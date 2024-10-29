@@ -1,9 +1,11 @@
+// UpbitWebSocketHandler.java
 package main.arbitrage.infrastructure.websocket.upbit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -28,11 +30,18 @@ public class UpbitWebSocketHandler implements WebSocketHandler {
             String payload;
             Object rawPayload = message.getPayload();
 
-            ByteBuffer buffer = (ByteBuffer) rawPayload;
-            payload = StandardCharsets.UTF_8.decode(buffer).toString();
-            
+            if (rawPayload instanceof String) {
+                payload = (String) rawPayload;
+            } else if (rawPayload instanceof ByteBuffer) {
+                ByteBuffer buffer = (ByteBuffer) rawPayload;
+                payload = StandardCharsets.UTF_8.decode(buffer).toString();
+            } else if (message instanceof TextMessage) {
+                payload = ((TextMessage) message).getPayload();
+            } else {
+                payload = rawPayload.toString();
+            }
+
             JsonNode jsonNode = objectMapper.readTree(payload);
-            log.info(jsonNode.toPrettyString());
             messageHandler.accept(jsonNode);
         } catch (Exception e) {
             log.error("Error processing message: {}", message.getPayload(), e);

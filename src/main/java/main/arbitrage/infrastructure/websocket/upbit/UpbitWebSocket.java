@@ -102,33 +102,6 @@ public class UpbitWebSocket implements WebSocketClient {
         }
     }
 
-//    private void handleMessage(String message) {
-//        try {
-//            log.info(message);
-//
-//            JsonNode node = objectMapper.readTree(message);
-//            if (node.has("status")) {
-//                handlePongMessage(node.get("status").asText());
-//                return;
-//            }
-//            String type = node.get("type").asText();
-//            String code = node.get("code").asText().replace("KRW-", "").toLowerCase();
-//
-//            switch (type) {
-//                case "orderbook":
-//                    log.info(node.toPrettyString());
-//                    break;
-//                case "trade":
-//                    log.info(node.toPrettyString());
-//                    break;
-//                default:
-//                    log.warn("Unknown message type: {}", type);
-//            }
-//        } catch (Exception e) {
-//            log.error("Upbit WebSocket Error Processing Message: {}", message, e);
-//        }
-//    }
-
     private void sendPing() {
         try {
             session.sendMessage(new TextMessage("PING"));
