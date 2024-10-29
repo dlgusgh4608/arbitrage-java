@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: arbitrage
+server:
+  port: 8000
