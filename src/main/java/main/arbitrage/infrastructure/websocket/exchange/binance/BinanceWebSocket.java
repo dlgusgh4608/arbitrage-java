@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.infrastructure.websocket.common.BaseWebSocketClient;
 import main.arbitrage.infrastructure.websocket.common.WebSocketClient;
+import main.arbitrage.infrastructure.websocket.common.dto.CommonOrderbookDto;
+import main.arbitrage.infrastructure.websocket.common.dto.CommonTradeDto;
 import main.arbitrage.infrastructure.websocket.handler.MessageWebSocketHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
@@ -12,14 +14,16 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
 @Slf4j
-public class BinanceWebSocket extends BaseWebSocketClient implements WebSocketClient {
+public class BinanceWebSocket extends BaseWebSocketClient {
     private static String WS_URL = "wss://fstream.binance.com/stream?streams=";
     private static boolean isRunning = false;
     private WebSocketSession session;
@@ -76,14 +80,53 @@ public class BinanceWebSocket extends BaseWebSocketClient implements WebSocketCl
 
         try {
             if (stream.endsWith("@aggTrade")) {
-                log.info(data.get("s").asText());
+                handleTrade(data);
             } else if (stream.endsWith("@depth10@100ms")) {
-                log.info(data.get("s").asText());
+                handleOrderbook(data);
             }
         } catch (Exception e) {
             log.error("Binance processing message {}", e.getMessage(), e);
         }
 
+    }
+
+    @Override
+    protected void handleTrade(JsonNode data) {
+        String symbol = data.get("s").asText().toLowerCase().replace("usdt", "");
+
+        CommonTradeDto trade = CommonTradeDto.builder()
+                .symbol(symbol)
+                .price(new BigDecimal(data.get("p").asText()))
+                .timestamp(data.get("T").asLong())
+                .build();
+
+        tradeMap.put(symbol, trade);
+    }
+
+    @Override
+    protected void handleOrderbook(JsonNode data) {
+        String symbol = data.get("s").asText().toLowerCase().replace("usdt", "");
+
+        CommonOrderbookDto orderbook = CommonOrderbookDto.builder()
+                .symbol(symbol)
+                .bids(createOrderbookUnits(data.get("b")))
+                .asks(createOrderbookUnits(data.get("a")))
+                .build();
+
+        orderbookMap.put(symbol, orderbook);
+    }
+
+    private CommonOrderbookDto.OrderbookUnit[] createOrderbookUnits(JsonNode units) {
+        CommonOrderbookDto.OrderbookUnit[] orderbooksUnits = new CommonOrderbookDto.OrderbookUnit[10];
+
+        for (int i = 0; i < 10; i++) {
+            JsonNode unit = units.get(i);
+            orderbooksUnits[i] = CommonOrderbookDto.OrderbookUnit.builder()
+                    .price(new BigDecimal(unit.get(0).asText()))
+                    .size(new BigDecimal(unit.get(1).asText()))
+                    .build();
+        }
+        return orderbooksUnits;
     }
 
     private String createStreamParams() {

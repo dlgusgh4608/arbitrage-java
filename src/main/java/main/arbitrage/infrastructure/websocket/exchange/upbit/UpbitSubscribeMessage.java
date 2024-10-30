@@ -30,12 +30,16 @@ public class UpbitSubscribeMessage {
                 .codes(formatSymbols(symbols))
                 .build());
 
-        // orderbook 타입 메시지 추가 -> 나중에 Front 붙히면 주석 없애기
-//        messages.add(UpbitSubscribeMessage.builder()
-//                .type("orderbook")
-//                .codes(formatSymbols(symbols))
-//                .build());
+        // orderbook depth는 Binance기준 10개로 맞춤. (detph10이면 충분. Front-end UI용도.)
+        String[] orderbookSymbols = Arrays.stream(symbols).map(symbol -> symbol.concat(".10")).toArray(String[]::new);
 
+        // orderbook 타입 메시지 추가
+        messages.add(UpbitSubscribeMessage.builder()
+                .type("orderbook")
+                .codes(formatSymbols(orderbookSymbols))
+                .build());
+
+        System.out.println(messages);
         return messages;
     }
 

@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import main.arbitrage.infrastructure.websocket.common.BaseWebSocketClient;
 import main.arbitrage.infrastructure.websocket.common.WebSocketClient;
+import main.arbitrage.infrastructure.websocket.common.dto.CommonOrderbookDto;
+import main.arbitrage.infrastructure.websocket.common.dto.CommonTradeDto;
 import main.arbitrage.infrastructure.websocket.handler.MessageWebSocketHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
@@ -14,14 +16,16 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.List;
 
 
 @Component
 @Slf4j
-public class UpbitWebSocket extends BaseWebSocketClient implements WebSocketClient {
+public class UpbitWebSocket extends BaseWebSocketClient {
     private static final String WS_URL = "wss://api.upbit.com/websocket/v1";
     private static boolean isRunning = false;
     private WebSocketSession session;
@@ -59,7 +63,6 @@ public class UpbitWebSocket extends BaseWebSocketClient implements WebSocketClie
             try {
                 session.close();
                 isRunning = false;
-                log.info("Upbit WebSocket Disconnected");
             } catch (IOException e) {
                 log.error("Error closing Upbit WebSocket", e);
             }
@@ -80,14 +83,13 @@ public class UpbitWebSocket extends BaseWebSocketClient implements WebSocketClie
             }
 
             String type = message.get("type").asText();
-            String code = message.get("code").asText().replace("KRW-", "").toLowerCase();
 
             switch (type) {
                 case "orderbook":
-                    log.info(message.toPrettyString());
+                    handleOrderbook(message);
                     break;
                 case "trade":
-                    log.info(message.toPrettyString());
+                    handleTrade(message);
                     break;
                 default:
                     log.warn("Unknown message type: {}", type);
@@ -95,6 +97,48 @@ public class UpbitWebSocket extends BaseWebSocketClient implements WebSocketClie
         } catch (Exception e) {
             log.error("Error processing message: {}", message, e);
         }
+    }
+
+    @Override
+    protected void handleTrade(JsonNode data) {
+        String symbol = data.get("code").asText().replace("KRW-", "").toLowerCase();
+
+        CommonTradeDto trade = CommonTradeDto.builder()
+                .symbol(symbol)
+                .price(new BigDecimal(data.get("trade_price").asText()))
+                .timestamp(data.get("trade_timestamp").asLong())
+                .build();
+
+        tradeMap.put(symbol, trade);
+    }
+
+    @Override
+    protected void handleOrderbook(JsonNode data) {
+        String symbol = data.get("code").asText().replace("KRW-", "").toLowerCase();
+
+        CommonOrderbookDto orderbook = CommonOrderbookDto.builder()
+                .symbol(symbol)
+                .bids(createOrderbookUnits(data.get("orderbook_units"), false))
+                .asks(createOrderbookUnits(data.get("orderbook_units"), true))
+                .build();
+
+        orderbookMap.put(symbol, orderbook);
+    }
+
+    private CommonOrderbookDto.OrderbookUnit[] createOrderbookUnits(JsonNode units, boolean isAsk) {
+        CommonOrderbookDto.OrderbookUnit[] orderbooksUnits = new CommonOrderbookDto.OrderbookUnit[10];
+        String type;
+        type = isAsk ? "ask" : "bid";
+
+        for (int i = 0; i < 10; i++) {
+            JsonNode unit = units.get(i);
+            orderbooksUnits[i] = CommonOrderbookDto.OrderbookUnit.builder()
+                    .price(new BigDecimal(unit.get(type.concat("_price")).asText()))
+                    .size(new BigDecimal(unit.get(type.concat("_size")).asText()))
+                    .build();
+        }
+
+        return orderbooksUnits;
     }
 
     private void handlePongMessage(String status) {
@@ -116,7 +160,6 @@ public class UpbitWebSocket extends BaseWebSocketClient implements WebSocketClie
     private void sendSubscribeMessage() throws IOException {
         List<UpbitSubscribeMessage> messages = UpbitSubscribeMessage.createSubscribeMessage("unique_ticket_123", symbols);
         String message = objectMapper.writeValueAsString(messages);
-        log.info(message);
         session.sendMessage(new TextMessage(message));
     }
 }

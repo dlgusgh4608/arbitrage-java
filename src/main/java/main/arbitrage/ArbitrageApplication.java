@@ -21,7 +21,7 @@ public class ArbitrageApplication {
 
         UpbitWebSocket upbitWebSocket = new UpbitWebSocket(objectMapper);
         BinanceWebSocket binanceWebSocket = new BinanceWebSocket(objectMapper);
-        Collector collector = new Collector(upbitWebSocket, binanceWebSocket);
+        Collector collector = new Collector(upbitWebSocket, binanceWebSocket, objectMapper);
         collector.run();
     }
 }
