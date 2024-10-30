@@ -22,12 +22,14 @@ import java.util.List;
 @Component
 @Slf4j
 public class UpbitWebSocket extends BaseWebSocketClient implements WebSocketClient {
+    private static final String WS_URL = "wss://api.upbit.com/websocket/v1";
+    private static boolean isRunning = false;
     private WebSocketSession session;
 
     private final String[] symbols = {"btc"};
 
     public UpbitWebSocket(ObjectMapper objectMapper) {
-        super("wss://api.upbit.com/websocket/v1", objectMapper);
+        super(objectMapper);
     }
 
     @Override
@@ -40,15 +42,13 @@ public class UpbitWebSocket extends BaseWebSocketClient implements WebSocketClie
             StandardWebSocketClient client = new StandardWebSocketClient();
             WebSocketHandler handler = new MessageWebSocketHandler("Upbit", this::handleMessage);
 
-            session = client.execute(handler, wsUrl).get();
+            session = client.execute(handler, WS_URL).get();
             isRunning = true;
 
             sendSubscribeMessage();
             sendPing();
-
-            log.info("Upbit WebSocket Connected time {}", LocalDateTime.now());
         } catch (InterruptedException | ExecutionException | IOException e) {
-            log.error("Upbit WebSocket Connect Error {}", wsUrl, e);
+            log.error("Upbit WebSocket Connect Error {}", WS_URL, e);
             throw new RuntimeException(e);
         }
     }

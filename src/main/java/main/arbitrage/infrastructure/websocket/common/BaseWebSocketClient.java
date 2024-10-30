@@ -4,12 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class BaseWebSocketClient {
-    protected static String wsUrl;
-    protected static boolean isRunning = false;
     protected ObjectMapper objectMapper;
 
-    public BaseWebSocketClient(String url, ObjectMapper objectMapper) {
-        wsUrl = url;
+    public BaseWebSocketClient(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 

@@ -6,6 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import main.arbitrage.service.Collector;
 import main.arbitrage.infrastructure.websocket.exchange.upbit.UpbitWebSocket;
+import main.arbitrage.infrastructure.websocket.exchange.binance.BinanceWebSocket;
+
 
 @EnableScheduling
 @SpringBootApplication
@@ -18,9 +20,8 @@ public class ArbitrageApplication {
         ObjectMapper objectMapper = new ObjectMapper();
 
         UpbitWebSocket upbitWebSocket = new UpbitWebSocket(objectMapper);
-        Collector collector = new Collector(upbitWebSocket);
+        BinanceWebSocket binanceWebSocket = new BinanceWebSocket(objectMapper);
+        Collector collector = new Collector(upbitWebSocket, binanceWebSocket);
         collector.run();
     }
-
-
 }
