@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.websocket;
+package main.arbitrage.infrastructure.websocket.common;
 
 public interface WebSocketClient {
     void connect();

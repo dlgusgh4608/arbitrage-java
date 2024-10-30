@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.websocket.upbit;
+package main.arbitrage.infrastructure.websocket.exchange.upbit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

@@ -1,5 +1,4 @@
-// UpbitWebSocketHandler.java
-package main.arbitrage.infrastructure.websocket.upbit;
+package main.arbitrage.infrastructure.websocket.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,12 +14,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
 @Slf4j
-public class UpbitWebSocketHandler implements WebSocketHandler {
+public class MessageWebSocketHandler implements WebSocketHandler {
     private final Consumer<JsonNode> messageHandler;
     private final ObjectMapper objectMapper;
+    private final String webSocketName;
 
-    public UpbitWebSocketHandler(Consumer<JsonNode> messageHandler) {
+    public MessageWebSocketHandler(String webSocketName, Consumer<JsonNode> messageHandler) {
         this.messageHandler = messageHandler;
+        this.webSocketName = webSocketName;
         this.objectMapper = new ObjectMapper();
     }
 
@@ -44,18 +45,18 @@ public class UpbitWebSocketHandler implements WebSocketHandler {
             JsonNode jsonNode = objectMapper.readTree(payload);
             messageHandler.accept(jsonNode);
         } catch (Exception e) {
-            log.error("Error processing message: {}", message.getPayload(), e);
+            log.error("{} WebSocket Error processing message: {}", webSocketName, message.getPayload(), e);
         }
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-        log.info("Upbit WebSocket connected");
+        log.info("{} WebSocket connected", webSocketName);
     }
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) {
-        log.error("Upbit WebSocket transport error", exception);
+        log.error("{} WebSocket transport error", webSocketName, exception);
     }
 
     @Override
@@ -65,6 +66,6 @@ public class UpbitWebSocketHandler implements WebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        log.info("Upbit WebSocket connection closed: {}", status);
+        log.info("{} WebSocket connection closed: {}", webSocketName, status);
     }
 }

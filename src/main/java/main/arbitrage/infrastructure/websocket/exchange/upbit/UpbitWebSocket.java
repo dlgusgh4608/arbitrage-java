@@ -1,10 +1,12 @@
-package main.arbitrage.infrastructure.websocket.upbit;
+package main.arbitrage.infrastructure.websocket.exchange.upbit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.infrastructure.websocket.WebSocketClient;
+
+import main.arbitrage.infrastructure.websocket.common.BaseWebSocketClient;
+import main.arbitrage.infrastructure.websocket.common.WebSocketClient;
+import main.arbitrage.infrastructure.websocket.handler.MessageWebSocketHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHandler;
@@ -18,15 +20,15 @@ import java.util.List;
 
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
-public class UpbitWebSocket implements WebSocketClient {
-    private static final String UPBIT_WS_URL = "wss://api.upbit.com/websocket/v1";
-    private static boolean isRunning = false;
+public class UpbitWebSocket extends BaseWebSocketClient implements WebSocketClient {
     private WebSocketSession session;
-    private final ObjectMapper objectMapper;
 
     private final String[] symbols = {"btc"};
+
+    public UpbitWebSocket(ObjectMapper objectMapper) {
+        super("wss://api.upbit.com/websocket/v1", objectMapper);
+    }
 
     @Override
     public void connect() {
@@ -36,9 +38,9 @@ public class UpbitWebSocket implements WebSocketClient {
 
         try {
             StandardWebSocketClient client = new StandardWebSocketClient();
-            WebSocketHandler handler = new UpbitWebSocketHandler(this::handleMessage);
+            WebSocketHandler handler = new MessageWebSocketHandler("Upbit", this::handleMessage);
 
-            session = client.execute(handler, UPBIT_WS_URL).get();
+            session = client.execute(handler, wsUrl).get();
             isRunning = true;
 
             sendSubscribeMessage();
@@ -46,7 +48,7 @@ public class UpbitWebSocket implements WebSocketClient {
 
             log.info("Upbit WebSocket Connected time {}", LocalDateTime.now());
         } catch (InterruptedException | ExecutionException | IOException e) {
-            log.error("Upbit WebSocket Connect Error {}", UPBIT_WS_URL, e);
+            log.error("Upbit WebSocket Connect Error {}", wsUrl, e);
             throw new RuntimeException(e);
         }
     }
@@ -69,15 +71,8 @@ public class UpbitWebSocket implements WebSocketClient {
         return session != null && session.isOpen() && isRunning;
     }
 
-    private void handlePongMessage(String status) {
-        if (!"UP".equals(status)) {
-            disconnect();
-            return;
-        }
-        sendPing();
-    }
-
-    private void handleMessage(JsonNode message) {
+    @Override
+    protected void handleMessage(JsonNode message) {
         try {
             if (message.has("status")) {
                 handlePongMessage(message.get("status").asText());
@@ -100,6 +95,14 @@ public class UpbitWebSocket implements WebSocketClient {
         } catch (Exception e) {
             log.error("Error processing message: {}", message, e);
         }
+    }
+
+    private void handlePongMessage(String status) {
+        if (!"UP".equals(status)) {
+            disconnect();
+            return;
+        }
+        sendPing();
     }
 
     private void sendPing() {

@@ -1,7 +1,7 @@
 package main.arbitrage.service;
 
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.infrastructure.websocket.WebSocketClient;
+import main.arbitrage.infrastructure.websocket.common.WebSocketClient;
 import org.springframework.stereotype.Service;
 
 @Service

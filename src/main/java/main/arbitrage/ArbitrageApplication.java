@@ -5,7 +5,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import main.arbitrage.service.Collector;
-import main.arbitrage.infrastructure.websocket.upbit.UpbitWebSocket;
+import main.arbitrage.infrastructure.websocket.exchange.upbit.UpbitWebSocket;
 
 @EnableScheduling
 @SpringBootApplication

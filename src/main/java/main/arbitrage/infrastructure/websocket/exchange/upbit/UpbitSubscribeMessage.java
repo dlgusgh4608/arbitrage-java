@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.websocket.upbit;
+package main.arbitrage.infrastructure.websocket.exchange.upbit;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

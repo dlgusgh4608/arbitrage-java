@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.websocket.upbit;
+package main.arbitrage.infrastructure.websocket.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,7 +16,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class UpbitWebSocketHandlerTest {
+class MessageWebSocketHandlerTest {
 
     @Mock
     private WebSocketSession session;
@@ -24,13 +24,13 @@ class UpbitWebSocketHandlerTest {
     @Mock
     private Consumer<JsonNode> messageHandler;
 
-    private UpbitWebSocketHandler handler;
+    private MessageWebSocketHandler handler;
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        handler = new UpbitWebSocketHandler(messageHandler);
+        handler = new MessageWebSocketHandler("Test", messageHandler);
     }
 
     @Test
