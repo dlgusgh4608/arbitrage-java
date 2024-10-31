@@ -2,6 +2,8 @@ package main.arbitrage.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.infrastructure.event.EventEmitter;
 import org.jsoup.Jsoup;
@@ -15,6 +17,7 @@ import java.io.IOException;
 @Slf4j
 @Service
 @EnableScheduling
+@RequiredArgsConstructor
 public class UsdToKrw {
     private static final String GOOGLE_FINANCE_USD_TO_KRW_URL = "https://www.google.com/finance/quote/USD-KRW";
     private static final String CURRENT_SELECTOR = "div.YMlKec.fxKbKc"; // 환율 셀렉터 -> 나중에 구글이 수정하면 바꿔야함.
@@ -22,11 +25,6 @@ public class UsdToKrw {
     private final EventEmitter emitter;
 
     double rate;
-
-    public UsdToKrw(ObjectMapper objectMapper, EventEmitter emitter) {
-        this.objectMapper = objectMapper;
-        this.emitter = emitter;
-    }
 
     private double getUsdToKrw() {
         try {
@@ -47,6 +45,7 @@ public class UsdToKrw {
         }
     }
 
+    @PostConstruct
     @Scheduled(fixedDelay = 1000 * 10) // 10sec
     private void publishUsdToKrw() {
         double currentRate = getUsdToKrw();
