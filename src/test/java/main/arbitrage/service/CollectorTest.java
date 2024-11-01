@@ -1,6 +1,6 @@
 package main.arbitrage.service;
 
-import main.arbitrage.infrastructure.websocket.common.WebSocketClient;
+import main.arbitrage.domain.collector.infrastructure.websocket.common.WebSocketClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

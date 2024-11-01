@@ -1,6 +1,7 @@
 package main.arbitrage.infrastructure.websocket.exchange.upbit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import main.arbitrage.domain.collector.infrastructure.websocket.exchange.upbit.UpbitSubscribeMessage;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
