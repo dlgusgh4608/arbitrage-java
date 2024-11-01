@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
 import main.arbitrage.infrastructure.websocket.common.BaseWebSocketClient;
-import main.arbitrage.infrastructure.websocket.common.WebSocketClient;
 import main.arbitrage.infrastructure.websocket.common.dto.CommonOrderbookDto;
 import main.arbitrage.infrastructure.websocket.common.dto.CommonTradeDto;
 import main.arbitrage.infrastructure.websocket.handler.MessageWebSocketHandler;
@@ -17,8 +16,6 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.List;
 

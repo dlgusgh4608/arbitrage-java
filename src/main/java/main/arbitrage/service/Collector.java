@@ -3,95 +3,56 @@ package main.arbitrage.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.common.util.calculator.FinancialCalculator;
-import main.arbitrage.common.util.currency.CurrencyConverter;
+import main.arbitrage.common.dto.PremiumDto;
+import main.arbitrage.domain.exchange.ExchangeTradeCollector;
+import main.arbitrage.domain.exchange.ExchangePair;
 import main.arbitrage.infrastructure.event.EventEmitter;
-import main.arbitrage.infrastructure.websocket.common.BaseWebSocketClient;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import main.arbitrage.infrastructure.websocket.common.dto.CommonTradeDto;
-import main.arbitrage.infrastructure.websocket.common.dto.CommonOrderbookDto;
-import main.arbitrage.common.dto.PremiumDto;
-
-import java.math.BigDecimal;
-
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class Collector {
-    private final BaseWebSocketClient upbitWebSocket;
-    private final BaseWebSocketClient binanceWebSocket;
-    private final ObjectMapper objectMapper;
+    private final ExchangeTradeCollector exchangeCollector;
+    private final PremiumCalculationService premiumCalculator;
+    private final TradeValidationService tradeValidator;
     private final EventEmitter emitter;
-
-    private final FinancialCalculator financialCalculator;
-    private final CurrencyConverter currencyConverter;
+    private final ObjectMapper objectMapper;
 
     private double usdToKrw;
-
-    public Collector(
-            @Qualifier("upbitWebSocket") BaseWebSocketClient upbitWebSocket,
-            @Qualifier("binanceWebSocket") BaseWebSocketClient binanceWebSocket,
-            EventEmitter emitter,
-            ObjectMapper objectMapper
-    ) {
-        this.upbitWebSocket = upbitWebSocket;
-        this.binanceWebSocket = binanceWebSocket;
-        this.emitter = emitter;
-        this.objectMapper = objectMapper;
-        this.currencyConverter = new CurrencyConverter();
-        this.financialCalculator = new FinancialCalculator();
-    }
 
     @PostConstruct
     private void initialize() {
         emitter.on("updateUsdToKrw", data -> this.usdToKrw = data.asDouble());
-
-        upbitWebSocket.connect();
-        binanceWebSocket.connect();
+        exchangeCollector.initialize();
     }
 
     @PostConstruct
     @Scheduled(fixedDelay = 500)
-    private void publish() {
+    private void scheduler() {
         if (usdToKrw == 0) return;
-
-        makePremiumOfTrade();
+        calculateAndEmitPremium();
     }
 
-    private void makePremiumOfTrade() {
-        CommonTradeDto upbitTrade = upbitWebSocket.getTrade("btc");
-        CommonTradeDto binanceTrade = binanceWebSocket.getTrade("btc");
+    private void calculateAndEmitPremium() {
+        ExchangePair tradePair = exchangeCollector.collectTrades("btc");
 
-        if (upbitTrade == null || binanceTrade == null) return;
+        if (!tradeValidator.isValidTradePair(tradePair.getDomestic(), tradePair.getOverseas()))
+            return;
 
-        Long binanceTimestamp = binanceTrade.getTimestamp();
-        Long upbitTimestamp = upbitTrade.getTimestamp();
-
-        // 각 거래소의 trade timestamp를 비교해서 30초 이상 차이 나면 정상적인 가격이 아니라 판단하고 return
-        if (Math.abs(binanceTimestamp - upbitTimestamp) > 30000) return;
-
-        BigDecimal upbitPrice = upbitTrade.getPrice();
-        BigDecimal binancePrice = binanceTrade.getPrice();
-
-        BigDecimal upbitPriceUsd = currencyConverter.krwToUsd(upbitPrice, usdToKrw);
-        BigDecimal kimchiPremium = financialCalculator.calculatePremium(upbitPriceUsd, binancePrice);
-
-        PremiumDto premium = PremiumDto.builder()
-                .symbol("btc")
-                .premium(kimchiPremium)
-                .domestic(upbitPrice)
-                .overseas(binancePrice)
-                .usdToKrw(usdToKrw)
-                .domesticTradeAt(upbitTimestamp)
-                .overseasTradeAt(binanceTimestamp)
-                .build();
+        PremiumDto premium = premiumCalculator.calculatePremium(
+                tradePair.getDomestic(),
+                tradePair.getOverseas(),
+                usdToKrw,
+                "btc"
+        );
 
         JsonNode payload = objectMapper.valueToTree(premium);
+        System.out.println(payload.toString());
 
-        System.out.println(payload);
         emitter.emit("btc", payload);
     }
 }
