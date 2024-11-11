@@ -13,10 +13,4 @@ public class PercentageCalculator {
                 .multiply(new BigDecimal("100"))
                 .setScale(4, RoundingMode.HALF_UP);
     }
-
-    public BigDecimal calculatePercentageAmount(BigDecimal amount, BigDecimal percent, int scale) {
-        return percent.divide(new BigDecimal("100"), 8, RoundingMode.HALF_UP)
-                .multiply(amount)
-                .setScale(scale, RoundingMode.HALF_UP);
-    }
 }
