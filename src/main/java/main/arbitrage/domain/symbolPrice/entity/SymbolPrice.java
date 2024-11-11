@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.symbol.entity.Symbol;
 
 import java.math.BigDecimal;
@@ -17,11 +18,15 @@ public class SymbolPrice {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long symbol_price_id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "symbol_id", nullable = false)
-    private Symbol symbol_id;
+    private Symbol symbol;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "exchange_rate_id", nullable = false)
+    private ExchangeRate exchangeRate;
 
     @Column(name = "premium", nullable = false)
     private BigDecimal premium;
@@ -31,9 +36,6 @@ public class SymbolPrice {
 
     @Column(name = "overseas", nullable = false)
     private BigDecimal overseas;
-
-    @Column(name = "usd_to_krw", nullable = false)
-    private BigDecimal usdToKrw;
 
     @Column(name = "domestic_trade_at", nullable = false)
     private Timestamp domesticTradeAt;

@@ -34,7 +34,7 @@ dependencies {
 
     // PostgreSQL
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
-    implementation 'org.postgresql:postgresql:42.7.4'
+    implementation 'org.postgresql:postgresql'
 
     //	Lombok
     compileOnly 'org.projectlombok:lombok'
