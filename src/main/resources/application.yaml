@@ -1,5 +1,17 @@
 spring:
   application:
     name: arbitrage
+  datasource:
+    url: jdbc:postgresql://localhost:5432/arbitrage
+    username: postgres
+    password: test123
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 4
+  jpa:
+    database: postgresql
+    hibernate:
+      ddl-auto: update
+    show-sql: true
 server:
   port: 8000
