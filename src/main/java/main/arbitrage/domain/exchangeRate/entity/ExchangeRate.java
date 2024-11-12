@@ -2,6 +2,7 @@ package main.arbitrage.domain.exchangeRate.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import main.arbitrage.domain.symbolPrice.entity.SymbolPrice;
@@ -27,4 +28,11 @@ public class ExchangeRate {
 
     @OneToOne(mappedBy = "exchangeRate", cascade = CascadeType.ALL, orphanRemoval = true)
     private SymbolPrice symbolPrice;
+
+    @Builder
+    public ExchangeRate(String fromCurrency, String toCurrency, double rate) {
+        this.fromCurrency = fromCurrency;
+        this.toCurrency = toCurrency;
+        this.rate = rate;
+    }
 }
