@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import main.arbitrage.domain.symbolPrice.entity.SymbolPrice;
+import main.arbitrage.domain.price.entity.Price;
 
 @Entity
 @Table(name = "exchange_rate")
@@ -17,17 +17,17 @@ public class ExchangeRate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long exchange_rate_id;
 
-    @Column(name = "to_currency")
+    @Column(name = "to_currency", length = 3)
     private String toCurrency;
 
-    @Column(name = "from_currency")
+    @Column(name = "from_currency", length = 3)
     private String fromCurrency;
 
     @Column(name = "rate")
     private double rate;
 
     @OneToOne(mappedBy = "exchangeRate", cascade = CascadeType.ALL, orphanRemoval = true)
-    private SymbolPrice symbolPrice;
+    private Price symbolPrice;
 
     @Builder
     public ExchangeRate(String fromCurrency, String toCurrency, double rate) {

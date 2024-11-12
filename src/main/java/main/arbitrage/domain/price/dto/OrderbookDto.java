@@ -1,4 +1,4 @@
-package main.arbitrage.domain.symbolPrice.dto;
+package main.arbitrage.domain.price.dto;
 
 import lombok.Builder;
 import lombok.Getter;

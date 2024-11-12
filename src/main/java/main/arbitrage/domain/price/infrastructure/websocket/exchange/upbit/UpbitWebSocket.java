@@ -1,13 +1,14 @@
-package main.arbitrage.domain.symbolPrice.infrastructure.websocket.exchange.upbit;
+package main.arbitrage.domain.price.infrastructure.websocket.exchange.upbit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
-import main.arbitrage.domain.symbolPrice.infrastructure.websocket.common.BaseWebSocketClient;
-import main.arbitrage.domain.symbolPrice.dto.TradeDto;
-import main.arbitrage.domain.symbolPrice.dto.OrderbookDto;
-import main.arbitrage.domain.symbolPrice.infrastructure.websocket.handler.MessageWebSocketHandler;
+import main.arbitrage.domain.price.infrastructure.websocket.common.BaseWebSocketClient;
+import main.arbitrage.domain.price.dto.TradeDto;
+import main.arbitrage.domain.price.dto.OrderbookDto;
+import main.arbitrage.domain.price.infrastructure.websocket.handler.MessageWebSocketHandler;
+import main.arbitrage.common.constant.SupportedSymbol;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHandler;
@@ -26,8 +27,7 @@ public class UpbitWebSocket extends BaseWebSocketClient {
     private static final String WS_URL = "wss://api.upbit.com/websocket/v1";
     private static boolean isRunning = false;
     private WebSocketSession session;
-
-    private final String[] symbols = {"btc"};
+    private static final List<String> SYMBOLS = SupportedSymbol.getApplySymbols();
 
     public UpbitWebSocket(ObjectMapper objectMapper) {
         super(objectMapper);
@@ -46,7 +46,7 @@ public class UpbitWebSocket extends BaseWebSocketClient {
             session = client.execute(handler, WS_URL).get();
             isRunning = true;
 
-            sendSubscribeMessage();
+            sendSubscribeMessage(SYMBOLS);
             sendPing();
         } catch (InterruptedException | ExecutionException | IOException e) {
             log.error("Upbit WebSocket Connect Error {}", WS_URL, e);
@@ -154,7 +154,7 @@ public class UpbitWebSocket extends BaseWebSocketClient {
         }
     }
 
-    private void sendSubscribeMessage() throws IOException {
+    private void sendSubscribeMessage(List<String> symbols) throws IOException {
         List<UpbitSubscribeMessage> messages = UpbitSubscribeMessage.createSubscribeMessage("unique_ticket_123", symbols);
         String message = objectMapper.writeValueAsString(messages);
         session.sendMessage(new TextMessage(message));

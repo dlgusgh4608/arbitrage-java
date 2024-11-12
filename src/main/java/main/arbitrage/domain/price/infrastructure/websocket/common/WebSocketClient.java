@@ -1,4 +1,6 @@
-package main.arbitrage.domain.symbolPrice.infrastructure.websocket.common;
+package main.arbitrage.domain.price.infrastructure.websocket.common;
+
+import java.util.List;
 
 public interface WebSocketClient {
     void connect();

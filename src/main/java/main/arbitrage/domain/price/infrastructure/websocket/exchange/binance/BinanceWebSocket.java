@@ -1,12 +1,13 @@
-package main.arbitrage.domain.symbolPrice.infrastructure.websocket.exchange.binance;
+package main.arbitrage.domain.price.infrastructure.websocket.exchange.binance;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.domain.symbolPrice.infrastructure.websocket.common.BaseWebSocketClient;
-import main.arbitrage.domain.symbolPrice.dto.TradeDto;
-import main.arbitrage.domain.symbolPrice.dto.OrderbookDto;
-import main.arbitrage.domain.symbolPrice.infrastructure.websocket.handler.MessageWebSocketHandler;
+import main.arbitrage.domain.price.infrastructure.websocket.common.BaseWebSocketClient;
+import main.arbitrage.domain.price.dto.TradeDto;
+import main.arbitrage.domain.price.dto.OrderbookDto;
+import main.arbitrage.domain.price.infrastructure.websocket.handler.MessageWebSocketHandler;
+import main.arbitrage.common.constant.SupportedSymbol;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
@@ -15,6 +16,7 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,7 +28,7 @@ public class BinanceWebSocket extends BaseWebSocketClient {
     private static boolean isRunning = false;
     private WebSocketSession session;
 
-    private final String[] symbols = {"btc"};
+    private static final List<String> SYMBOLS = SupportedSymbol.getApplySymbols();
 
     public BinanceWebSocket(ObjectMapper objectMapper) {
         super(objectMapper);
@@ -129,8 +131,8 @@ public class BinanceWebSocket extends BaseWebSocketClient {
 
     private String createStreamParams() {
         return Stream.concat(
-                Arrays.stream(symbols).map(symbol -> symbol.toLowerCase() + "usdt" + "@aggTrade"),
-                Arrays.stream(symbols).map(symbol -> symbol.toLowerCase() + "usdt" + "@depth10@100ms")
+                SYMBOLS.stream().map(symbol -> symbol.toLowerCase() + "usdt" + "@aggTrade"),
+                SYMBOLS.stream().map(symbol -> symbol.toLowerCase() + "usdt" + "@depth10@100ms")
         ).collect(Collectors.joining("/"));
     }
 }

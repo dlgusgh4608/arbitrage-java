@@ -1,4 +1,4 @@
-package main.arbitrage.domain.symbolPrice.infrastructure.websocket.handler;
+package main.arbitrage.domain.price.infrastructure.websocket.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

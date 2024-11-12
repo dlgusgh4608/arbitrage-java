@@ -1,9 +1,9 @@
-package main.arbitrage.domain.symbolPrice.infrastructure.websocket.common;
+package main.arbitrage.domain.price.infrastructure.websocket.common;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import main.arbitrage.domain.symbolPrice.dto.TradeDto;
-import main.arbitrage.domain.symbolPrice.dto.OrderbookDto;
+import main.arbitrage.domain.price.dto.TradeDto;
+import main.arbitrage.domain.price.dto.OrderbookDto;
 
 import java.util.concurrent.ConcurrentHashMap;
 
