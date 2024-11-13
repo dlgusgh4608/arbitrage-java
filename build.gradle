@@ -31,6 +31,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    // ENV
+    implementation 'me.paulschwarz:spring-dotenv:3.0.0'
+
     //	JSON
     implementation 'com.fasterxml.jackson.core:jackson-databind'
 

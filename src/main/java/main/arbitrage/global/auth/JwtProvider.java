@@ -17,7 +17,7 @@ public class JwtProvider {
     private final int JWT_ALIVE_TIME = 1000 * 60 * 60; // 1hour
 
     public JwtProvider(
-            @Value("${jwt.secret}") String secretKey
+            @Value("${jwt.access}") String secretKey
     ) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
