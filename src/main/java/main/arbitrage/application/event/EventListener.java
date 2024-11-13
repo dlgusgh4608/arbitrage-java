@@ -1,4 +1,4 @@
-package main.arbitrage.global.event;
+package main.arbitrage.application.event;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

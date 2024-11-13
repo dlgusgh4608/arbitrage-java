@@ -1,9 +1,8 @@
-package main.arbitrage.global.auth;
+package main.arbitrage.auth;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +16,7 @@ public class JwtProvider {
     private final int JWT_ALIVE_TIME = 1000 * 60 * 60; // 1hour
 
     public JwtProvider(
-            @Value("${jwt.access}") String secretKey
+            @Value("${jwt.secret}") String secretKey
     ) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);

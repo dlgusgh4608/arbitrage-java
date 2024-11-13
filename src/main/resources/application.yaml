@@ -17,6 +17,5 @@ server:
   port: ${SERVER_PORT:8000}
 
 jwt:
-  access: ${ACCESS_TOKEN_KEY}
-  refresh: ${REFRESH_TOKEN_KEY}
+  secret: ${JWT_SECRET}
 

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.global.event.EventEmitter;
+import main.arbitrage.application.event.EventEmitter;
 import main.arbitrage.domain.exchangeRate.controller.UsdToKrwValidation;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.exchangeRate.infrastructure.exchangeRate.usdToKrw.UsdToKrw;

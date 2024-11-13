@@ -6,7 +6,7 @@ import main.arbitrage.domain.user.dto.request.UserLoginRequest;
 import main.arbitrage.domain.user.dto.request.UserRegisterRequest;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.user.repository.UserRepository;
-import main.arbitrage.global.auth.JwtProvider;
+import main.arbitrage.auth.JwtProvider;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package main.arbitrage.global.auth;
+package main.arbitrage.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
