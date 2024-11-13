@@ -1,4 +1,4 @@
-package main.arbitrage.common.event;
+package main.arbitrage.global.event;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.stereotype.Component;

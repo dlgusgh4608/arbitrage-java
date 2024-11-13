@@ -5,19 +5,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.common.constant.SupportedSymbol;
-import main.arbitrage.common.dto.PremiumDto;
+import main.arbitrage.global.constant.SupportedSymbol;
+import main.arbitrage.global.dto.PremiumDto;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.price.buffer.PriceBuffer;
 import main.arbitrage.domain.price.controller.ExchangeTradeCollector;
 import main.arbitrage.domain.price.controller.ExchangePair;
 import main.arbitrage.domain.price.controller.TradeValidationService;
-import main.arbitrage.common.event.EventEmitter;
+import main.arbitrage.global.event.EventEmitter;
 import main.arbitrage.domain.price.entity.Price;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import main.arbitrage.common.util.json.TypedJsonNode;
+import main.arbitrage.global.util.json.TypedJsonNode;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
@@ -108,7 +108,7 @@ public class PremiumEmitOnSchedule {
 
     private void emitPremium(String symbol, PremiumDto premium) {
         JsonNode payload = objectMapper.valueToTree(premium);
-        System.out.println(payload.toString());
+//        System.out.println(payload.toString());
 
         emitter.emit(symbol, payload);
     }

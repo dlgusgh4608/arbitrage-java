@@ -1,4 +1,4 @@
-package main.arbitrage.common.util.currency;
+package main.arbitrage.global.util.currency;
 
 import org.springframework.stereotype.Component;
 

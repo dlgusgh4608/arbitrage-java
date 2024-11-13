@@ -1,4 +1,4 @@
-package main.arbitrage.common.dto;
+package main.arbitrage.global.dto;
 
 import lombok.Builder;
 import lombok.Getter;

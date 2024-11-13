@@ -8,7 +8,7 @@ import main.arbitrage.domain.price.infrastructure.websocket.common.BaseWebSocket
 import main.arbitrage.domain.price.dto.TradeDto;
 import main.arbitrage.domain.price.dto.OrderbookDto;
 import main.arbitrage.domain.price.infrastructure.websocket.handler.MessageWebSocketHandler;
-import main.arbitrage.common.constant.SupportedSymbol;
+import main.arbitrage.global.constant.SupportedSymbol;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHandler;

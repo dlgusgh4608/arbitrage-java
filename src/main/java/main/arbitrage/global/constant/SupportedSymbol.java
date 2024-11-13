@@ -1,4 +1,4 @@
-package main.arbitrage.common.constant;
+package main.arbitrage.global.constant;
 
 import java.util.Arrays;
 import java.util.Collections;

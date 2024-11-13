@@ -1,4 +1,4 @@
-package main.arbitrage.common.util.calculator;
+package main.arbitrage.global.util.calculator;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

@@ -1,4 +1,4 @@
-package main.arbitrage.common.util.calculator;
+package main.arbitrage.global.util.calculator;
 
 import org.springframework.stereotype.Component;
 
@@ -20,7 +20,7 @@ public class FinancialCalculator {
                 .add(min)
                 .setScale(4, RoundingMode.HALF_UP);
     }
-    
+
     public BigDecimal calculateShoulderValue(BigDecimal max, BigDecimal min) {
         return max.subtract(
                 max.subtract(min)

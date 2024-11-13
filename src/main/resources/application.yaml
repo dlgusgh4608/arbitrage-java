@@ -15,3 +15,6 @@ spring:
     show-sql: true
 server:
   port: 8000
+
+jwt:
+  secret: fdhsafjksdahfkjsahfjksdahfkjsdabnfhyiabsvyucbduy

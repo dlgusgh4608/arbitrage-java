@@ -1,9 +1,9 @@
 package main.arbitrage.domain.price.service;
 
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.common.util.calculator.FinancialCalculator;
-import main.arbitrage.common.util.currency.CurrencyConverter;
-import main.arbitrage.common.dto.PremiumDto;
+import main.arbitrage.global.util.calculator.FinancialCalculator;
+import main.arbitrage.global.util.currency.CurrencyConverter;
+import main.arbitrage.global.dto.PremiumDto;
 import main.arbitrage.domain.price.dto.TradeDto;
 import org.springframework.stereotype.Service;
 

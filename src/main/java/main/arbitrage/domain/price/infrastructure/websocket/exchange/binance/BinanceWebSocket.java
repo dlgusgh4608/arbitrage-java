@@ -7,7 +7,7 @@ import main.arbitrage.domain.price.infrastructure.websocket.common.BaseWebSocket
 import main.arbitrage.domain.price.dto.TradeDto;
 import main.arbitrage.domain.price.dto.OrderbookDto;
 import main.arbitrage.domain.price.infrastructure.websocket.handler.MessageWebSocketHandler;
-import main.arbitrage.common.constant.SupportedSymbol;
+import main.arbitrage.global.constant.SupportedSymbol;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
@@ -15,7 +15,6 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;

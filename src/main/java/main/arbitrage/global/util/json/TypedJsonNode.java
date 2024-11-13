@@ -1,4 +1,4 @@
-package main.arbitrage.common.util.json;
+package main.arbitrage.global.util.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

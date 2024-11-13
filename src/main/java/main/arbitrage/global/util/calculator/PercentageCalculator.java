@@ -1,4 +1,4 @@
-package main.arbitrage.common.util.calculator;
+package main.arbitrage.global.util.calculator;
 
 import org.springframework.stereotype.Component;
 
