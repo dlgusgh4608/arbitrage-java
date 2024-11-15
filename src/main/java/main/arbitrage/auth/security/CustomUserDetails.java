@@ -1,7 +1,7 @@
 package main.arbitrage.auth.security;
 
 
-import main.arbitrage.auth.jwt.dto.TokenDto;
+import main.arbitrage.auth.jwt.dto.JwtDto;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,7 +14,7 @@ public class CustomUserDetails implements UserDetails {
     private final String email;
     private final String nickname;
 
-    public CustomUserDetails(TokenDto tokenDto) {
+    public CustomUserDetails(JwtDto tokenDto) {
         this.userId = tokenDto.getUserId();
         this.email = tokenDto.getEmail();
         this.nickname = tokenDto.getNickname();

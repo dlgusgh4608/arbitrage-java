@@ -7,9 +7,8 @@ import main.arbitrage.domain.user.dto.request.UserRegisterRequest;
 import main.arbitrage.domain.user.dto.response.UserLoginResponse;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.user.repository.UserRepository;
-import main.arbitrage.auth.jwt.JwtProvider;
+import main.arbitrage.auth.jwt.JwtUtil;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +20,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
-    private final JwtProvider jwtProvider;
+    private final JwtUtil jwtProvider;
 
 
     @Transactional

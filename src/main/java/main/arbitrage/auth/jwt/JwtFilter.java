@@ -2,12 +2,11 @@ package main.arbitrage.auth.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.auth.jwt.dto.TokenDto;
+import main.arbitrage.auth.jwt.dto.JwtDto;
 import main.arbitrage.auth.security.CustomUserDetails;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,7 +23,7 @@ import java.util.UUID;
 @Slf4j
 public class JwtFilter extends OncePerRequestFilter {
 
-    private final JwtProvider jwtProvider;
+    private final JwtUtil jwtProvider;
     private final RefreshTokenService refreshTokenService;
 
     @Override
@@ -59,7 +58,7 @@ public class JwtFilter extends OncePerRequestFilter {
             }
 
             // 이 토큰은 내가 만든 토큰인가?
-            TokenDto tokenInfo = jwtProvider.getTokenInfo(accessToken);
+            JwtDto tokenInfo = jwtProvider.getTokenInfo(accessToken);
 
             // 엑세스 토큰이 만료되지 않았을때.
             if (!tokenInfo.isExpired()) {
@@ -107,7 +106,7 @@ public class JwtFilter extends OncePerRequestFilter {
             String newAccessToken = jwtProvider.createToken(userId, email, nickname);
             String newRefreshToken = refreshTokenService.updateRefreshToken(email, UUID.randomUUID().toString());
 
-            TokenDto newTokenInfo = jwtProvider.getTokenInfo(newAccessToken);
+            JwtDto newTokenInfo = jwtProvider.getTokenInfo(newAccessToken);
             saveUserAuthContext(newTokenInfo);
 
             // new Cookie() client 작업 후 http only cookie 만들어 테스트
@@ -124,7 +123,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
     }
 
-    private void saveUserAuthContext(TokenDto tokenDto) {
+    private void saveUserAuthContext(JwtDto tokenDto) {
         UserDetails userDetails = new CustomUserDetails(tokenDto);
 
         UsernamePasswordAuthenticationToken authentication =
@@ -140,7 +139,8 @@ public class JwtFilter extends OncePerRequestFilter {
     // SecurityConfig에 있는 requestMatchers와 일치시켜주세요.
     private boolean isPublicUrl(String requestURI) {
         return requestURI.equals("/api/users/login") ||
-                requestURI.equals("/api/users/register");
+                requestURI.equals("/api/users/register") ||
+                requestURI.equals("/");
     }
 
     private String resolveRefreshToken(HttpServletRequest request) {

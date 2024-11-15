@@ -29,7 +29,8 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers( // public route list
                         "/api/users/register",
-                        "/api/users/login"
+                        "/api/users/login",
+                        "/"
                 )
                 .permitAll() // public route list에 지정된 url을 허용.
                 .anyRequest() // list에 있는거 아니면
