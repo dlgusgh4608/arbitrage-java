@@ -108,7 +108,6 @@ public class PremiumEmitOnSchedule {
 
     private void emitPremium(String symbol, PremiumDto premium) {
         JsonNode payload = objectMapper.valueToTree(premium);
-//        System.out.println(payload.toString());
 
         emitter.emit(symbol, payload);
     }

@@ -9,8 +9,8 @@ import java.math.BigDecimal;
 @Builder
 public class OrderbookDto {
     private String symbol;
-    private OrderbookUnit[] bids = new OrderbookUnit[10];
-    private OrderbookUnit[] asks = new OrderbookUnit[10];
+    private OrderbookUnit[] bids;
+    private OrderbookUnit[] asks;
 
     @Builder
     @Getter

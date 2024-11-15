@@ -5,13 +5,9 @@ import main.arbitrage.domain.user.dto.request.UserLoginRequest;
 import main.arbitrage.domain.user.dto.request.UserRegisterRequest;
 import main.arbitrage.domain.user.dto.response.UserLoginResponse;
 import main.arbitrage.domain.user.service.UserService;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import main.arbitrage.auth.security.SecurityUtil;
 
 @RestController
 @RequestMapping("/api/users")
@@ -28,12 +24,20 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest request) {
-        String token = userService.login(request);
+        UserLoginResponse userLoginResponse = userService.login(request);
 
-        UserLoginResponse response = UserLoginResponse.builder()
-                .accessToken(token)
-                .build();
+        return ResponseEntity.ok(userLoginResponse);
+    }
 
-        return ResponseEntity.ok(response);
+    @GetMapping("/test")
+    public ResponseEntity<UserLoginResponse> refresh() {
+        Long userId = SecurityUtil.getUserId();
+        String email = SecurityUtil.getEmail();
+        String nickname = SecurityUtil.getNickname();
+        System.out.println(userId);
+        System.out.println(email);
+        System.out.println(nickname);
+
+        return null;
     }
 }

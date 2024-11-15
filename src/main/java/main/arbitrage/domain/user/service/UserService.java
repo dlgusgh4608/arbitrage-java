@@ -4,21 +4,28 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.domain.user.dto.request.UserLoginRequest;
 import main.arbitrage.domain.user.dto.request.UserRegisterRequest;
+import main.arbitrage.domain.user.dto.response.UserLoginResponse;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.user.repository.UserRepository;
-import main.arbitrage.auth.JwtProvider;
+import main.arbitrage.auth.jwt.JwtProvider;
+import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final RefreshTokenService refreshTokenService;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
 
+
     @Transactional
-    public User register(UserRegisterRequest request) {
+    public void register(UserRegisterRequest request) {
 
         String email = request.getEmail();
         if (email == null) throw new IllegalArgumentException("Email is required!");
@@ -43,11 +50,11 @@ public class UserService {
                 .password(passwordEncoder.encode(password))
                 .build();
 
-        return userRepository.save(user);
+        userRepository.save(user);
     }
 
     @Transactional
-    public String login(UserLoginRequest request) {
+    public UserLoginResponse login(UserLoginRequest request) {
         String email = request.getEmail();
         if (email == null) throw new IllegalArgumentException("Email is required!");
 
@@ -61,6 +68,12 @@ public class UserService {
             throw new IllegalArgumentException("Invalid info");
         }
 
-        return jwtProvider.createToken(email);
+        String accessToken = jwtProvider.createToken(user.getUserId(), email, user.getNickname());
+        String refreshToken = refreshTokenService.createRefreshToken(email, UUID.randomUUID().toString());
+
+        return UserLoginResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
     }
 }

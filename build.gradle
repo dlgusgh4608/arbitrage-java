@@ -17,6 +17,9 @@ configurations {
     compileOnly {
         extendsFrom annotationProcessor
     }
+    testImplementation {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
 }
 
 repositories {
@@ -46,20 +49,26 @@ dependencies {
     // https://mvnrepository.com/artifact/org.postgresql/postgresql
     implementation 'org.postgresql:postgresql'
 
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    testImplementation 'it.ozimov:embedded-redis:0.7.3'
+
     //	Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+    testAnnotationProcessor 'org.projectlombok:lombok'
 
     //HTML parser
     implementation 'org.jsoup:jsoup:1.18.1'
 
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.book:spring-boot-starter-security-test'
+    testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.mockito:mockito-junit-jupiter'
+    testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.assertj:assertj-core'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'com.h2database:h2'
 }
 

@@ -1,10 +1,15 @@
 spring:
   application:
     name: arbitrage
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: ${PG_URL}
+    username: ${PG_USERNAME:postgres}
+    password: ${PG_PASSWORD:5432}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 4
@@ -19,3 +24,6 @@ server:
 jwt:
   secret: ${JWT_SECRET}
 
+token:
+  access: 3600000 # 1hour
+  refresh: 604800000 # 7days

@@ -3,6 +3,7 @@ package main.arbitrage.domain.price.infrastructure.websocket.exchange.upbit;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Arrays;
 @Getter
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Slf4j
 public class UpbitSubscribeMessage {
     private String ticket;
     private String type;
@@ -39,7 +41,7 @@ public class UpbitSubscribeMessage {
                 .codes(formatSymbols(orderbookSymbols))
                 .build());
 
-        System.out.println(messages);
+        log.info("subscribe message: {}", messages);
         return messages;
     }
 
