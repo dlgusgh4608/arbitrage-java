@@ -29,12 +29,10 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers( // public route list
                         "/api/users/register",
-                        "/api/users/login",
-                        "/"
-                )
-                .permitAll() // public route list에 지정된 url을 허용.
-                .anyRequest() // list에 있는거 아니면
-                .authenticated() // 무조건 auth 검사
+                        "/api/users/login"
+                ).permitAll()
+                .requestMatchers("/api/**").authenticated() // api는 위의 public list제외 검사
+                .anyRequest().permitAll() // 나머지
         );
 
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

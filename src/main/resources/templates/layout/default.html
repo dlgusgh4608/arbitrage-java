@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+>
+<head>
+    <!--  normalize css  -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css"/>
+    <!--  global css  -->
+    <link rel="stylesheet" href="/css/global.css">
+    <!--  jQuery  -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <title layout:title-pattern="$CONTENT_TITLE">Default</title>
+</head>
+<body>
+<header th:replace="components/header :: header"></header>
+<main layout:fragment="content"></main>
+<footer th:replace="components/footer :: footer"></footer>
+<th:block layout:fragment="script"></th:block>
+</body>
+</html>

@@ -140,7 +140,8 @@ public class JwtFilter extends OncePerRequestFilter {
     private boolean isPublicUrl(String requestURI) {
         return requestURI.equals("/api/users/login") ||
                 requestURI.equals("/api/users/register") ||
-                requestURI.equals("/");
+                requestURI.equals("/") ||
+                requestURI.startsWith("/css");
     }
 
     private String resolveRefreshToken(HttpServletRequest request) {
