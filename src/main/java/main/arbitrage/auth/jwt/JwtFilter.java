@@ -1,5 +1,14 @@
 package main.arbitrage.auth.jwt;
 
+import java.io.IOException;
+import java.util.UUID;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,14 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.auth.jwt.dto.JwtDto;
 import main.arbitrage.auth.security.CustomUserDetails;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -141,7 +142,10 @@ public class JwtFilter extends OncePerRequestFilter {
         return requestURI.equals("/api/users/login") ||
                 requestURI.equals("/api/users/register") ||
                 requestURI.equals("/") ||
-                requestURI.startsWith("/css");
+                requestURI.equals("/favicon.ico") ||
+                requestURI.startsWith("/css") ||
+                requestURI.startsWith("/image") ||
+                requestURI.startsWith("/js");
     }
 
     private String resolveRefreshToken(HttpServletRequest request) {

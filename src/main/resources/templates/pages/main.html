@@ -3,13 +3,63 @@
       layout:decorate="~{layout/default}">
 <head>
     <title>메인페이지</title>
+    <th:block layout:fragment="css">
+        <link rel="stylesheet" th:href="@{/css/main.css}">
+        <style>
+            
+        </style>
+    </th:block>
 </head>
 <body>
 <main layout:fragment="content">
-    <h1>메인페이지</h1>
+    <section class="banner-container section">
+        <article class="container-xxl banner">
+            <div class="banner-text-wrap">
+                <h1 class="banner-text animate-in">
+                    안전하게
+                </h1>
+                <h1 class="banner-text animate-in">
+                    쉽게
+                </h1>
+                <h1 class="banner-text animate-in">
+                    간편하게
+                </h1>
+            </div>
+            <div class="btn-wrap animate-in">
+                <button th:replace="components/button :: button(text='무료로 시작하기', href='signup.html')"></button>
+            </div>
+        </article>
+    </section>
+    <section class="section">
+        <article class="container-xxl d-flex info-section">
+            <div class="w-50 p-3 d-flex flex-column align-items-center">
+                <div class="mb-5 width-half">
+                    <h1 class="section-title">거래</h1>
+                    <h2 class="fs-1 fw-bold">리스크는 적게</h2>
+                    <h2 class="fs-1 fw-bold">수익은 크게</h2>
+                    <h2 class="fs-1 fw-bold">자동으로.</h2>
+                </div>
+                <img src="/image/upbit.png" alt="trade-image" class="width-half" />
+            </div>
+            <div class="w-50 p-3 d-flex flex-column align-items-center">
+                <img src="/image/binance.png" alt="trade-image" class="width-half" />
+                <div class="mt-5 width-half">
+                    <h2 class="fs-4 fw-bold">잠자는 동안에도 돈이 들어오는 방법을 찾지 못한다면 당신은 죽을 때까지 일을 해야만 할 것이다.</h2>
+                    <h2 class="fs-6 fw-bold">- Warren Buffett -</h2>
+                </div>
+            </div>
+        </article>
+    </section>
+    <script>
+        $(document).ready(function() {
+            function adjustBannerHeight() {
+                $('.banner-container').css('height', $(window).height());
+            }
+            
+            adjustBannerHeight();
+            $(window).resize(adjustBannerHeight);
+        });
+    </script>
 </main>
-<script>
-    console.log($('h1'));
-</script>
 </body>
 </html>

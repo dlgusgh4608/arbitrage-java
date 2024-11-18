@@ -3,8 +3,20 @@
 <head>
 </head>
 <body>
-<header th:fragment="header">
-    헤더어
+<header th:fragment="header" class='navbar navbar-expand-lg bd-navbar sticky-top header-wrap'>
+    <nav class="container-xxl bd-gutter flex-wrap flex-lg-nowrap">
+        <a class="navbar-brand p-0 me-0 me-lg-2" href="/">
+            <img class="h-logo" src="/image/logo.png" alt="logo" />
+        </a>
+        <ul class="navbar-list">
+            <li class="navbar-item">
+                <button th:replace="components/button :: button(text='로그인', href='login.html')"></button>
+            </li>
+            <li class="navbar-item">
+                <button th:replace="components/button :: button(text='회원가입', href='signup.html')"></button>
+            </li>
+        </ul>
+    </nav>
 </header>
 </body>
 </html>

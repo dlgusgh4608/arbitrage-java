@@ -1,0 +1,8 @@
+<th:block layout:fragment="button(text, href)">
+    <th:block th:if="${href}">
+        <a class="btn custom-button" th:href="${href}" th:text="${text}"></a>
+    </th:block>
+    <th:block th:unless="${href}">
+        <button class="btn custom-button" th:text="${text}"></button>
+    </th:block>
+</th:block>

@@ -1,3 +1,22 @@
+/* #F0B90B main color */
 * {
     box-sizing: border-box;
+}
+
+body {
+    background: #fafafa;
+}
+
+a {
+    text-decoration: none;
+}
+
+.custom-button {
+    background-color: #FCD535;
+    font-weight: 500;
+}
+
+.custom-button:hover {
+    background-color: #FCD535;
+    opacity: 0.7;
 }
