@@ -1,7 +1,7 @@
 package main.arbitrage.infrastructure.binance.pub.websocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.infrastructure.common.BaseWebSocketClient;
 import main.arbitrage.application.collector.dto.TradeDto;
@@ -9,7 +9,6 @@ import main.arbitrage.application.collector.dto.OrderbookDto;
 import main.arbitrage.infrastructure.common.MessageWebSocketHandler;
 import main.arbitrage.global.constant.SupportedSymbol;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
@@ -22,31 +21,26 @@ import java.util.stream.Stream;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class BinanceWebSocket extends BaseWebSocketClient {
+    private static final List<String> SYMBOLS = SupportedSymbol.getApplySymbols();
     private static String WS_URL = "wss://fstream.binance.com/stream?streams=";
     private static boolean isRunning = false;
+    private final MessageWebSocketHandler handler;
+    
     private WebSocketSession session;
-
-    private static final List<String> SYMBOLS = SupportedSymbol.getApplySymbols();
-
-    public BinanceWebSocket(ObjectMapper objectMapper) {
-        super(objectMapper);
-    }
 
     @Override
     public void connect() {
         if (isRunning) {
             throw new IllegalStateException("Binance WebSocket is already running!");
         }
-
         try {
             StandardWebSocketClient client = new StandardWebSocketClient();
-            WebSocketHandler handler = new MessageWebSocketHandler("Binance", this::handleMessage);
             String params = createStreamParams();
-
             WS_URL = WS_URL.concat(params);
-
             session = client.execute(handler, WS_URL).get();
+            handler.setMessageHandler(session, this::handleMessage);
             isRunning = true;
         } catch (InterruptedException | ExecutionException e) {
             log.error("Binance WebSocket Connect Error {}", WS_URL, e);

@@ -2,6 +2,7 @@ package main.arbitrage.infrastructure.upbit.pub.websocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import main.arbitrage.infrastructure.common.BaseWebSocketClient;
@@ -14,6 +15,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import main.arbitrage.infrastructure.common.MessageWebSocketHandler;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -23,15 +25,15 @@ import java.util.List;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class UpbitWebSocket extends BaseWebSocketClient {
     private static final String WS_URL = "wss://api.upbit.com/websocket/v1";
-    private static boolean isRunning = false;
-    private WebSocketSession session;
     private static final List<String> SYMBOLS = SupportedSymbol.getApplySymbols();
-
-    public UpbitWebSocket(ObjectMapper objectMapper) {
-        super(objectMapper);
-    }
+    private static boolean isRunning = false;
+    private final MessageWebSocketHandler handler;
+    private final ObjectMapper objectMapper;
+    
+    private WebSocketSession session;
 
     @Override
     public void connect() {
@@ -41,9 +43,8 @@ public class UpbitWebSocket extends BaseWebSocketClient {
 
         try {
             StandardWebSocketClient client = new StandardWebSocketClient();
-            WebSocketHandler handler = new MessageWebSocketHandler("Upbit", this::handleMessage);
-
             session = client.execute(handler, WS_URL).get();
+            handler.setMessageHandler(session, this::handleMessage); // message 처리기 부착
             isRunning = true;
 
             sendSubscribeMessage(SYMBOLS);
