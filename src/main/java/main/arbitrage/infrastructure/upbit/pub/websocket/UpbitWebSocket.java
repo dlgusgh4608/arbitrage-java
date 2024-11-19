@@ -5,17 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import main.arbitrage.infrastructure.common.BaseWebSocketClient;
+import main.arbitrage.infrastructure.common.websocket.BaseWebSocketClient;
 import main.arbitrage.application.collector.dto.TradeDto;
 import main.arbitrage.application.collector.dto.OrderbookDto;
-import main.arbitrage.infrastructure.common.MessageWebSocketHandler;
+import main.arbitrage.infrastructure.common.websocket.handler.ExchangeWebSocketHandler;
 import main.arbitrage.global.constant.SupportedSymbol;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
-import main.arbitrage.infrastructure.common.MessageWebSocketHandler;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -30,9 +28,8 @@ public class UpbitWebSocket extends BaseWebSocketClient {
     private static final String WS_URL = "wss://api.upbit.com/websocket/v1";
     private static final List<String> SYMBOLS = SupportedSymbol.getApplySymbols();
     private static boolean isRunning = false;
-    private final MessageWebSocketHandler handler;
     private final ObjectMapper objectMapper;
-    
+
     private WebSocketSession session;
 
     @Override
@@ -43,8 +40,8 @@ public class UpbitWebSocket extends BaseWebSocketClient {
 
         try {
             StandardWebSocketClient client = new StandardWebSocketClient();
+            ExchangeWebSocketHandler handler = new ExchangeWebSocketHandler("Upbit", this::handleMessage, objectMapper);
             session = client.execute(handler, WS_URL).get();
-            handler.setMessageHandler(session, this::handleMessage); // message 처리기 부착
             isRunning = true;
 
             sendSubscribeMessage(SYMBOLS);

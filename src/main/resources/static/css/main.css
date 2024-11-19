@@ -1,31 +1,30 @@
 .section {
   margin-bottom: 60px;
 }
-.banner-container {
+.banner-image {
   background-image: url('../image/banner.jpg');
   background-size: cover;
   background-position: center;
 }
-
-.banner {
+.banner-wrap {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
   height: 100%;
   padding: 120px 10px;
 }
-.banner-text-wrap {
-  margin-bottom: 40px;
-  text-align: end;
-}
-.banner-text {
+.slogan-text {
   font-size: calc(2rem + 1.5vw);
   font-weight: 900;
   color: #fff;
   user-select:none
 }
-.btn-wrap {
-  text-align: end;
+
+.symbol-info-wrap {
+  width: 75%;
+  min-height: 50%;
+  border-radius: 2rem;
+  background-color: #fafafa;
+  padding: 2rem;
 }
 
 .animate-in {
@@ -33,11 +32,11 @@
   animation: slideIn 0.5s forwards;
 }
 
-.banner-text:nth-child(1) { animation-delay: 0.3s; }
-.banner-text:nth-child(2) { animation-delay: 0.6s; }
-.banner-text:nth-child(3) { animation-delay: 0.9s; }
-.banner-text:nth-child(4) { animation-delay: 1.2s; }
-.btn-wrap { animation-delay: 1.5s; }
+.slogan-text.animate-in:nth-child(1) { animation-delay: 0.3s; }
+.slogan-text.animate-in:nth-child(2) { animation-delay: 0.6s; }
+.slogan-text.animate-in:nth-child(3) { animation-delay: 0.9s; }
+.signup-btn-wrap.animate-in { animation-delay: 1.2s; }
+.symbol-info-wrap.animate-in { animation-delay: 1.5s; }
 
 @keyframes slideIn {
   from {
@@ -58,20 +57,61 @@
   margin-bottom: 30px;
 }
 
-.info-section {
+.info-article {
   flex-direction: row;
 }
 
-.width-half {
+.responsive-width {
   width: 50%
 }
 
+.symbol-list {
+  padding: 0;
+}
+
+.symbol-list > li {
+  margin-bottom: 1rem;
+}
+
+.symbol-header {
+  display: flex;
+  width: 25%;
+}
+
+.symbol-image {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-right: 1rem;
+}
+.symbol-item {
+  color: #000;
+  font-size: .9rem;
+}
+.symbol-premium {
+  width: 25%;
+  text-align: end;
+}
+
 @media(max-width: 1024px) {
-  .width-half {
-    width: 100%;
+  .responsive-width {
+    width: 100%
   }
-  .info-section {
+  .info-article {
     flex-direction: column;
     align-items: center;
+  }
+  .symbol-info-wrap {
+    width: 100%;
+  }
+  .symbol-image {
+    width: 1rem;
+    height: 1rem;
+    margin-right: .6rem;
+  }
+  .symbol-item > .symbol-image,#upbit,#binance {
+    display: none;
+  }
+  .symbol-item > .symbol-header,.symbol-premium {
+    width: 50%;
   }
 }

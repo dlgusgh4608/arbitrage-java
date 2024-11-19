@@ -145,7 +145,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 requestURI.equals("/favicon.ico") ||
                 requestURI.startsWith("/css") ||
                 requestURI.startsWith("/image") ||
-                requestURI.startsWith("/js");
+                requestURI.startsWith("/js") ||
+                requestURI.startsWith("/ws");
     }
 
     private String resolveRefreshToken(HttpServletRequest request) {
