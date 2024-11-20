@@ -90,32 +90,63 @@
         $(document).ready(function() {
             const ws = new WebSocket("ws://localhost:8000/ws/premium")
             const prev = {
-                'btc': null,
-                'eth': null,
+                'btc': {
+                    premium: null,
+                    upbit: null,
+                    binance: null
+                },
+                'eth': {
+                    premium: null,
+                    upbit: null,
+                    binance: null
+                },
             }
 
-            const defaultColor = '#f1f3f5'
-            const upColor = '#f03e3e'
-            const downColor = '#1c7ed6'
+            const colors = {
+                default: '#000',
+                up: '#f03e3e',
+                down: '#1c7ed6',
+            }
+
+            const getColor = (prevValue, currentValue) => {
+                    if(prevValue === null) return colors.default
+                        
+                    if(prevValue < currentValue) return colors.up
+
+                    if(prevValue > currentValue) return colors.down
+
+                    return colors.default
+                }
             
-            ws.onmessage = (e => {
-                const dataOfJson = JSON.parse(e.data)
+            const handleMessage = (message) => {
+                const dataOfJson = JSON.parse(message.data)
                 
                 const { symbol, premium, domestic, overseas } = dataOfJson
                 
-                $(`#${symbol}`).find('#upbit').text('₩' + domestic.toLocaleString())
-                $(`#${symbol}`).find('#binance').text('$' + overseas.toLocaleString())
-                $(`#${symbol}`).find('#premium').text(premium.toLocaleString() + '%')
+                const premiumEle = $(`#${symbol}`).find('#premium')
+                const upbitEle = $(`#${symbol}`).find('#upbit')
+                const binanceEle = $(`#${symbol}`).find('#binance')
+
+                premiumEle.text(premium.toLocaleString() + '%')
+                upbitEle.text('₩' + domestic.toLocaleString())
+                binanceEle.text('$' + overseas.toLocaleString())
+
+                const prevPremium = prev[symbol].premium
+                const prevupbit = prev[symbol].upbit
+                const prevBinance = prev[symbol].binance
+
                 
 
-// domestic: 4377000
-// domesticTradeAt: 1731994059805
-// overseas: 3119.94
-// overseasTradeAt: 1731994059701
-// premium: 0.8353
-// symbol: "eth"
-// usdToKrw: 1391.29
-            })
+                premiumEle.css('color', getColor(prevPremium, premium))
+                upbitEle.css('color', getColor(prevupbit, domestic))
+                binanceEle.css('color', getColor(prevBinance, overseas))
+
+                prev[symbol].premium = premium
+                prev[symbol].upbit = domestic
+                prev[symbol].binance = overseas
+            }
+
+            ws.onmessage = handleMessage
 
             function adjustBannerHeight() {
                 $('.banner-image').css('height', $(window).height());
