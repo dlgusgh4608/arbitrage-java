@@ -3,20 +3,17 @@ package main.arbitrage.auth.jwt;
 import java.io.IOException;
 import java.util.UUID;
 
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.auth.jwt.dto.JwtDto;
-import main.arbitrage.auth.security.CustomUserDetails;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
 
 @Component
@@ -24,7 +21,7 @@ import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
 @Slf4j
 public class JwtFilter extends OncePerRequestFilter {
 
-    private final JwtUtil jwtProvider;
+    private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
 
     @Override
@@ -39,7 +36,7 @@ public class JwtFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-
+        
         try {
             /*
              * 1. accessToken을 검사 -> 만료가 되었는가? 정상적인 토큰인가?
@@ -59,11 +56,11 @@ public class JwtFilter extends OncePerRequestFilter {
             }
 
             // 이 토큰은 내가 만든 토큰인가?
-            JwtDto tokenInfo = jwtProvider.getTokenInfo(accessToken);
+            JwtDto tokenInfo = jwtUtil.getTokenInfo(accessToken);
 
             // 엑세스 토큰이 만료되지 않았을때.
             if (!tokenInfo.isExpired()) {
-                saveUserAuthContext(tokenInfo);
+                jwtUtil.saveUserAuthContext(tokenInfo);
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -82,7 +79,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
             Long userId = tokenInfo.getUserId();
             String email = tokenInfo.getEmail();
-            String nickname = tokenInfo.getNickname();
 
             // email을 통해 refresh token을 redis에서 받아옴.
             String foundRefreshToken = refreshTokenService.findRefreshToken(email);
@@ -102,57 +98,57 @@ public class JwtFilter extends OncePerRequestFilter {
             /*
              * 해당 라인 아래부터는 refresh token의 TTL이 지나지 않았고
              * access token도 정상적인 key로 만들어졌을때
-             * 새로운 access, refresh token을 만들고 response Header에 넣어주고 next.
+             * 새로운 access, refresh token을 만들고 response Header 및 cookie 에 넣어주고 next.
              * */
-            String newAccessToken = jwtProvider.createToken(userId, email, nickname);
-            String newRefreshToken = refreshTokenService.updateRefreshToken(email, UUID.randomUUID().toString());
+            String newAccessToken = jwtUtil.createToken(userId, email);
+            Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(email);
+            String newRefreshToken = refreshTokenService.updateRefreshToken(email, UUID.randomUUID().toString(), refreshTokenTTL);
 
-            JwtDto newTokenInfo = jwtProvider.getTokenInfo(newAccessToken);
-            saveUserAuthContext(newTokenInfo);
+            JwtDto newTokenInfo = jwtUtil.getTokenInfo(newAccessToken);
+            jwtUtil.saveUserAuthContext(newTokenInfo);
 
-            // new Cookie() client 작업 후 http only cookie 만들어 테스트
 
-            response.setHeader("accessToken", newAccessToken);
-            response.setHeader("refreshToken", newRefreshToken);
-            log.info("New AccessToken: {}\nNew Refresh Token: {}", newAccessToken, newRefreshToken);
+            // 쿠키를 구워요
+            Cookie refreshTokenCookie = new Cookie("refreshToken", newRefreshToken);
+            refreshTokenCookie.setHttpOnly(true);
+            refreshTokenCookie.setPath("/");
+            refreshTokenCookie.setMaxAge(refreshTokenTTL.intValue());
+
+            Cookie accessTokenCookie = new Cookie("accessToken", newAccessToken); // 차피 jwt에 ttl 있어서 굳이 설정 필요 없음.
+            accessTokenCookie.setPath("/");
+            accessTokenCookie.setMaxAge(-1);
+
+            response.addCookie(refreshTokenCookie);
+            response.addCookie(accessTokenCookie);
+
+            log.info("새로운 액세스 토큰: {}\n새로운 리프레시 토큰: {}", newAccessToken, newRefreshToken);
 
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write(e.getMessage());
-            return;
         }
-    }
-
-    private void saveUserAuthContext(JwtDto tokenDto) {
-        UserDetails userDetails = new CustomUserDetails(tokenDto);
-
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     // SecurityConfig에 있는 requestMatchers와 일치시켜주세요.
     private boolean isPublicUrl(String requestURI) {
+        if (!requestURI.startsWith("/api")) {
+            return true;
+        }
+
         return requestURI.equals("/api/users/login") ||
                 requestURI.equals("/api/users/register") ||
-                requestURI.equals("/") ||
-                requestURI.equals("/favicon.ico") ||
-                requestURI.startsWith("/css") ||
-                requestURI.startsWith("/image") ||
-                requestURI.startsWith("/js") ||
-                requestURI.startsWith("/ws");
+                requestURI.equals("/api/users/send-email");
     }
 
     private String resolveRefreshToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("refreshToken");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
         }
         return null;
     }

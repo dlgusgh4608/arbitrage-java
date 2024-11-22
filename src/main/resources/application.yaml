@@ -1,8 +1,4 @@
 spring:
-  thymeleaf:
-    cache: false
-    prefix: classpath:templates/
-    suffix: .html
   application:
     name: arbitrage
   data:
@@ -22,11 +18,30 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  thymeleaf:
+    cache: false
+    prefix: classpath:templates/
+    suffix: .html
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_ID}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          timeout: 5000
+          starttls:
+            enable: true
 server:
   port: ${SERVER_PORT:8000}
 
 jwt:
   secret: ${JWT_SECRET}
+
+mail:
+  secret: ${MAIL_SECRET}
 
 token:
   access: 3600000 # 1hour

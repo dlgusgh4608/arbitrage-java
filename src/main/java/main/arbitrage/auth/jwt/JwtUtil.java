@@ -7,7 +7,12 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.auth.jwt.dto.JwtDto;
+import main.arbitrage.auth.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -30,11 +35,10 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String createToken(Long userId, String email, String nickname) {
+    public String createToken(Long userId, String email) {
         Map<String, String> claims = new HashMap<>();
         claims.put("userId", userId.toString());
         claims.put("email", email);
-        claims.put("nickname", nickname);
 
         Date now = new Date();
         Date validity = new Date(now.getTime() + tokenTTL);
@@ -78,5 +82,18 @@ public class JwtUtil {
             throw new RuntimeException("invalid Token");
         }
 
+    }
+
+    public void saveUserAuthContext(JwtDto tokenDto) {
+        UserDetails userDetails = new CustomUserDetails(tokenDto);
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }

@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Builder;
 
 @Getter
-public class UserLoginResponse {
+public class UserTokenResponse {
 
     @JsonProperty("access_token")
     private String accessToken;
@@ -13,9 +13,13 @@ public class UserLoginResponse {
     @JsonProperty("refresh_token")
     private String refreshToken;
 
+    @JsonProperty("refresh_token_ttl")
+    private Long refreshTokenTTL;
+
     @Builder
-    public UserLoginResponse(String accessToken, String refreshToken) {
+    public UserTokenResponse(String accessToken, String refreshToken, Long refreshTokenTTL) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
+        this.refreshTokenTTL = refreshTokenTTL;
     }
 }

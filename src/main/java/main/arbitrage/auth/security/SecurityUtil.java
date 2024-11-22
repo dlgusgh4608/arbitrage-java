@@ -17,11 +17,6 @@ public class SecurityUtil {
         return userDetails.getEmail();
     }
 
-    public static String getNickname() {
-        CustomUserDetails userDetails = isAuthorized();
-        return userDetails.getNickname();
-    }
-
     private static CustomUserDetails isAuthorized() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 

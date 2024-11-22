@@ -12,12 +12,10 @@ import java.util.Collections;
 public class CustomUserDetails implements UserDetails {
     private final Long userId;
     private final String email;
-    private final String nickname;
 
     public CustomUserDetails(JwtDto tokenDto) {
         this.userId = tokenDto.getUserId();
         this.email = tokenDto.getEmail();
-        this.nickname = tokenDto.getNickname();
     }
 
     @Override
@@ -41,9 +39,5 @@ public class CustomUserDetails implements UserDetails {
 
     public String getEmail() {
         return email;
-    }
-
-    public String getNickname() {
-        return nickname;
     }
 }

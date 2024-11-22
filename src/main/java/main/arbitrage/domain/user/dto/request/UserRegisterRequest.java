@@ -18,22 +18,21 @@ public class UserRegisterRequest {
     @Size(max = 30, message = "이메일은 30자를 초과할 수 없습니다.")
     private String email;
 
-    @NotBlank(message = "닉네임은 필수 입력값입니다.")
-    @Size(min = 2, max = 30, message = "닉네임은 2자 이상 30자 이하여야 합니다.")
-    @Pattern(regexp = "^[ㄱ-ㅎ가-힣a-zA-Z0-9]*$", message = "닉네임은 한글, 영문, 숫자만 사용 가능합니다.")
-    private String nickname;
 
     @NotBlank(message = "비밀번호는 필수 입력값입니다.")
     @Pattern(
-            regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,30}$",
+            regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,20}$",
             message = "비밀번호는 8~30자리이면서 1개 이상의 알파벳, 숫자, 특수문자를 포함해야합니다."
     )
     private String password;
 
+    @NotBlank(message = "인증코드는 필수 입력값입니다.")
+    private String code;
+
     @Builder
-    public UserRegisterRequest(String email, String nickname, String password) {
+    public UserRegisterRequest(String email, String password, String code) {
         this.email = email;
-        this.nickname = nickname;
         this.password = password;
+        this.code = code;
     }
 }

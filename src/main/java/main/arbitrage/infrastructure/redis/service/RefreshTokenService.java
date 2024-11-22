@@ -19,17 +19,13 @@ public class RefreshTokenService {
         return redisTemplate.opsForValue().get(email);
     }
 
-    public String updateRefreshToken(String email, String newToken) {
-        Long prevRefreshTokenTTL = redisTemplate.getExpire(email);
+    public Long getRefreshTokenTTL(String email) {
+        return redisTemplate.getExpire(email);
+    }
 
-        if (prevRefreshTokenTTL > 0) {
-            redisTemplate.opsForValue().set(email, newToken, Duration.ofSeconds(prevRefreshTokenTTL));
-
-            return newToken;
-        } else {
-            redisTemplate.delete(email);
-            throw new RuntimeException("Refresh token not found or expired");
-        }
+    public String updateRefreshToken(String email, String newToken, Long TTL) {
+        redisTemplate.opsForValue().set(email, newToken, Duration.ofSeconds(TTL));
+        return newToken;
     }
 
     public String createRefreshToken(String email, String token) {

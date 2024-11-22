@@ -9,11 +9,16 @@
             <img class="h-logo" src="/image/logo.png" alt="logo" />
         </a>
         <ul class="navbar-list">
-            <li class="navbar-item">
-                <button th:replace="components/button :: button(text='로그인', href='login.html')"></button>
+            <li class="navbar-item" sec:authorize="isAuthenticated()">
+                <div>is login</div>
+                <!-- <button th:replace="components/button :: button(text='내 정보', href='/')"></button> -->
             </li>
-            <li class="navbar-item">
-                <button th:replace="components/button :: button(text='회원가입', href='signup.html')"></button>
+            
+            <li class="navbar-item" sec:authorize="isAnonymous()">
+                <button th:replace="components/button :: button(text='로그인', href='/login')"></button>
+            </li>
+            <li class="navbar-item" sec:authorize="isAnonymous()">
+                <button th:replace="components/button :: button(text='회원가입', href='/signup')"></button>
             </li>
         </ul>
     </nav>
