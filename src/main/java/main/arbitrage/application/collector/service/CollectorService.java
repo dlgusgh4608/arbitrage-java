@@ -47,14 +47,14 @@ public class CollectorService {
         exchangeCollector.initialize();
     }
 
-    @Scheduled(fixedDelay = 1000) // 1초
+    @Scheduled(cron = "* * * * * *") // 1초
     protected void processScheduler() {
         if (exchangeRate == null) return;
         ExchangeRate ex = exchangeRate.convertToType(objectMapper);
         processAllSymbols(ex);
     }
 
-    @Scheduled(fixedDelay = 60 * 1000) // 1분
+    @Scheduled(cron = "59 * * * * *") // 1분
     @Transactional
     protected void saveBufferScheduler() {
         priceDomainService.saveBufferedData();
