@@ -29,10 +29,14 @@ public class UserRegisterRequest {
     @NotBlank(message = "인증코드는 필수 입력값입니다.")
     private String code;
 
+    @NotBlank(message = "Bad Request")
+    private String encryptedCode;
+
     @Builder
-    public UserRegisterRequest(String email, String password, String code) {
+    public UserRegisterRequest(String email, String password, String code, String encryptedCode) {
         this.email = email;
         this.password = password;
         this.code = code;
+        this.encryptedCode = encryptedCode;
     }
 }

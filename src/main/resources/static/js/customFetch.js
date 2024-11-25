@@ -1,6 +1,6 @@
 async function fetcher(method = 'GET', url = '', data = {}) {
   const accessToken = getCookie('accessToken')
-  
+
   const authorization = accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {}
   const headers = {
     'Content-Type': 'application/json',
@@ -21,13 +21,22 @@ async function fetcher(method = 'GET', url = '', data = {}) {
       return; // 함수 종료
     }
       
-    const json = await response.json()
-    
-    if(Math.floor(response.status / 100) < 4) { // 100 ~ 300
-      return { success: true, data: json }
-    }else {
-      return { success: false, data: json }
+    try{
+        const json = await response.json()
+
+        if(Math.floor(response.status / 100) < 4) { // 100 ~ 300
+          return { success: true, data: json }
+        }else {
+          return { success: false, data: json }
+        }
+    }catch(e) {
+        if(Math.floor(response.status / 100) < 4) { // 100 ~ 300
+          return { success: true, data: response }
+        }else {
+          return { success: false, data: response }
+        }
     }
+
   }catch(e) {
     console.error(e)
   }

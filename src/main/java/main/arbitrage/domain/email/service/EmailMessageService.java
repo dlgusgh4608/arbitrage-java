@@ -4,6 +4,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.domain.email.entity.EmailMessage;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.messaging.MessagingException;
@@ -17,6 +18,7 @@ import static org.springframework.security.core.context.SecurityContextHolder.se
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailMessageService {
     private final JavaMailSender javaMailSender;
     private final SpringTemplateEngine templateEngine;
@@ -26,12 +28,22 @@ public class EmailMessageService {
 
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
 
-        MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
-        mimeMessageHelper.setTo(emailMessage.getTo()); // 메일 수신자
-        mimeMessageHelper.setSubject(emailMessage.getSubject()); // 메일 제목
-        mimeMessageHelper.setText(setContext(authNum, type), true); // 메일 본문 내용, HTML 여부
-        javaMailSender.send(mimeMessage);
-        
+        try {
+            MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
+            mimeMessageHelper.setTo(emailMessage.getTo());
+            mimeMessageHelper.setSubject(emailMessage.getSubject());
+            mimeMessageHelper.setText(setContext(authNum, type), true);
+
+            javaMailSender.send(mimeMessage);
+        } catch (MailSendException e) {
+            // Gmail open smtp server에서는 잘못된 수신자에게 발송시 Error를 반환하지 않는다 한다.
+            // Client딴에서 처리하자
+            log.error("Failed to send email. Invalid email address: {}", emailMessage.getTo(), e);
+            throw new IllegalArgumentException("Invalid email address.", e);
+        } catch (MessagingException e) {
+            log.error("Failed to send email: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to send email.", e);
+        }
         return authNum;
     }
 

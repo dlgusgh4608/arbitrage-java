@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html
+        xmlns:th="http://www.thymeleaf.org"
+        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
 <head>
 </head>
 <body>
 <header th:fragment="header" class='navbar navbar-expand-lg bd-navbar sticky-top header-wrap'>
     <nav class="container-xxl bd-gutter flex-wrap flex-lg-nowrap">
         <a class="navbar-brand p-0 me-0 me-lg-2" href="/">
-            <img class="h-logo" src="/image/logo.png" alt="logo" />
+            <img class="h-logo" src="/images/logo.png" alt="logo"/>
         </a>
         <ul class="navbar-list">
             <li class="navbar-item" sec:authorize="isAuthenticated()">
                 <div>is login</div>
                 <!-- <button th:replace="components/button :: button(text='내 정보', href='/')"></button> -->
             </li>
-            
+
             <li class="navbar-item" sec:authorize="isAnonymous()">
                 <button th:replace="components/button :: button(text='로그인', href='/login')"></button>
             </li>

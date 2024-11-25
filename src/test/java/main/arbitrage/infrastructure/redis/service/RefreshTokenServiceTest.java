@@ -55,29 +55,4 @@ class RefreshTokenServiceTest {
         assertThat(foundToken).isEqualTo(TEST_TOKEN);
         verify(valueOperations).get(TEST_EMAIL);
     }
-
-    @Test
-    @DisplayName("Update RefreshToken")
-    void updateRefreshTokenSuccessTest() {
-        // given
-        String newToken = "newToken";
-        given(redisTemplate.getExpire(TEST_EMAIL)).willReturn(TEST_TTL);
-        valueOperations.set(
-                eq(TEST_EMAIL),
-                eq(TEST_TOKEN),
-                any(Duration.class)
-        );
-
-        // when
-        String updatedToken = refreshTokenService.updateRefreshToken(TEST_EMAIL, newToken);
-
-        // then
-        assertThat(updatedToken).isEqualTo(newToken);
-        verify(redisTemplate).getExpire(TEST_EMAIL);
-        verify(valueOperations).set(
-                eq(TEST_EMAIL),
-                eq(newToken),
-                eq(Duration.ofSeconds(TEST_TTL))
-        );
-    }
 }

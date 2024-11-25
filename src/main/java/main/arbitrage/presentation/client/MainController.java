@@ -23,12 +23,9 @@ public class MainController {
     }
 
     @GetMapping("/login")
-    public String login(HttpServletRequest request, Model model) {
-        String accessToken = getAccessTokenFromCookie(request);
-
-        if (accessToken != null && !jwtUtil.getTokenInfo(accessToken).isExpired()) {
-            return "redirect:/";
-        }
+    public String login(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails != null) return "redirect:/";
+        
         return "pages/login";
     }
 
@@ -36,17 +33,5 @@ public class MainController {
     public String signup(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
         if (userDetails != null) return "redirect:/";
         return "pages/signup";
-    }
-
-    private String getAccessTokenFromCookie(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("accessToken")) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
     }
 }

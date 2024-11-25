@@ -2,7 +2,7 @@
   margin-bottom: 60px;
 }
 .banner-image {
-  background-image: url('../image/banner.jpg');
+  background-image: url('../images/banner.jpg');
   background-size: cover;
   background-position: center;
 }

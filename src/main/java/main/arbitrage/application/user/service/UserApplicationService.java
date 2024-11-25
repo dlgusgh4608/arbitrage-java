@@ -35,12 +35,7 @@ public class UserApplicationService {
         return aesCrypto.encrypt(code);
     }
 
-    public boolean checkCode(String code) throws Exception {
-        String[] codes = code.split(":");
-
-        String encryptedCode = codes[0];
-        String originCode = codes[1];
-
+    public boolean checkCode(String originCode, String encryptedCode) throws Exception {
         return aesCrypto.decrypt(encryptedCode).equals(originCode);
     }
 
@@ -51,9 +46,13 @@ public class UserApplicationService {
     }
 
     @Transactional
-    public UserTokenResponse register(UserRegisterRequest req) {
+    public UserTokenResponse register(UserRegisterRequest req) throws Exception {
         if (userService.existsByEmail(req.getEmail())) {
             throw new IllegalArgumentException("This email is already in use");
+        }
+
+        if (!checkCode(req.getCode(), req.getEncryptedCode())) {
+            throw new IllegalArgumentException("Invalid Code");
         }
 
         User user = userService.create(req);
@@ -63,8 +62,6 @@ public class UserApplicationService {
         Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(user.getEmail());
 
         jwtUtil.saveUserAuthContext(jwtUtil.getTokenInfo(accessToken));
-
-        System.out.println(SecurityUtil.getEmail());
 
         return UserTokenResponse.builder()
                 .accessToken(accessToken)

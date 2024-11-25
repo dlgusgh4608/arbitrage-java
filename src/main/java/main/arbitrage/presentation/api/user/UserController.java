@@ -2,6 +2,7 @@ package main.arbitrage.presentation.api.user;
 
 import java.io.IOException;
 
+import main.arbitrage.domain.user.dto.request.UserCheckMailRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,24 +26,16 @@ import main.arbitrage.domain.user.dto.response.UserSendMailResponse;
 public class UserController {
     private final UserApplicationService userApplicationService;
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody UserRegisterRequest request, HttpServletResponse response) throws IOException {        
+    @PostMapping("/signup")
+    public ResponseEntity<?> register(@RequestBody UserRegisterRequest request, HttpServletResponse response) throws Exception {
         UserTokenResponse userTokenResponse = userApplicationService.register(request);
         setCookies(userTokenResponse, response);
 
         return ResponseEntity.status(302).header("Location", "/").build();
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserLoginRequest request, HttpServletResponse response) {
-        UserTokenResponse userTokenResponse = userApplicationService.login(request);
-        setCookies(userTokenResponse, response);
-        
-        return ResponseEntity.status(302).header("Location", "/").build();
-    }
-
-    @PostMapping("/send-email")
-    public ResponseEntity<?> sendMail(@RequestBody UserSendMailRequest request) throws Exception {
+    @PostMapping("/signup/send-email")
+    public ResponseEntity<?> sendEmail(@RequestBody UserSendMailRequest request) throws Exception {
         String email = request.getEmail();
         userApplicationService.validateEmail(email);
 
@@ -56,6 +49,29 @@ public class UserController {
         return ResponseEntity.ok(UserSendMailResponse.builder().code(code).build());
     }
 
+    @PostMapping("/signup/check-code")
+    public ResponseEntity<?> checkCode(@RequestBody UserCheckMailRequest request) throws Exception {
+        System.out.println(request.getOriginCode());
+        System.out.println(request.getEncryptedCode());
+
+        boolean ok = userApplicationService.checkCode(request.getOriginCode(), request.getEncryptedCode());
+
+
+        if (ok) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody UserLoginRequest request, HttpServletResponse response) {
+        UserTokenResponse userTokenResponse = userApplicationService.login(request);
+        setCookies(userTokenResponse, response);
+
+        return ResponseEntity.status(302).header("Location", "/").build();
+    }
+
     private void setCookies(UserTokenResponse userTokenResponse, HttpServletResponse response) {
         Cookie refreshTokenCookie = new Cookie("refreshToken", userTokenResponse.getRefreshToken());
         refreshTokenCookie.setHttpOnly(true);
@@ -65,7 +81,7 @@ public class UserController {
         Cookie accessTokenCookie = new Cookie("accessToken", userTokenResponse.getAccessToken());
         accessTokenCookie.setPath("/");
         accessTokenCookie.setMaxAge(-1);
-        
+
         response.addCookie(refreshTokenCookie);
         response.addCookie(accessTokenCookie);
     }

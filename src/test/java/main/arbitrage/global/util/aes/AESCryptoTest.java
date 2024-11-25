@@ -25,18 +25,11 @@ public class AESCryptoTest {
 
         // when
         String encryptStr = aesCrypto.encrypt(text);
-        String[] encryptStrs = encryptStr.split(":");
-
-        String encryptedStr = encryptStrs[0];
-        String originStr = encryptStrs[1];
-
-        String decryptStr = aesCrypto.decrypt(encryptedStr);
+        String decryptStr = aesCrypto.decrypt(encryptStr);
 
 
         // then
         assertThat(text).isEqualTo(decryptStr);
-        assertThat(text).isEqualTo(originStr);
         assertThat(text).isNotEqualTo(encryptStr);
-        assertThat(text).isNotEqualTo(encryptedStr);
     }
 }

@@ -19,6 +19,8 @@ public class UsdToKrw {
 
             String rateToString = doc.select(CURRENT_SELECTOR).text();
 
+            if (rateToString.isEmpty()) throw new IOException("is Empty String");
+
             return Double.parseDouble(rateToString.replace(",", ""));
         } catch (IOException e) {
             // Jsoup로 crawling을 했을때 반환값이 0일경우 아래와 같은 Error Message가 발생함.

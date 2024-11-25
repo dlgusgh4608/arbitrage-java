@@ -40,14 +40,10 @@ public class AESCrypto {
         System.arraycopy(iv, 0, combined, 0, iv.length);
         System.arraycopy(encrypted, 0, combined, iv.length, encrypted.length);
 
-        String encryptedString = Base64.getEncoder().encodeToString(combined);
-
-        // 원본 텍스트와 :로 결합하여 추후 인증할때 사용.
-        return encryptedString.concat(":" + plainText);
+        return Base64.getEncoder().encodeToString(combined);
     }
 
     public String decrypt(String encryptedText) throws Exception {
-        // :분리후 전달하기
         byte[] combined = Base64.getDecoder().decode(encryptedText);
 
         // IV 추출

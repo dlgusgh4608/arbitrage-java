@@ -20,6 +20,5 @@ public class UserSendMailRequest {
     @Builder
     public UserSendMailRequest(String email) {
         this.email = email;
-
     }
 }

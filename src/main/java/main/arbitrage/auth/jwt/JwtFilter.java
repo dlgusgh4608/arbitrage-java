@@ -3,6 +3,7 @@ package main.arbitrage.auth.jwt;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -36,7 +37,7 @@ public class JwtFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        
+
         try {
             /*
              * 1. accessToken을 검사 -> 만료가 되었는가? 정상적인 토큰인가?
@@ -49,10 +50,12 @@ public class JwtFilter extends OncePerRequestFilter {
              * */
             String accessToken = resolveAccessToken(request);
 
+            System.out.println("accessToken: " + accessToken);
             // AccessToken null check
             if (accessToken == null) {
-                log.info("access token is not found");
-                throw new RuntimeException("invalid token");
+                SecurityContextHolder.clearContext();
+                filterChain.doFilter(request, response);
+                return;
             }
 
             // 이 토큰은 내가 만든 토큰인가?
@@ -125,20 +128,15 @@ public class JwtFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
         } catch (Exception e) {
+            SecurityContextHolder.clearContext();
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write(e.getMessage());
         }
     }
 
-    // SecurityConfig에 있는 requestMatchers와 일치시켜주세요.
     private boolean isPublicUrl(String requestURI) {
-        if (!requestURI.startsWith("/api")) {
-            return true;
-        }
-
         return requestURI.equals("/api/users/login") ||
-                requestURI.equals("/api/users/register") ||
-                requestURI.equals("/api/users/send-email");
+                requestURI.startsWith("/api/users/signup");
     }
 
     private String resolveRefreshToken(HttpServletRequest request) {
@@ -154,9 +152,13 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private String resolveAccessToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("accessToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
         }
         return null;
     }
