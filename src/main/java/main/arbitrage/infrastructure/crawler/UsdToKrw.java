@@ -19,7 +19,7 @@ public class UsdToKrw {
 
             String rateToString = doc.select(CURRENT_SELECTOR).text();
 
-            if (rateToString.isEmpty()) throw new IOException("is Empty String");
+            if (rateToString.isEmpty()) return 0;
 
             return Double.parseDouble(rateToString.replace(",", ""));
         } catch (IOException e) {
