@@ -10,14 +10,12 @@ import lombok.NoArgsConstructor;
 public class JwtDto {
     private Long userId;
     private String email;
-    private String nickname;
     private boolean isExpired;
 
     @Builder
-    public JwtDto(Long userId, String email, String nickname, boolean isExpired) {
+    public JwtDto(Long userId, String email, boolean isExpired) {
         this.userId = userId;
         this.email = email;
-        this.nickname = nickname;
         this.isExpired = isExpired;
     }
 }

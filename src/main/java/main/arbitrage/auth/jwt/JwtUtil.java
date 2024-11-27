@@ -65,7 +65,6 @@ public class JwtUtil {
             return JwtDto.builder()
                     .userId(Long.parseLong(jwtClaim.get("userId", String.class)))
                     .email(jwtClaim.get("email", String.class))
-                    .nickname(jwtClaim.get("nickname", String.class))
                     .isExpired(false)
                     .build();
         } catch (ExpiredJwtException e) { // access token이 만료되었을때에도 사용자값 return
@@ -74,7 +73,6 @@ public class JwtUtil {
             return JwtDto.builder()
                     .userId(Long.parseLong(jwtClaim.get("userId", String.class)))
                     .email(jwtClaim.get("email", String.class))
-                    .nickname(jwtClaim.get("nickname", String.class))
                     .isExpired(true)
                     .build();
         } catch (Exception e) {
