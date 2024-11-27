@@ -83,17 +83,4 @@ public class JwtUtil {
         }
 
     }
-
-    public void saveUserAuthContext(JwtDto tokenDto) {
-        UserDetails userDetails = new CustomUserDetails(tokenDto);
-
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
 }

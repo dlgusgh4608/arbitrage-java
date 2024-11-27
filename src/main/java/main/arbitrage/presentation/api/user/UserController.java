@@ -3,6 +3,7 @@ package main.arbitrage.presentation.api.user;
 import java.io.IOException;
 
 import main.arbitrage.domain.user.dto.request.UserCheckMailRequest;
+import main.arbitrage.global.util.cookie.CookieUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -73,16 +74,19 @@ public class UserController {
     }
 
     private void setCookies(UserTokenResponse userTokenResponse, HttpServletResponse response) {
-        Cookie refreshTokenCookie = new Cookie("refreshToken", userTokenResponse.getRefreshToken());
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(userTokenResponse.getRefreshTokenTTL().intValue());
-
-        Cookie accessTokenCookie = new Cookie("accessToken", userTokenResponse.getAccessToken());
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(-1);
-
-        response.addCookie(refreshTokenCookie);
-        response.addCookie(accessTokenCookie);
+        CookieUtil.addCookie(
+                response,
+                "refreshToken",
+                userTokenResponse.getRefreshToken(),
+                userTokenResponse.getRefreshTokenTTL().intValue(),
+                true
+        );
+        CookieUtil.addCookie(
+                response,
+                "accessToken",
+                userTokenResponse.getAccessToken(),
+                -1,
+                false
+        );
     }
 }

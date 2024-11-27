@@ -1,9 +1,14 @@
 package main.arbitrage.auth.jwt;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.UUID;
 
+import main.arbitrage.auth.security.CustomUserDetails;
+import main.arbitrage.global.util.cookie.CookieUtil;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -48,22 +53,23 @@ public class JwtFilter extends OncePerRequestFilter {
              * 6. refreshToken이 만료되었으면 return Error
              * 7. refreshToken이 만료가 되지 않았으면 refreshToken rolling, new accessToken 발급
              * */
-            String accessToken = resolveAccessToken(request);
+            Optional<Cookie> accessTokenCookie = CookieUtil.getCookie(request, "accessToken");
 
-            System.out.println("accessToken: " + accessToken);
-            // AccessToken null check
-            if (accessToken == null) {
+            // AccessToken is empty
+            if (accessTokenCookie.isEmpty()) {
                 SecurityContextHolder.clearContext();
                 filterChain.doFilter(request, response);
                 return;
             }
+
+            String accessToken = accessTokenCookie.get().getValue();
 
             // 이 토큰은 내가 만든 토큰인가?
             JwtDto tokenInfo = jwtUtil.getTokenInfo(accessToken);
 
             // 엑세스 토큰이 만료되지 않았을때.
             if (!tokenInfo.isExpired()) {
-                jwtUtil.saveUserAuthContext(tokenInfo);
+                saveUserAuthContext(tokenInfo);
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -72,13 +78,15 @@ public class JwtFilter extends OncePerRequestFilter {
              * 해당 라인 아래부터는 Refresh Token을 이용해 Access Token을 재발급입니다.
              * */
 
-            String refreshToken = resolveRefreshToken(request);
+            Optional<Cookie> refreshTokenCookie = CookieUtil.getCookie(request, "refreshToken");
 
             // refresh token이 존재하지 않을때.
-            if (refreshToken == null) {
+            if (refreshTokenCookie.isEmpty()) {
                 log.info("refresh token is not found");
                 throw new RuntimeException("invalid token");
             }
+
+            String refreshToken = refreshTokenCookie.get().getValue();
 
             Long userId = tokenInfo.getUserId();
             String email = tokenInfo.getEmail();
@@ -108,21 +116,11 @@ public class JwtFilter extends OncePerRequestFilter {
             String newRefreshToken = refreshTokenService.updateRefreshToken(email, UUID.randomUUID().toString(), refreshTokenTTL);
 
             JwtDto newTokenInfo = jwtUtil.getTokenInfo(newAccessToken);
-            jwtUtil.saveUserAuthContext(newTokenInfo);
-
+            saveUserAuthContext(newTokenInfo);
 
             // 쿠키를 구워요
-            Cookie refreshTokenCookie = new Cookie("refreshToken", newRefreshToken);
-            refreshTokenCookie.setHttpOnly(true);
-            refreshTokenCookie.setPath("/");
-            refreshTokenCookie.setMaxAge(refreshTokenTTL.intValue());
-
-            Cookie accessTokenCookie = new Cookie("accessToken", newAccessToken); // 차피 jwt에 ttl 있어서 굳이 설정 필요 없음.
-            accessTokenCookie.setPath("/");
-            accessTokenCookie.setMaxAge(-1);
-
-            response.addCookie(refreshTokenCookie);
-            response.addCookie(accessTokenCookie);
+            CookieUtil.addCookie(response, "refreshToken", newRefreshToken, refreshTokenTTL.intValue(), true);
+            CookieUtil.addCookie(response, "accessToken", newAccessToken, -1, false);
 
             log.info("새로운 액세스 토큰: {}\n새로운 리프레시 토큰: {}", newAccessToken, newRefreshToken);
 
@@ -139,27 +137,16 @@ public class JwtFilter extends OncePerRequestFilter {
                 requestURI.startsWith("/api/users/signup");
     }
 
-    private String resolveRefreshToken(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("refreshToken".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
-    }
+    private void saveUserAuthContext(JwtDto tokenDto) {
+        UserDetails userDetails = new CustomUserDetails(tokenDto);
 
-    private String resolveAccessToken(HttpServletRequest request) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if ("accessToken".equals(cookie.getName())) {
-                    return cookie.getValue();
-                }
-            }
-        }
-        return null;
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }
