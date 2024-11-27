@@ -17,7 +17,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-
     public User create(UserRegisterRequest request) {
         String email = request.getEmail();
         if (email == null) throw new IllegalArgumentException("Email is required!");

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.auth.jwt.JwtUtil;
-import main.arbitrage.auth.security.SecurityUtil;
 import main.arbitrage.domain.email.entity.EmailMessage;
 import main.arbitrage.domain.email.service.EmailMessageService;
 import main.arbitrage.domain.user.dto.request.UserLoginRequest;
@@ -61,8 +60,6 @@ public class UserApplicationService {
         String refreshToken = refreshTokenService.createRefreshToken(user.getEmail(), UUID.randomUUID().toString());
         Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(user.getEmail());
 
-        jwtUtil.saveUserAuthContext(jwtUtil.getTokenInfo(accessToken));
-
         return UserTokenResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
@@ -87,8 +84,6 @@ public class UserApplicationService {
         String accessToken = jwtUtil.createToken(user.getUserId(), user.getEmail());
         String refreshToken = refreshTokenService.createRefreshToken(user.getEmail(), UUID.randomUUID().toString());
         Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(user.getEmail());
-
-        jwtUtil.saveUserAuthContext(jwtUtil.getTokenInfo(accessToken));
 
         return UserTokenResponse.builder()
                 .accessToken(accessToken)

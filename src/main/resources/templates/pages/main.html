@@ -85,75 +85,73 @@
             </div>
         </article>
     </section>
-    <script>
-        $(document).ready(function() {
-            const ws = new WebSocket("ws://localhost:8000/ws/premium")
-            const prev = {
-                'btc': {
-                    premium: null,
-                    upbit: null,
-                    binance: null
-                },
-                'eth': {
-                    premium: null,
-                    upbit: null,
-                    binance: null
-                },
+    <script th:inline="javascript">
+        const ws = new WebSocket("ws://localhost:8000/ws/premium")
+        const prev = {
+            'btc': {
+                premium: null,
+                upbit: null,
+                binance: null
+            },
+            'eth': {
+                premium: null,
+                upbit: null,
+                binance: null
+            },
+        }
+
+        const colors = {
+            default: '#000',
+            up: '#f03e3e',
+            down: '#1c7ed6',
+        }
+
+        const getColor = (prevValue, currentValue) => {
+                if(prevValue === null) return colors.default
+
+                if(prevValue < currentValue) return colors.up
+
+                if(prevValue > currentValue) return colors.down
+
+                return colors.default
             }
 
-            const colors = {
-                default: '#000',
-                up: '#f03e3e',
-                down: '#1c7ed6',
-            }
+        const handleMessage = (message) => {
+            const dataOfJson = JSON.parse(message.data)
 
-            const getColor = (prevValue, currentValue) => {
-                    if(prevValue === null) return colors.default
-                        
-                    if(prevValue < currentValue) return colors.up
+            const { symbol, premium, domestic, overseas } = dataOfJson
 
-                    if(prevValue > currentValue) return colors.down
+            const premiumEle = $(`#${symbol}`).find('#premium')
+            const upbitEle = $(`#${symbol}`).find('#upbit')
+            const binanceEle = $(`#${symbol}`).find('#binance')
 
-                    return colors.default
-                }
-            
-            const handleMessage = (message) => {
-                const dataOfJson = JSON.parse(message.data)
-                
-                const { symbol, premium, domestic, overseas } = dataOfJson
-                
-                const premiumEle = $(`#${symbol}`).find('#premium')
-                const upbitEle = $(`#${symbol}`).find('#upbit')
-                const binanceEle = $(`#${symbol}`).find('#binance')
+            premiumEle.text(premium.toLocaleString() + '%')
+            upbitEle.text('₩' + domestic.toLocaleString())
+            binanceEle.text('$' + overseas.toLocaleString())
 
-                premiumEle.text(premium.toLocaleString() + '%')
-                upbitEle.text('₩' + domestic.toLocaleString())
-                binanceEle.text('$' + overseas.toLocaleString())
+            const prevPremium = prev[symbol].premium
+            const prevupbit = prev[symbol].upbit
+            const prevBinance = prev[symbol].binance
 
-                const prevPremium = prev[symbol].premium
-                const prevupbit = prev[symbol].upbit
-                const prevBinance = prev[symbol].binance
 
-                
 
-                premiumEle.css('color', getColor(prevPremium, premium))
-                upbitEle.css('color', getColor(prevupbit, domestic))
-                binanceEle.css('color', getColor(prevBinance, overseas))
+            premiumEle.css('color', getColor(prevPremium, premium))
+            upbitEle.css('color', getColor(prevupbit, domestic))
+            binanceEle.css('color', getColor(prevBinance, overseas))
 
-                prev[symbol].premium = premium
-                prev[symbol].upbit = domestic
-                prev[symbol].binance = overseas
-            }
+            prev[symbol].premium = premium
+            prev[symbol].upbit = domestic
+            prev[symbol].binance = overseas
+        }
 
-            ws.onmessage = handleMessage
+        ws.onmessage = handleMessage
 
-            function adjustBannerHeight() {
-                $('.banner-image').css('height', $(window).height());
-            }
+        function adjustBannerHeight() {
+            $('.banner-image').css('height', $(window).height());
+        }
 
-            adjustBannerHeight();
-            $(window).resize(adjustBannerHeight);
-        });
+        adjustBannerHeight();
+        $(window).resize(adjustBannerHeight);
     </script>
 </main>
 </body>

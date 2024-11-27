@@ -28,7 +28,15 @@ public class UserController {
     private final UserApplicationService userApplicationService;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> register(@RequestBody UserRegisterRequest request, HttpServletResponse response) throws Exception {
+    public ResponseEntity<?> signup(@RequestBody UserRegisterRequest request, HttpServletResponse response) throws Exception {
+        UserTokenResponse userTokenResponse = userApplicationService.register(request);
+        setCookies(userTokenResponse, response);
+
+        return ResponseEntity.status(302).header("Location", "/").build();
+    }
+
+    @PostMapping("/signup/oauth")
+    public ResponseEntity<?> oAuthSignup(@RequestBody UserRegisterRequest request, HttpServletResponse response) throws Exception {
         UserTokenResponse userTokenResponse = userApplicationService.register(request);
         setCookies(userTokenResponse, response);
 
@@ -86,7 +94,7 @@ public class UserController {
                 "accessToken",
                 userTokenResponse.getAccessToken(),
                 -1,
-                false
+                true
         );
     }
 }
