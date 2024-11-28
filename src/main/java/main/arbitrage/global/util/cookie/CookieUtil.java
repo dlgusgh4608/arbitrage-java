@@ -37,7 +37,7 @@ public final class CookieUtil {
             HttpServletResponse response,
             String name
     ) {
-        Optional.of(request.getCookies())
+        Optional.ofNullable(request.getCookies())
                 .ifPresent(cookies ->
                         Arrays.stream(cookies)
                                 .filter(cookie -> cookie.getName().equals(name))

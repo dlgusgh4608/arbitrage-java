@@ -1,10 +1,6 @@
 async function fetcher(method = 'GET', url = '', data = {}) {
-  const accessToken = getCookie('accessToken')
-
-  const authorization = accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {}
   const headers = {
     'Content-Type': 'application/json',
-    ...authorization
   }
 
   try {

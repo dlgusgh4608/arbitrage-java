@@ -13,18 +13,28 @@
         </a>
         <ul class="navbar-list">
             <li class="navbar-item" sec:authorize="isAuthenticated()">
-                <div>is login</div>
-                <!-- <button th:replace="components/button :: button(text='내 정보', href='/')"></button> -->
+                <button class="btn custom-button" id="logoutBtn">
+                    로그아웃
+                </button>
             </li>
 
             <li class="navbar-item" sec:authorize="isAnonymous()">
-                <button th:replace="components/button :: button(text='로그인', href='/login')"></button>
+                <button class="btn custom-button">
+                    <a style="color:#000;" href="/login">로그인</a>
+                </button>
             </li>
             <li class="navbar-item" sec:authorize="isAnonymous()">
-                <button th:replace="components/button :: button(text='회원가입', href='/signup')"></button>
+                <button class="btn custom-button">
+                    <a style="color:#000;" href="/signup">회원가입</a>
+                </button>
             </li>
         </ul>
     </nav>
+    <script th:inline="javascript">
+        $('#logoutBtn').on('click', async () => {
+            const { success, data } = await fetcher('post', '/api/users/logout', {})
+        })
+    </script>
 </header>
 </body>
 </html>

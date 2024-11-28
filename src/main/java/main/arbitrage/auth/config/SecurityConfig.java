@@ -1,5 +1,6 @@
 package main.arbitrage.auth.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import main.arbitrage.auth.jwt.JwtFilter;
 import main.arbitrage.auth.oauth.handler.OAuthSuccessHandler;
 import main.arbitrage.auth.oauth.repository.OAuthUserRequestRepository;
@@ -49,6 +50,7 @@ public class SecurityConfig {
                                 .requestMatchers("/ws/**").permitAll()
                                 .requestMatchers("/login/**", "/api/users/login/**").permitAll() // login
                                 .requestMatchers("/signup/**", "/api/users/signup/**").permitAll() // signup
+                                .requestMatchers("/logout/**", "/api/users/logout/**").permitAll() // signup
                                 .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 ->
@@ -62,6 +64,16 @@ public class SecurityConfig {
                                         userInfo.userService(oAuthUserRequestService)
                                 )
                                 .successHandler(oAuthSuccessHandler)
+                )
+                .logout(logout ->
+                                logout
+                                        .logoutUrl("/api/users/logout")
+//                                .logoutSuccessHandler((request, response, authentication) -> {
+//                                    response.setStatus(HttpServletResponse.SC_OK);
+//                                })
+                                        .clearAuthentication(true)
+                                        .deleteCookies("accessToken", "refreshToken")
+                                        .logoutSuccessUrl("/")
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

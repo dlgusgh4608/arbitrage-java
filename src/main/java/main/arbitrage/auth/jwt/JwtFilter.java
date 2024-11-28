@@ -57,7 +57,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
             // AccessToken is empty
             if (accessTokenCookie.isEmpty()) {
-                SecurityContextHolder.clearContext();
+                logout(request, response);
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -125,7 +125,7 @@ public class JwtFilter extends OncePerRequestFilter {
             saveUserAuthContext(newTokenInfo);
             filterChain.doFilter(request, response);
         } catch (Exception e) {
-            SecurityContextHolder.clearContext();
+            logout(request, response);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write(e.getMessage());
         }
@@ -147,5 +147,11 @@ public class JwtFilter extends OncePerRequestFilter {
                 );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    private void logout(HttpServletRequest request, HttpServletResponse response) {
+        CookieUtil.removeCookie(request, response, "accessToken");
+        CookieUtil.removeCookie(request, response, "refreshToken");
+        SecurityContextHolder.clearContext();
     }
 }
