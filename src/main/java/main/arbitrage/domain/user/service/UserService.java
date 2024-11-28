@@ -9,27 +9,25 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-import main.arbitrage.domain.user.dto.request.UserRegisterRequest;
-
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public User create(UserRegisterRequest request) {
-        String email = request.getEmail();
+    public User create(User user) {
+        String email = user.getEmail();
         if (email == null) throw new IllegalArgumentException("Email is required!");
 
-        String password = request.getPassword();
+        String password = user.getPassword();
         if (password == null) throw new IllegalArgumentException("Password is required!");
 
-        User user = User.builder()
+        User Encodeuser = User.builder()
                 .email(email)
                 .password(passwordEncoder.encode(password))
                 .build();
 
-        return userRepository.save(user);
+        return userRepository.save(Encodeuser);
     }
 
     public boolean existsByEmail(String email) {

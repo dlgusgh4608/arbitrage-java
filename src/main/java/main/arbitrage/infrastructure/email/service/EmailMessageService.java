@@ -1,9 +1,9 @@
-package main.arbitrage.domain.email.service;
+package main.arbitrage.infrastructure.email.service;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.domain.email.entity.EmailMessage;
+import main.arbitrage.infrastructure.email.dto.EmailMessageDto;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -14,8 +14,6 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.util.Random;
 
-import static org.springframework.security.core.context.SecurityContextHolder.setContext;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -23,22 +21,22 @@ public class EmailMessageService {
     private final JavaMailSender javaMailSender;
     private final SpringTemplateEngine templateEngine;
 
-    public String sendMail(EmailMessage emailMessage, String type) throws Exception {
+    public String sendMail(EmailMessageDto emailMessageDto, String type) throws Exception {
         String authNum = generateCode();
 
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
 
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
-            mimeMessageHelper.setTo(emailMessage.getTo());
-            mimeMessageHelper.setSubject(emailMessage.getSubject());
+            mimeMessageHelper.setTo(emailMessageDto.getTo());
+            mimeMessageHelper.setSubject(emailMessageDto.getSubject());
             mimeMessageHelper.setText(setContext(authNum, type), true);
 
             javaMailSender.send(mimeMessage);
         } catch (MailSendException e) {
             // Gmail open smtp server에서는 잘못된 수신자에게 발송시 Error를 반환하지 않는다 한다.
             // Client딴에서 처리하자
-            log.error("Failed to send email. Invalid email address: {}", emailMessage.getTo(), e);
+            log.error("Failed to send email. Invalid email address: {}", emailMessageDto.getTo(), e);
             throw new IllegalArgumentException("Invalid email address.", e);
         } catch (MessagingException e) {
             log.error("Failed to send email: {}", e.getMessage(), e);

@@ -122,14 +122,25 @@
             const email = $('#email').val()
             const password = $('#password').val()
             const confirmPassword = $('#confirmPassword').val()
-            const code = $('#code').val()
             if(!email.match(emailRegex)) return alert('이메일 형식이 올바르지 않습니다.')
             if(!password.match(password)) return alert('비밀번호 형식이 올바르지 않습니다.')
             if(password !== confirmPassword) return alert('비밀번호와 비밀번호 확인이 일치하지 않습니다.')
-            if(!codeOk) return alert('올바른 인증코드를 입력해주세요.')
 
-            const payload = { email, password, code, encryptedCode }
-            const { success, data } = await fetcher('post', '/api/users/signup', payload)
+            if(oauth) {
+                const payload = {
+                    email,
+                    password,
+                    ...oauth
+                }
+                const { success, data } = await fetcher('post', '/api/users/signup/oauth', payload)
+            }else {
+                const code = $('#code').val()
+                if(!codeOk) return alert('올바른 인증코드를 입력해주세요.')
+
+                const payload = { email, password, code, encryptedCode }
+                const { success, data } = await fetcher('post', '/api/users/signup', payload)
+            }
+
         })
     </script>
 </main>

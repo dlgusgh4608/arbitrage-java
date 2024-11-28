@@ -117,7 +117,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
             // 쿠키를 구워요
             CookieUtil.addCookie(response, "refreshToken", newRefreshToken, refreshTokenTTL.intValue(), true);
-            CookieUtil.addCookie(response, "accessToken", newAccessToken, -1, false);
+            CookieUtil.addCookie(response, "accessToken", newAccessToken, -1, true);
 
             log.info("새로운 액세스 토큰: {}\n새로운 리프레시 토큰: {}", newAccessToken, newRefreshToken);
 

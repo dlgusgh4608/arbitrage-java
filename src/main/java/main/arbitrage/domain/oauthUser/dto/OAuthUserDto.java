@@ -1,4 +1,4 @@
-package main.arbitrage.auth.oauth.dto;
+package main.arbitrage.domain.oauthUser.dto;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,8 +7,9 @@ import lombok.Setter;
 @Getter
 @RequiredArgsConstructor
 @Setter
-public class OAuthDto {
+public class OAuthUserDto {
     private final String provider;
     private final String providerId;
     private final String email;
+    private final String accessToken;
 }

@@ -1,4 +1,4 @@
-package main.arbitrage.domain.oauthUser.repository;
+package main.arbitrage.auth.oauth.repository;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

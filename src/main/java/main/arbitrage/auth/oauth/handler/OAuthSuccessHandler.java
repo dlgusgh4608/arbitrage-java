@@ -3,8 +3,9 @@ package main.arbitrage.auth.oauth.handler;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import main.arbitrage.auth.jwt.JwtUtil;
-import main.arbitrage.auth.oauth.dto.OAuthDto;
-import main.arbitrage.auth.oauth.store.OAuthStore;
+import main.arbitrage.auth.oauth.dto.CustomOAuthRequestDto;
+import main.arbitrage.domain.oauthUser.dto.OAuthUserDto;
+import main.arbitrage.domain.oauthUser.store.OAuthUserStore;
 import main.arbitrage.domain.oauthUser.entity.OAuthUser;
 import main.arbitrage.domain.oauthUser.repository.OAuthUserRepository;
 import main.arbitrage.domain.user.entity.User;
@@ -12,7 +13,6 @@ import main.arbitrage.domain.user.repository.UserRepository;
 import main.arbitrage.global.util.cookie.CookieUtil;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ import java.util.UUID;
 public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
-    private final OAuthStore oAuthStore;
+    private final OAuthUserStore oAuthUserStore;
     private final UserRepository userRepository;
     private final OAuthUserRepository oAuthUserRepository;
 
@@ -37,12 +37,12 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
             HttpServletResponse response,
             Authentication authentication
     ) throws IOException {
-        OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
+        CustomOAuthRequestDto oauth2User = (CustomOAuthRequestDto) authentication.getPrincipal();
 
-        // OAuthUserService 에서 넘어옴.
-        String provider = oauth2User.getAttribute("provider");
-        String providerId = oauth2User.getAttribute("providerId");
-        String email = oauth2User.getAttribute("email");
+        String provider = oauth2User.getProvider();
+        String providerId = oauth2User.getProviderId();
+        String email = oauth2User.getEmail();
+        String accessToken = oauth2User.getAccessToken();
 
         /*
          * provider, providerId 를 이용하여 OAuthUser를 찾음
@@ -58,8 +58,8 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
         Optional<OAuthUser> oAuthUser = oAuthUserRepository.findByProviderAndProviderId(provider, providerId);
 
         if (oAuthUser.isEmpty()) {
-            OAuthDto oAuthDto = new OAuthDto(provider, providerId, email);
-            emptyUserProcess(request, response, oAuthDto);
+            OAuthUserDto oAuthUserDto = new OAuthUserDto(provider, providerId, email, accessToken);
+            emptyUserProcess(request, response, oAuthUserDto);
             return;
         }
 
@@ -71,21 +71,21 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private void emptyUserProcess(
             HttpServletRequest request,
             HttpServletResponse response,
-            OAuthDto oAuthDto
+            OAuthUserDto oAuthUserDto
     ) throws IOException {
-        Optional<User> user = userRepository.findByEmail(oAuthDto.getEmail());
+        Optional<User> user = userRepository.findByEmail(oAuthUserDto.getEmail());
 
         if (user.isEmpty()) { // User와 OAuthUser가 모두 없을 경우
             String key = UUID.randomUUID().toString();
-            oAuthStore.save(key, oAuthDto);
+            oAuthUserStore.save(key, oAuthUserDto);
             String targetUrl = UriComponentsBuilder.fromUriString("/signup").queryParam("uid", key).build().toUriString();
             getRedirectStrategy().sendRedirect(request, response, targetUrl);
             return;
         }
         // 가입된 이메일인데 User와 연동되지 않은경우
         OAuthUser oauthUser = OAuthUser.builder()
-                .provider(oAuthDto.getProvider())
-                .providerId(oAuthDto.getProviderId())
+                .provider(oAuthUserDto.getProvider())
+                .providerId(oAuthUserDto.getProviderId())
                 .user(user.get())
                 .build();
 
@@ -105,6 +105,6 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
         String refreshToken = refreshTokenService.updateRefreshToken(email, UUID.randomUUID().toString(), refreshTokenTTL);
 
         CookieUtil.addCookie(response, "refreshToken", refreshToken, refreshTokenTTL.intValue(), true);
-        CookieUtil.addCookie(response, "accessToken", accessToken, -1, false);
+        CookieUtil.addCookie(response, "accessToken", accessToken, -1, true);
     }
 }

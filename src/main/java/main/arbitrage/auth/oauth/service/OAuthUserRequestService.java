@@ -1,10 +1,10 @@
-package main.arbitrage.domain.oauthUser.service;
+package main.arbitrage.auth.oauth.service;
 
 import lombok.RequiredArgsConstructor;
+import main.arbitrage.auth.oauth.dto.CustomOAuthRequestDto;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
@@ -19,18 +19,25 @@ public class OAuthUserRequestService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
         String provider = userRequest.getClientRegistration().getRegistrationId();
+        String accessToken = userRequest.getAccessToken().getTokenValue();
         String providerId = extractProviderId(oAuth2User, provider);
         String email = extractEmail(oAuth2User, provider);
 
-        Map<String, Object> customAttributes = new HashMap<>();
-        customAttributes.put("provider", provider);
-        customAttributes.put("providerId", providerId);
-        customAttributes.put("email", email);
+        Map<String, Object> attributes = Map.of(
+                "provider", provider,
+                "providerId", providerId,
+                "accessToken", accessToken,
+                "email", email
+        );
 
-        return new DefaultOAuth2User(
+        return new CustomOAuthRequestDto(
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
-                customAttributes,
-                "email"
+                attributes,
+                "providerId",
+                provider,
+                providerId,
+                accessToken,
+                email
         );
     }
 

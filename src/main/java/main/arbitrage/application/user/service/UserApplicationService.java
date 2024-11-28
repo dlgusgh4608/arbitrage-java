@@ -3,14 +3,18 @@ package main.arbitrage.application.user.service;
 import java.util.Optional;
 import java.util.UUID;
 
+import main.arbitrage.domain.oauthUser.dto.OAuthUserRegisterRequest;
+import main.arbitrage.domain.oauthUser.entity.OAuthUser;
+import main.arbitrage.domain.oauthUser.service.OAuthUserService;
+import main.arbitrage.infrastructure.google.GoogleApiClient;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.auth.jwt.JwtUtil;
-import main.arbitrage.domain.email.entity.EmailMessage;
-import main.arbitrage.domain.email.service.EmailMessageService;
+import main.arbitrage.infrastructure.email.dto.EmailMessageDto;
+import main.arbitrage.infrastructure.email.service.EmailMessageService;
 import main.arbitrage.domain.user.dto.request.UserLoginRequest;
 import main.arbitrage.domain.user.dto.request.UserRegisterRequest;
 import main.arbitrage.domain.user.dto.response.UserTokenResponse;
@@ -24,24 +28,30 @@ import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
 @RequiredArgsConstructor
 public class UserApplicationService {
     private final EmailMessageService emailMessageService;
-    private final AESCrypto aesCrypto;
     private final UserService userService;
+    private final OAuthUserService oAuthUserService;
+
+    private final AESCrypto aesCrypto;
     private final RefreshTokenService refreshTokenService;
     private final JwtUtil jwtUtil;
+    
+    private final GoogleApiClient googleApiClient;
 
-    public String sendEmail(EmailMessage emailMessage) throws Exception {
-        String code = emailMessageService.sendMail(emailMessage, "email");
+    @Transactional
+    public String sendEmail(EmailMessageDto emailMessageDto) throws Exception {
+        String email = emailMessageDto.getTo();
+
+        if (userService.existsByEmail(email)) {
+            throw new DataIntegrityViolationException("This email is already in use: " + email);
+        }
+
+        String code = emailMessageService.sendMail(emailMessageDto, "email");
+
         return aesCrypto.encrypt(code);
     }
 
     public boolean checkCode(String originCode, String encryptedCode) throws Exception {
         return aesCrypto.decrypt(encryptedCode).equals(originCode);
-    }
-
-    public void validateEmail(String email) {
-        if (userService.existsByEmail(email)) {
-            throw new DataIntegrityViolationException("This email is already in use: " + email);
-        }
     }
 
     @Transactional
@@ -54,17 +64,45 @@ public class UserApplicationService {
             throw new IllegalArgumentException("Invalid Code");
         }
 
-        User user = userService.create(req);
+        User user = userService.create(User.builder()
+                .email(req.getEmail())
+                .password(req.getPassword())
+                .build()
+        );
 
-        String accessToken = jwtUtil.createToken(user.getUserId(), user.getEmail());
-        String refreshToken = refreshTokenService.createRefreshToken(user.getEmail(), UUID.randomUUID().toString());
-        Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(user.getEmail());
+        return userTokenResponseBuilder(user);
+    }
 
-        return UserTokenResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .refreshTokenTTL(refreshTokenTTL)
-                .build();
+    @Transactional
+    public UserTokenResponse oAuthUserRegister(OAuthUserRegisterRequest req) throws Exception {
+        String provider = req.getProvider(); // provider is only kakao, google
+
+        switch (provider.toLowerCase()) {
+            case "google" -> {
+                if (googleApiClient.validateUser(req.getAccessToken(), req.getProvider(), req.getEmail())) {
+                    throw new IllegalArgumentException("invalid Value");
+                }
+            }
+            case "kakao" -> {
+                System.out.println(provider);
+            }
+            default -> throw new Exception("invalid provider");
+        }
+
+        User user = userService.create(User.builder()
+                .email(req.getEmail())
+                .password(req.getPassword())
+                .build()
+        );
+
+        oAuthUserService.create(OAuthUser.builder()
+                .providerId(req.getProviderId())
+                .provider(provider)
+                .user(user)
+                .build()
+        );
+
+        return userTokenResponseBuilder(user);
     }
 
     @Transactional
@@ -81,6 +119,10 @@ public class UserApplicationService {
             throw new IllegalArgumentException("Invalid info");
         }
 
+        return userTokenResponseBuilder(user);
+    }
+
+    private UserTokenResponse userTokenResponseBuilder(User user) {
         String accessToken = jwtUtil.createToken(user.getUserId(), user.getEmail());
         String refreshToken = refreshTokenService.createRefreshToken(user.getEmail(), UUID.randomUUID().toString());
         Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(user.getEmail());

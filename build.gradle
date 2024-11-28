@@ -39,6 +39,10 @@ dependencies {
     // OAuth 2
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
+    // HTTP
+    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
     // ENV
     implementation 'me.paulschwarz:spring-dotenv:3.0.0'
 
