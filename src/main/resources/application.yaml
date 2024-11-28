@@ -44,6 +44,21 @@ spring:
             scope:
               - email
               - profile
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            redirect-uri: "{baseUrl}/login/oauth2/code/kakao"
+            client-authentication-method: client_secret_post
+            authorization-grant-type: authorization_code
+            scope:
+              - account_email
+            client-name: Kakao
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            user-name-attribute: id
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
 server:
   port: ${SERVER_PORT:8000}
 

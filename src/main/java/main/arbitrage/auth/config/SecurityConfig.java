@@ -66,14 +66,11 @@ public class SecurityConfig {
                                 .successHandler(oAuthSuccessHandler)
                 )
                 .logout(logout ->
-                                logout
-                                        .logoutUrl("/api/users/logout")
-//                                .logoutSuccessHandler((request, response, authentication) -> {
-//                                    response.setStatus(HttpServletResponse.SC_OK);
-//                                })
-                                        .clearAuthentication(true)
-                                        .deleteCookies("accessToken", "refreshToken")
-                                        .logoutSuccessUrl("/")
+                        logout
+                                .logoutUrl("/api/users/logout")
+                                .clearAuthentication(true)
+                                .deleteCookies("accessToken", "refreshToken")
+                                .logoutSuccessUrl("/")
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

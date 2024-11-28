@@ -44,7 +44,7 @@ public class OAuthUserRequestService extends DefaultOAuth2UserService {
     private String extractProviderId(OAuth2User oAuth2User, String provider) {
         return switch (provider.toLowerCase()) {
             case "google" -> oAuth2User.getAttribute("sub");
-            case "kakao" -> oAuth2User.getAttribute("id");
+            case "kakao" -> String.valueOf(Optional.ofNullable(oAuth2User.getAttribute("id")).get());
             default -> null;
         };
     }
