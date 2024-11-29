@@ -3,6 +3,8 @@ package main.arbitrage.infrastructure.oauthValidator.kakao;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import main.arbitrage.infrastructure.oauthValidator.OAuthApiClient;
+import main.arbitrage.infrastructure.oauthValidator.dto.OAuthValidatorDto;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.OkHttpClient;
@@ -10,12 +12,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class KakaoApiClient {
+public class KakaoApiClient implements OAuthApiClient {
     private final OkHttpClient okHttpClient;
     private final ObjectMapper objectMapper;
     private static final String KAKAO_USER_INFO_URL = "https://kapi.kakao.com/v2/user/me";
 
-    public KakaoUserInfoDto validateTokenAndGetUserInfo(String accessToken) {
+    @Override
+    public OAuthValidatorDto validateTokenAndGetUserInfo(String accessToken) {
         try {
             Request request = new Request.Builder()
                     .url(KAKAO_USER_INFO_URL)
@@ -29,7 +32,7 @@ public class KakaoApiClient {
 
                 JsonNode jsonNode = objectMapper.readTree(response.body().string());
 
-                return KakaoUserInfoDto.builder()
+                return OAuthValidatorDto.builder()
                         .email(jsonNode.get("kakao_account").get("email").asText())
                         .providerId(jsonNode.get("id").asText())
                         .build();
@@ -39,8 +42,9 @@ public class KakaoApiClient {
         }
     }
 
+    @Override
     public boolean validateUser(String accessToken, String providerId, String email) {
-        KakaoUserInfoDto userInfo = validateTokenAndGetUserInfo(accessToken);
+        OAuthValidatorDto userInfo = validateTokenAndGetUserInfo(accessToken);
         return userInfo.getProviderId().equals(providerId) && userInfo.getEmail().equals(email);
     }
 }
