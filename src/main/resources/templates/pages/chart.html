@@ -1,0 +1,127 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>차트</title>
+    <th:block layout:fragment="css">
+    </th:block>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial/dist/chartjs-chart-financial.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+    
+</head>
+<body>
+<main layout:fragment="content">
+    <div style="width: 100%; height: 600px;">
+        <canvas id="candlestickChart" style="width:100% !important; height: 600px !important;"></canvas>
+    </div>
+    <script th:inline="javascript">
+        $(function(){
+            const ctx = document.getElementById('candlestickChart').getContext('2d');
+
+            const mockData = [[${chartData}]]
+
+            const chartData = mockData.map(d => ({
+                x: new Date(d.date).getTime(),
+                o: d.open,
+                h: d.high,
+                l: d.low,
+                c: d.close
+            }));
+
+            const chart = new Chart(ctx, {
+                type: 'candlestick',
+                data: {
+                    datasets: [{
+                        label: 'OHLC',
+                        data: chartData,
+                        borderColors: {
+                            up: '#26a69a',
+                            down: '#ef5350',
+                            unchanged: '#999999'
+                        },
+                        backgroundColors: {
+                            up: '#26a69a',
+                            down: '#ef5350',
+                            unchanged: '#999999'
+                        },
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            }
+                        },
+                        y: {
+                            position: 'right'
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    const point = context.raw;
+                                    return [
+                                        `Open: ${point.o}`,
+                                        `High: ${point.h}`,
+                                        `Low: ${point.l}`,
+                                        `Close: ${point.c}`
+                                    ];
+                                }
+                            }
+                        },
+                        zoom: {
+                            limits: {
+                                x: {
+                                    min: 'original',
+                                    max: 'original'
+                                }
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,
+                                scaleMode: 'x',
+                                threshold: 10,
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                    speed: 0.1
+                                },
+                                drag: {
+                                    enabled: false
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x'
+                            }
+                        }
+                    }
+                }
+            });
+        })
+    </script>
+</main>
+</body>
+</html>

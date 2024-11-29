@@ -13,6 +13,11 @@
         </a>
         <ul class="navbar-list">
             <li class="navbar-item" sec:authorize="isAuthenticated()">
+                <button class="btn custom-button">
+                    <a style="color:#000;" href="/profile">마이페이지</a>
+                </button>
+            </li>
+            <li class="navbar-item" sec:authorize="isAuthenticated()">
                 <button class="btn custom-button" id="logoutBtn">
                     로그아웃
                 </button>

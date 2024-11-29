@@ -47,10 +47,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorizeRequests) ->
                         authorizeRequests
                                 .requestMatchers("/").permitAll() // main page
+                                .requestMatchers("/chart").permitAll() // chart
                                 .requestMatchers("/ws/**").permitAll()
                                 .requestMatchers("/login/**", "/api/users/login/**").permitAll() // login
                                 .requestMatchers("/signup/**", "/api/users/signup/**").permitAll() // signup
-                                .requestMatchers("/logout/**", "/api/users/logout/**").permitAll() // signup
+                                .requestMatchers("/logout/**", "/api/users/logout/**").permitAll() // logout
                                 .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 ->
