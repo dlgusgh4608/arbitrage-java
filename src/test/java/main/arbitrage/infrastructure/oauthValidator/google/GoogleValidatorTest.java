@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.google;
+package main.arbitrage.infrastructure.oauthValidator.google;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.google;
+package main.arbitrage.infrastructure.oauthValidator.google;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

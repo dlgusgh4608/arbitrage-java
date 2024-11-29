@@ -6,7 +6,8 @@ import java.util.UUID;
 import main.arbitrage.domain.oauthUser.dto.OAuthUserRegisterRequest;
 import main.arbitrage.domain.oauthUser.entity.OAuthUser;
 import main.arbitrage.domain.oauthUser.service.OAuthUserService;
-import main.arbitrage.infrastructure.google.GoogleApiClient;
+import main.arbitrage.infrastructure.oauthValidator.google.GoogleApiClient;
+import main.arbitrage.infrastructure.oauthValidator.kakao.KakaoApiClient;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -34,8 +35,9 @@ public class UserApplicationService {
     private final AESCrypto aesCrypto;
     private final RefreshTokenService refreshTokenService;
     private final JwtUtil jwtUtil;
-    
+
     private final GoogleApiClient googleApiClient;
+    private final KakaoApiClient kakaoApiClient;
 
     @Transactional
     public String sendEmail(EmailMessageDto emailMessageDto) throws Exception {
@@ -77,14 +79,20 @@ public class UserApplicationService {
     public UserTokenResponse oAuthUserRegister(OAuthUserRegisterRequest req) throws Exception {
         String provider = req.getProvider(); // provider is only kakao, google
 
+        System.out.println(provider);
+
         switch (provider.toLowerCase()) {
             case "google" -> {
-                if (googleApiClient.validateUser(req.getAccessToken(), req.getProvider(), req.getEmail())) {
+                if (!googleApiClient.validateUser(req.getAccessToken(), req.getProviderId(), req.getEmail())) {
+                    System.out.println(1);
                     throw new IllegalArgumentException("invalid Value");
                 }
             }
             case "kakao" -> {
-                System.out.println(provider);
+                if (!kakaoApiClient.validateUser(req.getAccessToken(), req.getProviderId(), req.getEmail())) {
+                    System.out.println(2);
+                    throw new IllegalArgumentException("invalid Value");
+                }
             }
             default -> throw new Exception("invalid provider");
         }
