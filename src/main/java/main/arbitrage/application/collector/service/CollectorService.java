@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.domain.price.service.PriceDomainService;
 import main.arbitrage.global.constant.SupportedSymbol;
-import main.arbitrage.infrastructure.common.websocket.handler.ClientWebSocketHandler;
+import main.arbitrage.infrastructure.websocket.handler.ClientWebSocketHandler;
 import main.arbitrage.infrastructure.event.dto.PremiumDto;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.application.collector.dto.ExchangePair;
@@ -19,7 +19,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import main.arbitrage.global.util.json.TypedJsonNode;
 
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
 

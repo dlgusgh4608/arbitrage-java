@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.common.websocket.handler;
+package main.arbitrage.infrastructure.websocket.handler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -79,7 +79,7 @@ public class ClientWebSocketHandler implements WebSocketHandler {
                 }
             }
         }
-        
+
         sessionsToRemove.forEach(sessionMap::remove);
     }
 }

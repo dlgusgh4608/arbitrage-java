@@ -1,6 +1,5 @@
-package main.arbitrage.auth.config;
+package main.arbitrage.config;
 
-import jakarta.servlet.http.HttpServletResponse;
 import main.arbitrage.auth.jwt.JwtFilter;
 import main.arbitrage.auth.oauth.handler.OAuthSuccessHandler;
 import main.arbitrage.auth.oauth.repository.OAuthUserRequestRepository;

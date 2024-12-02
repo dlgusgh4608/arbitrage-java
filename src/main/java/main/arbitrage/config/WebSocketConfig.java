@@ -1,8 +1,7 @@
-package main.arbitrage.infrastructure.common.websocket;
+package main.arbitrage.config;
 
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.infrastructure.common.websocket.handler.ClientWebSocketHandler;
-import main.arbitrage.infrastructure.common.websocket.handler.ExchangeWebSocketHandler;
+import main.arbitrage.infrastructure.websocket.handler.ClientWebSocketHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;

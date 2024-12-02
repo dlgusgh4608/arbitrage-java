@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.common.http;
+package main.arbitrage.config;
 
 import okhttp3.OkHttpClient;
 import org.springframework.context.annotation.Bean;
