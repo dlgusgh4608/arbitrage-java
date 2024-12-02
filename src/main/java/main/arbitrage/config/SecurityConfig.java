@@ -1,9 +1,5 @@
 package main.arbitrage.config;
 
-import main.arbitrage.auth.jwt.JwtFilter;
-import main.arbitrage.auth.oauth.handler.OAuthSuccessHandler;
-import main.arbitrage.auth.oauth.repository.OAuthUserRequestRepository;
-import main.arbitrage.auth.oauth.service.OAuthUserRequestService;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,9 +10,13 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import main.arbitrage.auth.jwt.JwtFilter;
+import main.arbitrage.auth.oauth.handler.OAuthSuccessHandler;
+import main.arbitrage.auth.oauth.repository.OAuthUserRequestRepository;
+import main.arbitrage.auth.oauth.service.OAuthUserRequestService;
 
 @Configuration
 @EnableWebSecurity
@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorizeRequests) ->
                         authorizeRequests
                                 .requestMatchers("/").permitAll() // main page
-                                .requestMatchers("/chart").permitAll() // chart
+                                .requestMatchers("/chart/**").permitAll() // chart
                                 .requestMatchers("/ws/**").permitAll()
                                 .requestMatchers("/login/**", "/api/users/login/**").permitAll() // login
                                 .requestMatchers("/signup/**", "/api/users/signup/**").permitAll() // signup

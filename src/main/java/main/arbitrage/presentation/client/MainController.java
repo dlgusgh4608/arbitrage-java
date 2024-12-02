@@ -5,6 +5,7 @@ import main.arbitrage.auth.jwt.JwtUtil;
 import main.arbitrage.domain.oauthUser.dto.OAuthUserDto;
 import main.arbitrage.domain.oauthUser.store.OAuthUserStore;
 import main.arbitrage.auth.security.CustomUserDetails;
+import main.arbitrage.global.constant.SupportedSymbol;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -54,30 +55,14 @@ public class MainController {
     }
 
     @GetMapping("/chart")
-    public String chart(Model model) {
-        List<CandleData> data = new ArrayList<>();
-        LocalDateTime startDate = LocalDateTime.now().minusDays(30);
-        double basePrice = 3500.0;
-
-        for (int i = 0; i < 900; i++) {
-            double open = basePrice + (Math.random() - 0.5) * 50;
-            double close = open + (Math.random() - 0.5) * 40;
-            double high = Math.max(open, close) + Math.random() * 20;
-            double low = Math.min(open, close) - Math.random() * 20;
-
-            data.add(new CandleData(
-                    startDate.plusDays(i).toString(),
-                    open,
-                    high,
-                    low,
-                    close
-            ));
-
-            basePrice = close;
+    public String chart(
+            @RequestParam(name="symbol", required = true, defaultValue = "btc") String symbol,
+            Model model
+    ) {
+        if (!SupportedSymbol.getApplySymbols().contains(symbol.toLowerCase())) {
+            return "redirect:/";
         }
-
-        model.addAttribute("chartData", data);
-
+        
         return "pages/chart";
     }
 }

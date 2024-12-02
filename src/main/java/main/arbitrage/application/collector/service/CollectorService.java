@@ -1,17 +1,20 @@
 package main.arbitrage.application.collector.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import main.arbitrage.application.collector.dto.ChartDto;
+import main.arbitrage.application.collector.dto.OrderbookPair;
+import main.arbitrage.domain.price.entity.Price;
 import main.arbitrage.domain.price.service.PriceDomainService;
 import main.arbitrage.global.constant.SupportedSymbol;
-import main.arbitrage.infrastructure.websocket.handler.ClientWebSocketHandler;
+import main.arbitrage.infrastructure.websocket.server.handler.ChartServerWebSocketHandler;
+import main.arbitrage.infrastructure.websocket.server.handler.PremiumServerWebSocketHandler;
 import main.arbitrage.infrastructure.event.dto.PremiumDto;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
-import main.arbitrage.application.collector.dto.ExchangePair;
+import main.arbitrage.application.collector.dto.TradePair;
 import main.arbitrage.infrastructure.event.EventEmitter;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -21,6 +24,7 @@ import main.arbitrage.global.util.json.TypedJsonNode;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
@@ -33,7 +37,9 @@ public class CollectorService {
     private final EventEmitter emitter;
     private final ObjectMapper objectMapper;
     private final PriceDomainService priceDomainService;
-    private final ClientWebSocketHandler handler;
+    private final PremiumServerWebSocketHandler premiumServerWebSocketHandler;
+    private final ChartServerWebSocketHandler chartServerWebSocketHandler;
+    private final ConcurrentHashMap<String, Price> priceMap = new ConcurrentHashMap<>();
 
     private TypedJsonNode<ExchangeRate> exchangeRate;
 
@@ -46,33 +52,39 @@ public class CollectorService {
         exchangeCollector.initialize();
     }
 
-    @Scheduled(cron = "* * * * * *") // 1초
-    protected void processScheduler() {
+    @Scheduled(fixedRate = 300) // .3초
+    protected void calculatePremium() {
         if (exchangeRate == null) return;
         ExchangeRate ex = exchangeRate.convertToType(objectMapper);
         processAllSymbols(ex);
     }
 
+    @Scheduled(cron = "* * * * * *") // 1초
+    protected void processScheduler() {
+        priceMap.forEach((s, price) -> priceDomainService.addToBuffer(price));
+    }
+
     @Scheduled(cron = "59 * * * * *") // 1분
     @Transactional
     protected void saveBufferScheduler() {
-        priceDomainService.saveBufferedData();
+        priceDomainService.saveToPG();
     }
 
     private void processAllSymbols(ExchangeRate exchangeRate) {
         List<CompletableFuture<Void>> futures = SupportedSymbol.getApplySymbols()
                 .stream()
-                .map(symbol -> calculateAndEmitPremiumAsync(exchangeRate, symbol))
+                .map(symbol -> calculateAndEmitAsync(exchangeRate, symbol))
                 .toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 
     @Async
-    private CompletableFuture<Void> calculateAndEmitPremiumAsync(ExchangeRate exchangeRate, String symbol) {
+    private CompletableFuture<Void> calculateAndEmitAsync(ExchangeRate exchangeRate, String symbol) {
         return CompletableFuture.runAsync(() -> {
             try {
-                ExchangePair tradePair = exchangeCollector.collectTrades(symbol);
+                TradePair tradePair = exchangeCollector.collectTrades(symbol);
+                OrderbookPair orderbookPair = exchangeCollector.collectOrderbooks(symbol);
 
                 if (!tradeValidator.isValidTradePair(tradePair.getUpbit(), tradePair.getBinance())) {
                     log.warn("Invalid trade pair for symbol: {}", symbol);
@@ -86,19 +98,31 @@ public class CollectorService {
                         symbol
                 );
 
-                priceDomainService.saveToBuffer(symbol, exchangeRate, tradePair, premium);
-                emitPremium(symbol, premium);
+                Price price = Price.builder()
+                        .symbol(premium.getSymbol())
+                        .exchangeRate(exchangeRate)
+                        .premium(premium.getPremium())
+                        .upbit(premium.getDomestic())
+                        .binance(premium.getOverseas())
+                        .upbitTradeAt(premium.getDomesticTradeAt())
+                        .binanceTradeAt(premium.getOverseasTradeAt())
+                        .build();
 
+
+                priceMap.put(symbol, price);
+                emitPremium(premium);
+                emitOrderbook(symbol, premium, orderbookPair);
             } catch (Exception e) {
                 log.error("Error processing symbol {}: ", symbol, e);
             }
         });
     }
 
+    private void emitOrderbook(String symbol, PremiumDto premium, OrderbookPair orderbookPair) {
+        chartServerWebSocketHandler.sendMessage(new ChartDto(symbol, premium, orderbookPair));
+    }
 
-    private void emitPremium(String symbol, PremiumDto premium) {
-        JsonNode payload = objectMapper.valueToTree(premium);
-        handler.sendMessage(payload);
-        emitter.emit(symbol, payload);
+    private void emitPremium(PremiumDto premium) {
+        premiumServerWebSocketHandler.sendMessage(premium);
     }
 }

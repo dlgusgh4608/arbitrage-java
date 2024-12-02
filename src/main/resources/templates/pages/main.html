@@ -27,7 +27,7 @@
                 </div>
                 <div class="to-price-wrap animate-in">
                     <button class="btn custom-button">
-                        <a style="color:#000;" href="/chart">무료로 시작하기</a>
+                        <a style="color:#000;" href="/chart?symbol=btc">무료로 시작하기</a>
                     </button>
                 </div>
             </article>
@@ -89,6 +89,7 @@
     </section>
     <script th:inline="javascript">
         const ws = new WebSocket("ws://localhost:8000/ws/premium")
+        
         const prev = {
             'btc': {
                 premium: null,

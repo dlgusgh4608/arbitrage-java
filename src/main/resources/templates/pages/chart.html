@@ -23,103 +23,114 @@
     </div>
     <script th:inline="javascript">
         $(function(){
-            const ctx = document.getElementById('candlestickChart').getContext('2d');
+            
+            const [ symbol ] = [[${param.symbol}]]
 
-            const mockData = [[${chartData}]]
+            // 웹소켓 연결
+            const chartWs = new WebSocket(`ws://localhost:8000/ws/chart/${symbol}`);
 
-            const chartData = mockData.map(d => ({
-                x: new Date(d.date).getTime(),
-                o: d.open,
-                h: d.high,
-                l: d.low,
-                c: d.close
-            }));
+            chartWs.onmessage = (message) => {
+                const data = JSON.parse(message.data);
+                console.log(data)
+            };
 
-            const chart = new Chart(ctx, {
-                type: 'candlestick',
-                data: {
-                    datasets: [{
-                        label: 'OHLC',
-                        data: chartData,
-                        borderColors: {
-                            up: '#26a69a',
-                            down: '#ef5350',
-                            unchanged: '#999999'
-                        },
-                        backgroundColors: {
-                            up: '#26a69a',
-                            down: '#ef5350',
-                            unchanged: '#999999'
-                        },
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'day'
-                            }
-                        },
-                        y: {
-                            position: 'right'
-                        }
-                    },
-                    interaction: {
-                        intersect: false,
-                        mode: 'index'
-                    },
-                    plugins: {
-                        tooltip: {
-                            enabled: true,
-                            mode: 'index',
-                            intersect: false,
-                            callbacks: {
-                                label: function(context) {
-                                    const point = context.raw;
-                                    return [
-                                        `Open: ${point.o}`,
-                                        `High: ${point.h}`,
-                                        `Low: ${point.l}`,
-                                        `Close: ${point.c}`
-                                    ];
-                                }
-                            }
-                        },
-                        zoom: {
-                            limits: {
-                                x: {
-                                    min: 'original',
-                                    max: 'original'
-                                }
-                            },
-                            pan: {
-                                enabled: true,
-                                mode: 'x',
-                                modifierKey: null,
-                                scaleMode: 'x',
-                                threshold: 10,
-                            },
-                            zoom: {
-                                wheel: {
-                                    enabled: true,
-                                    speed: 0.1
-                                },
-                                drag: {
-                                    enabled: false
-                                },
-                                pinch: {
-                                    enabled: true
-                                },
-                                mode: 'x'
-                            }
-                        }
-                    }
-                }
-            });
+            // const ctx = document.getElementById('candlestickChart').getContext('2d');
+
+            // const mockData = [[${chartData}]]
+
+            // const chartData = mockData.map(d => ({
+            //     x: new Date(d.date).getTime(),
+            //     o: d.open,
+            //     h: d.high,
+            //     l: d.low,
+            //     c: d.close
+            // }));
+
+            // const chart = new Chart(ctx, {
+            //     type: 'candlestick',
+            //     data: {
+            //         datasets: [{
+            //             label: 'OHLC',
+            //             data: chartData,
+            //             borderColors: {
+            //                 up: '#26a69a',
+            //                 down: '#ef5350',
+            //                 unchanged: '#999999'
+            //             },
+            //             backgroundColors: {
+            //                 up: '#26a69a',
+            //                 down: '#ef5350',
+            //                 unchanged: '#999999'
+            //             },
+            //             borderWidth: 1
+            //         }]
+            //     },
+            //     options: {
+            //         responsive: true,
+            //         maintainAspectRatio: false,
+            //         scales: {
+            //             x: {
+            //                 type: 'time',
+            //                 time: {
+            //                     unit: 'day'
+            //                 }
+            //             },
+            //             y: {
+            //                 position: 'right'
+            //             }
+            //         },
+            //         interaction: {
+            //             intersect: false,
+            //             mode: 'index'
+            //         },
+            //         plugins: {
+            //             tooltip: {
+            //                 enabled: true,
+            //                 mode: 'index',
+            //                 intersect: false,
+            //                 callbacks: {
+            //                     label: function(context) {
+            //                         const point = context.raw;
+            //                         return [
+            //                             `Open: ${point.o}`,
+            //                             `High: ${point.h}`,
+            //                             `Low: ${point.l}`,
+            //                             `Close: ${point.c}`
+            //                         ];
+            //                     }
+            //                 }
+            //             },
+            //             zoom: {
+            //                 limits: {
+            //                     x: {
+            //                         min: 'original',
+            //                         max: 'original'
+            //                     }
+            //                 },
+            //                 pan: {
+            //                     enabled: true,
+            //                     mode: 'x',
+            //                     modifierKey: null,
+            //                     scaleMode: 'x',
+            //                     threshold: 10,
+            //                 },
+            //                 zoom: {
+            //                     wheel: {
+            //                         enabled: true,
+            //                         speed: 0.1
+            //                     },
+            //                     drag: {
+            //                         enabled: false
+            //                     },
+            //                     pinch: {
+            //                         enabled: true
+            //                     },
+            //                     mode: 'x'
+            //                 }
+            //             }
+            //         }
+            //     }
+            // });
         })
     </script>
 </main>

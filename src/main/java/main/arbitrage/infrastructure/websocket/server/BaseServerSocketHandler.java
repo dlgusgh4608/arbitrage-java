@@ -1,26 +1,21 @@
-package main.arbitrage.infrastructure.websocket.handler;
+package main.arbitrage.infrastructure.websocket.server;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
-public class ClientWebSocketHandler implements WebSocketHandler {
-    private final ObjectMapper objectMapper;
-    private final ConcurrentHashMap<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();
+public abstract class BaseServerSocketHandler<T> implements WebSocketHandler {
+    protected final ObjectMapper objectMapper;
+    protected final ConcurrentHashMap<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();
 
     @Override
     public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) {
@@ -47,13 +42,10 @@ public class ClientWebSocketHandler implements WebSocketHandler {
         log.info("{} WebSocket connection closed: {}", session.getId(), status);
     }
 
-    public void sendMessage(JsonNode json) {
-        if (json == null) {
-            log.warn("Attempted to send null message");
-            return;
-        }
+    public void sendMessage(T dto) {
+        if (dto == null) return;
 
-        TextMessage message = new TextMessage(json.toString());
+        TextMessage message = new TextMessage(objectMapper.valueToTree(dto).toString());
         List<String> sessionsToRemove = new ArrayList<>();
 
         for (Map.Entry<String, WebSocketSession> entry : sessionMap.entrySet()) {

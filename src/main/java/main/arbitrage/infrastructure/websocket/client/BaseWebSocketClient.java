@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.websocket;
+package main.arbitrage.infrastructure.websocket.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import main.arbitrage.application.collector.dto.TradeDto;
