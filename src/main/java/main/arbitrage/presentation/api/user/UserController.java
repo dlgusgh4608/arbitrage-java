@@ -1,8 +1,5 @@
 package main.arbitrage.presentation.api.user;
 
-import main.arbitrage.domain.oauthUser.dto.OAuthUserRegisterRequest;
-import main.arbitrage.domain.user.dto.request.UserCheckMailRequest;
-import main.arbitrage.global.util.cookie.CookieUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,12 +9,15 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.user.service.UserApplicationService;
-import main.arbitrage.infrastructure.email.dto.EmailMessageDto;
+import main.arbitrage.domain.oauthUser.dto.OAuthUserRegisterRequest;
+import main.arbitrage.domain.user.dto.request.UserCheckMailRequest;
 import main.arbitrage.domain.user.dto.request.UserLoginRequest;
 import main.arbitrage.domain.user.dto.request.UserRegisterRequest;
 import main.arbitrage.domain.user.dto.request.UserSendMailRequest;
-import main.arbitrage.domain.user.dto.response.UserTokenResponse;
 import main.arbitrage.domain.user.dto.response.UserSendMailResponse;
+import main.arbitrage.domain.user.dto.response.UserTokenResponse;
+import main.arbitrage.global.util.cookie.CookieUtil;
+import main.arbitrage.infrastructure.email.dto.EmailMessageDto;
 
 @RestController
 @RequestMapping("/api/users")

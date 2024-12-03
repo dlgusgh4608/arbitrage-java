@@ -1,11 +1,8 @@
 package main.arbitrage.presentation.client;
 
-import lombok.RequiredArgsConstructor;
-import main.arbitrage.auth.jwt.JwtUtil;
-import main.arbitrage.domain.oauthUser.dto.OAuthUserDto;
-import main.arbitrage.domain.oauthUser.store.OAuthUserStore;
-import main.arbitrage.auth.security.CustomUserDetails;
-import main.arbitrage.global.constant.SupportedSymbol;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,16 +10,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import lombok.RequiredArgsConstructor;
+import main.arbitrage.application.collector.service.CollectorService;
+import main.arbitrage.auth.security.CustomUserDetails;
+import main.arbitrage.domain.oauthUser.dto.OAuthUserDto;
+import main.arbitrage.domain.oauthUser.store.OAuthUserStore;
+import main.arbitrage.domain.price.dto.PriceDto;
+import main.arbitrage.domain.price.entity.Price;
+import main.arbitrage.global.constant.SupportedSymbol;
 
 @Controller
 @RequestMapping("/")
 @RequiredArgsConstructor
 public class MainController {
-    private final JwtUtil jwtUtil;
     private final OAuthUserStore authUserStore;
+    private final CollectorService collectorService;
 
     @GetMapping("/")
     public String mainPage(Model model) {
@@ -56,13 +58,20 @@ public class MainController {
 
     @GetMapping("/chart")
     public String chart(
-            @RequestParam(name="symbol", required = true, defaultValue = "btc") String symbol,
+            @RequestParam(name = "symbol", required = true, defaultValue = "btc") String symbol,
             Model model
     ) {
         if (!SupportedSymbol.getApplySymbols().contains(symbol.toLowerCase())) {
             return "redirect:/";
         }
-        
+
+        List<Price> prices = collectorService.getInitialPriceOfSymbol(symbol);
+        List<PriceDto> priceDTOs = prices.stream()
+                .map(PriceDto::from)
+                .collect(Collectors.toList());
+
+        model.addAttribute("prices", priceDTOs);
+
         return "pages/chart";
     }
 }

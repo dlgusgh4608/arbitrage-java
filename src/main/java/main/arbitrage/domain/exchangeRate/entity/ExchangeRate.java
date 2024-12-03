@@ -26,8 +26,8 @@ public class ExchangeRate {
     @Column(name = "rate")
     private double rate;
 
-    @OneToOne(mappedBy = "exchangeRate", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Price symbolPrice;
+//    @OneToOne(mappedBy = "exchangeRate", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private Price price;
 
     @Builder
     public ExchangeRate(String fromCurrency, String toCurrency, double rate) {

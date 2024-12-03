@@ -37,4 +37,9 @@ public class PriceBuffer {
     public int size() {
         return buffer.size();
     }
+
+    public List<Price> getBufferedDataOfSymbol(String symbol) {
+        return new ArrayList<>(buffer).stream()
+                .filter(price -> price.getSymbol().equals(symbol)).toList();
+    }
 }

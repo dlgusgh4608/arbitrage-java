@@ -4,6 +4,22 @@
 <head>
     <title>차트</title>
     <th:block layout:fragment="css">
+        <style>
+            .order-book {
+                font-size: 0.9rem;
+            }
+            .order-row {
+                font-size: 0.85rem;
+            }
+            .text-success {
+                color: #26a69a !important;
+                font-weight: bold;
+            }
+            .text-danger {
+                color: #ef5350 !important;
+                font-weight: bold;
+            }
+        </style>
     </th:block>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -11,126 +27,342 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial/dist/chartjs-chart-financial.min.js"></script>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
-    
+
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-crosshair"></script>
 </head>
 <body>
 <main layout:fragment="content">
-    <div style="width: 100%; height: 600px;">
-        <canvas id="candlestickChart" style="width:100% !important; height: 600px !important;"></canvas>
-    </div>
+    <section class="container-xxl d-flex pt-5" style="min-height: 600px;">
+        <article class="col-9 me-2 h-100">
+            <canvas id="candlestickChart" style="width:100% !important; height: 600px !important;"></canvas>
+        </article>
+        <article class="col-3 h-100 d-flex" style="min-height: 600px;">
+            <div class="my-auto w-100">
+                <div class="d-flex justify-content-between mb-3">
+                    <div>Upbit</div>
+                    <div>Binance</div>
+                </div>
+                
+                
+                <!-- 매도 asks -->
+                <div class="order-list asks mb-2">
+                    <div class="order-row d-flex justify-content-between">
+                        <div class="w-50 d-flex justify-content-between pe-2">
+                            <div>
+                                <!-- 업비트 order size -->
+                                 -,---
+                            </div>
+                            <div class="text-danger">
+                                <!-- 업비트 order price -->
+                                 -,---
+                            </div>
+                        </div>
+                        <div class="w-50 d-flex justify-content-between ps-2">
+                            <div class="text-danger">
+                                <!-- 바이낸스 order price -->
+                                -,---
+                                
+                            </div>
+                            <div>
+                                <!-- 바이낸스 order size -->
+                                -,---
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 프리미엄 -->
+                <div class="d-flex justify-content-center py-2 border-top border-bottom">
+                    <span class="premium h5 mb-0">-,---%</span>
+                </div>
+                <!-- 매수 bids -->
+                <div class="order-list bids mt-2">
+                    <div class="order-row d-flex justify-content-between">
+                        <div class="w-50 d-flex justify-content-between pe-2">
+                            <div>
+                                <!-- 업비트 order size -->
+                                 -,---
+                            </div>
+                            <div class="text-success">
+                                <!-- 업비트 order price -->
+                                 -,---
+                            </div>
+                        </div>
+                        <div class="w-50 d-flex justify-content-between ps-2">
+                            <div class="text-success">
+                                <!-- 바이낸스 order price -->
+                                -,---
+                                
+                            </div>
+                            <div>
+                                <!-- 바이낸스 order size -->
+                                -,---
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </section>
+    <section class="container-xxl pt-1">
+        <!-- 거래내역 작성할 예정 -->
+        <!-- 우선사항. 1. User profile에서 env등록 2. Java를 이용한 자동거래.-->
+    </section>
     <script th:inline="javascript">
         $(function(){
-            
             const [ symbol ] = [[${param.symbol}]]
+            const prices = [[${prices}]]
+            const chartWs = new WebSocket(`ws://localhost:8000/ws/chart/${symbol}`)
+        
+            const createCandleOfMinutes = (data) => {
+                const aMinuteMs = 60 * 1000;
+                const result = []
+                let currentCandle = null
 
-            // 웹소켓 연결
-            const chartWs = new WebSocket(`ws://localhost:8000/ws/chart/${symbol}`);
+                data.forEach(d => {
+                    const timestamp = new Date(d.createdAt).getTime()
+                    const roundedTimestamp = Math.floor(timestamp / aMinuteMs) * aMinuteMs
+                    
+                    if (!currentCandle || currentCandle.x !== roundedTimestamp) {
+                        // 새로운 캔들 시작
+                        if (currentCandle) {
+                            result.push(currentCandle);
+                        }
+
+                        // initial
+                        currentCandle = {
+                            x: roundedTimestamp,
+                            o: d.premium,
+                            h: d.premium,
+                            l: d.premium,
+                            c: d.premium
+                        }
+                    } else {
+                        // 기존 캔들 업데이트
+                        currentCandle.h = Math.max(currentCandle.h, d.premium)
+                        currentCandle.l = Math.min(currentCandle.l, d.premium)
+                        currentCandle.c = d.premium
+                    }
+                })
+
+                if (currentCandle) {
+                    result.push(currentCandle)
+                }
+
+                return result
+            }
+            
+            const aMinuteChartData = createCandleOfMinutes(prices)
+            
+            const updateCandleOfMinutes = (originArr, data) => {
+                // chart js 원본배열 참조함.
+                const aMinuteMs = 60 * 1000;
+                const timestamp = Date.now()
+                const roundedTimestamp = Math.floor(timestamp / aMinuteMs) * aMinuteMs
+
+                if(!originArr.at(-1)?.x) return
+                
+                if(originArr.at(-1).x !== roundedTimestamp) {
+                    // 새로운 데이터 생성
+                    if (originArr.length > 100) {
+                        originArr.shift();
+                    }
+                    
+                    originArr.push({
+                        x: roundedTimestamp,
+                        o: data.premium,
+                        h: data.premium,
+                        l: data.premium,
+                        c: data.premium
+                    })
+                }else {
+                    originArr.at(-1).h = Math.max(originArr.at(-1).h, data.premium)
+                    originArr.at(-1).l = Math.min(originArr.at(-1).l, data.premium)
+                    originArr.at(-1).c = data.premium
+                }
+            }
+
+            const ctx = document.getElementById('candlestickChart').getContext('2d')
+
+            const chart = new Chart(ctx, {
+                type: 'candlestick',
+                data: {
+                    datasets: [{
+                        label: 'OHLC',
+                        data: aMinuteChartData,
+                        borderColors: {
+                            up: '#26a69a',
+                            down: '#ef5350',
+                            unchanged: '#999999'
+                        },
+                        backgroundColors: {
+                            up: '#26a69a',
+                            down: '#ef5350',
+                            unchanged: '#999999'
+                        },
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'minute'
+                            },
+                            min: new Date(Date.now() - (60 * 1000 * 100)).getTime(),
+                            // max: Date.now(),
+                            ticks: {
+                                source: 'data'
+                            },
+                            offset: true,
+                            grid: {
+                                offset: true
+                            }
+                        },
+                        y: {
+                            position: 'right',
+                            // y축도 데이터를 모두 포함하도록 설정
+                            beginAtZero: false,
+                            grace: '5%'  // 위아래 5% 여백
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    const point = context.raw;
+                                    return [
+                                        `Open: ${point.o}`,
+                                        `High: ${point.h}`,
+                                        `Low: ${point.l}`,
+                                        `Close: ${point.c}`
+                                    ];
+                                }
+                            }
+                        },
+                        zoom: {
+                            limits: {
+                                x: {
+                                    min: 'original',
+                                    max: 'original'
+                                }
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,
+                                scaleMode: 'x',
+                                threshold: 10,
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                    speed: 0.1
+                                },
+                                drag: {
+                                    enabled: false
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x'
+                            }
+                        },
+                        crosshair: {
+                            line: {
+                                color: '#666',
+                                width: 1
+                            },
+                            sync: {
+                                enabled: false,
+                            },
+                            zoom: {
+                                enabled: false,
+                            },
+                            snap: {
+                                enabled: true
+                            }
+                        }
+                    }
+                }
+            })
+
+            const getOrderbookHTML = ({ upbit, binance }) => {
+                const getAskItem = (upbit, binance) => `
+                    <div class="order-row d-flex justify-content-between">
+                        <div class="w-50 d-flex justify-content-between pe-2">
+                            <div>
+                                ${upbit.size.toFixed(3)}
+                            </div>
+                            <div class="text-danger">
+                                ${upbit.price.toLocaleString()}
+                            </div>
+                        </div>
+                        <div class="w-50 d-flex justify-content-between ps-2">
+                            <div class="text-danger">
+                                ${binance.price}
+                            </div>
+                            <div>
+                                ${binance.size}
+                            </div>
+                        </div>
+                    </div>
+                `.trim()
+
+                const getBidItem = (upbit, binance) => `
+                    <div class="order-row d-flex justify-content-between">
+                        <div class="w-50 d-flex justify-content-between pe-2">
+                            <div>
+                                ${upbit.size.toFixed(3)}
+                            </div>
+                            <div class="text-success">
+                                ${upbit.price.toLocaleString()}
+                            </div>
+                        </div>
+                        <div class="w-50 d-flex justify-content-between ps-2">
+                            <div class="text-success">
+                                ${binance.price}
+                            </div>
+                            <div>
+                                ${binance.size}
+                            </div>
+                        </div>
+                    </div>
+                `.trim()
+
+                const askItems = upbit.asks.map((v, i) => getAskItem(v, binance.asks[i]))
+                const bidItems = upbit.bids.map((v, i) => getBidItem(v, binance.bids[i]))
+
+                return {
+                    asks: askItems.join(''),
+                    bids: bidItems.join('')
+                }
+            }
 
             chartWs.onmessage = (message) => {
-                const data = JSON.parse(message.data);
-                console.log(data)
-            };
+                const { premium, orderbookPair } = JSON.parse(message.data)
+                const { asks, bids } = getOrderbookHTML(orderbookPair)
+                
 
-            // const ctx = document.getElementById('candlestickChart').getContext('2d');
+                $('.asks').html(asks)
+                $('.bids').html(bids)
+                $('.premium').text(`${premium.premium}%`)
 
-            // const mockData = [[${chartData}]]
-
-            // const chartData = mockData.map(d => ({
-            //     x: new Date(d.date).getTime(),
-            //     o: d.open,
-            //     h: d.high,
-            //     l: d.low,
-            //     c: d.close
-            // }));
-
-            // const chart = new Chart(ctx, {
-            //     type: 'candlestick',
-            //     data: {
-            //         datasets: [{
-            //             label: 'OHLC',
-            //             data: chartData,
-            //             borderColors: {
-            //                 up: '#26a69a',
-            //                 down: '#ef5350',
-            //                 unchanged: '#999999'
-            //             },
-            //             backgroundColors: {
-            //                 up: '#26a69a',
-            //                 down: '#ef5350',
-            //                 unchanged: '#999999'
-            //             },
-            //             borderWidth: 1
-            //         }]
-            //     },
-            //     options: {
-            //         responsive: true,
-            //         maintainAspectRatio: false,
-            //         scales: {
-            //             x: {
-            //                 type: 'time',
-            //                 time: {
-            //                     unit: 'day'
-            //                 }
-            //             },
-            //             y: {
-            //                 position: 'right'
-            //             }
-            //         },
-            //         interaction: {
-            //             intersect: false,
-            //             mode: 'index'
-            //         },
-            //         plugins: {
-            //             tooltip: {
-            //                 enabled: true,
-            //                 mode: 'index',
-            //                 intersect: false,
-            //                 callbacks: {
-            //                     label: function(context) {
-            //                         const point = context.raw;
-            //                         return [
-            //                             `Open: ${point.o}`,
-            //                             `High: ${point.h}`,
-            //                             `Low: ${point.l}`,
-            //                             `Close: ${point.c}`
-            //                         ];
-            //                     }
-            //                 }
-            //             },
-            //             zoom: {
-            //                 limits: {
-            //                     x: {
-            //                         min: 'original',
-            //                         max: 'original'
-            //                     }
-            //                 },
-            //                 pan: {
-            //                     enabled: true,
-            //                     mode: 'x',
-            //                     modifierKey: null,
-            //                     scaleMode: 'x',
-            //                     threshold: 10,
-            //                 },
-            //                 zoom: {
-            //                     wheel: {
-            //                         enabled: true,
-            //                         speed: 0.1
-            //                     },
-            //                     drag: {
-            //                         enabled: false
-            //                     },
-            //                     pinch: {
-            //                         enabled: true
-            //                     },
-            //                     mode: 'x'
-            //                 }
-            //             }
-            //         }
-            //     }
-            // });
+                updateCandleOfMinutes(aMinuteChartData, premium)
+                chart.update();
+            }
         })
     </script>
 </main>

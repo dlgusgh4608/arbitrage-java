@@ -9,6 +9,7 @@ import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Date;
 
 @Entity
 @Table(name = "price")
@@ -42,6 +43,9 @@ public class Price {
     @Column(name = "binance_trade_at", nullable = false)
     private Timestamp binanceTradeAt;
 
+    @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP(0) WITHOUT TIME ZONE")
+    private Timestamp createdAt;
+
     @Builder
     public Price(
             String symbol,
@@ -59,5 +63,10 @@ public class Price {
         this.binance = binance;
         this.upbitTradeAt = new Timestamp(upbitTradeAt);
         this.binanceTradeAt = new Timestamp(binanceTradeAt);
+    }
+
+    public Price withCreatedAt(Date createdAt) {
+        this.createdAt = new Timestamp((createdAt.getTime() + 500) / 1000 * 1000); // 반올림 하여 초단위 저장
+        return this;
     }
 }
