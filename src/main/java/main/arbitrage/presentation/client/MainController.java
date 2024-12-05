@@ -4,14 +4,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Valid;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
+import main.arbitrage.domain.userEnv.dto.UserEnvFormDto;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.collector.service.CollectorService;
@@ -82,5 +83,23 @@ public class MainController {
         model.addAttribute("prices", priceDTOs);
 
         return "pages/chart";
+    }
+
+    @GetMapping("/user-env/register")
+    public String envRegisterGet(Model model) {
+        UserEnvFormDto userEnvFormDto = new UserEnvFormDto();
+
+        model.addAttribute("formDto", userEnvFormDto);
+
+        return "pages/env-register";
+    }
+
+    @PostMapping("/user-env/register")
+    public String envRegisterPost(@Valid @ModelAttribute("formDto") UserEnvFormDto dto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "pages/env-register";
+        }
+
+        return "redirect:/";
     }
 }

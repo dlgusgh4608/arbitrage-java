@@ -1,0 +1,90 @@
+.wrapper {
+    width: 100%;
+    max-width: 600px;
+    background: #fff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.exchange-section {
+    border: 1px solid #dee2e6;
+    padding: 1.5rem;
+    border-radius: 4px;
+}
+
+.exchange-section h3 {
+    color: #000;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background-color: #FCD535;
+    border-color: #FCD535;
+    color: #000;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background-color: #FCD535;
+    border-color: #FCD535;
+    opacity: 0.8;
+    color: #000;
+}
+
+.guide-btn {
+    color: #0d6efd;
+    text-decoration: none;
+    font-size: 0.9rem;
+    padding: 0;
+}
+
+.guide-btn:hover {
+    text-decoration: underline;
+}
+
+.guide-box {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 1rem;
+}
+
+.guide-steps {
+    padding-left: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.guide-steps li {
+    margin-bottom: 0.5rem;
+}
+
+.guide-steps li:last-child {
+    margin-bottom: 0;
+}
+
+.guide-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+}
+
+.guide-steps a {
+    color: #0d6efd;
+    text-decoration: none;
+}
+
+.guide-steps a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .wrapper {
+        padding: 1rem;
+    }
+    
+    .exchange-section {
+        padding: 1rem;
+    }
+} 

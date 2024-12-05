@@ -1,0 +1,98 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>API 키 등록</title>
+    <th:block layout:fragment="css">
+        <link rel="stylesheet" th:href="@{/css/env-register.css}">
+    </th:block>
+</head>
+<body>
+<main layout:fragment="content">
+    <section class="container-xxl pt-5 d-flex flex-column justify-content-center align-items-center mb-5">
+        <h2 class="text-center mb-5">API 키 등록</h2>
+        <article class="wrapper">
+            <form method="post" th:action th:object="${formDto}" id="envRegisterForm">
+                <div class="exchange-section mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="fs-5 mb-0">업비트 API</h3>
+                        <button type="button" class="btn btn-link guide-btn" data-bs-toggle="collapse"
+                                data-bs-target="#upbitGuide" aria-expanded="false">
+                            발급 가이드 보기
+                        </button>
+                    </div>
+
+                    <div class="collapse mb-3" id="upbitGuide">
+                        <div class="guide-box">
+                            <h4 class="fs-6 fw-bold">업비트 API 키 발급 방법</h4>
+                            <ol class="guide-steps">
+                                <li>업비트 로그인 후 <a href="https://upbit.com/service_center/open_api_guide" target="_blank">Open
+                                    API 관리</a> 페이지로 이동
+                                </li>
+                                <li>보안인증 완료 후 [Open API 관리] 메뉴 선택</li>
+                                <li>[자산 조회, 주문 조회, 주문 하기] 권한 체크</li>
+                                <li>IP 주소에 123.456.78.9 등록 후 발급</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="upbitAccessKey" class="form-label fs-6">Access Key</label>
+                        <input type="text" class="form-control" id="upbitAccessKey" th:field="*{upbitAccessKey}">
+                        <p class="valid-warning" th:errors=*{upbitAccessKey}></p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="upbitSecretKey" class="form-label fs-6">Secret Key</label>
+                        <input type="password" class="form-control" id="upbitSecretKey" th:field="*{upbitSecretKey}">
+                        <p class="valid-warning" th:errors=*{upbitSecretKey}></p>
+                    </div>
+                </div>
+
+                <div class="exchange-section mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="fs-5 mb-0">바이낸스 API</h3>
+                        <button type="button" class="btn btn-link guide-btn" data-bs-toggle="collapse"
+                                data-bs-target="#binanceGuide" aria-expanded="false">
+                            발급 가이드 보기
+                        </button>
+                    </div>
+
+                    <div class="collapse mb-3" id="binanceGuide">
+                        <div class="guide-box">
+                            <h4 class="fs-6 fw-bold">바이낸스 API 키 발급 방법</h4>
+                            <ol class="guide-steps">
+                                <li>바이낸스 로그인 후
+                                    <a href="https://www.binance.com/en/my/settings/api-management" target="_blank">
+                                        API Management
+                                    </a> 페이지로 이동
+                                </li>
+                                <li>[Create API] 버튼 클릭</li>
+                                <li>[System generated] 버튼 클릭</li>
+                                <li>API 이름 입력 및 [Read Only] 권한만 체크</li>
+                                <li>[Enable Reading, Enable Futures] 권한 체크</li>
+                                <li>IP Address에 123.456.78.9 등록 후 발급</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="binanceAccessKey" class="form-label fs-6">Access Key</label>
+                        <input type="text" class="form-control" id="binanceAccessKey" th:field="*{binanceAccessKey}">
+                        <p class="valid-warning" th:errors=*{binanceAccessKey}></p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="binanceSecretKey" class="form-label fs-6">Secret Key</label>
+                        <input type="password" class="form-control" id="binanceSecretKey"
+                               th:field="*{binanceSecretKey}">
+                        <p class="valid-warning" th:errors=*{binanceSecretKey}></p>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">등록하기</button>
+            </form>
+        </article>
+    </section>
+
+</main>
+</body>
+</html> 
