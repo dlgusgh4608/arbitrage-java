@@ -29,11 +29,11 @@ public class GoogleApiClient implements OAuthApiClient {
                 if (!response.isSuccessful()) {
                     throw new IllegalArgumentException("Failure Google API request");
                 }
-                
+
                 JsonNode jsonNode = objectMapper.readTree(response.body().string());
                 return OAuthValidatorDto.builder()
-                        .email(jsonNode.get("kakao_account").get("email").asText())
-                        .providerId(jsonNode.get("id").asText())
+                        .email(jsonNode.get("email").asText())
+                        .providerId(jsonNode.get("sub").asText())
                         .build();
             }
         } catch (Exception e) {
