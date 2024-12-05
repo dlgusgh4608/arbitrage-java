@@ -5,13 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.domain.exchangeRate.validator.UsdToKrwValidation;
 import main.arbitrage.infrastructure.crawler.UsdToKrw;
 
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@EnableScheduling
 public class ExchangeRateGetService {
     private final UsdToKrw usdToKrwCrawler;
     private final UsdToKrwValidation usdToKrwValidation;

@@ -14,7 +14,7 @@ public class CollectorService {
     private final PriceDomainService priceDomainService;
 
     @Transactional
-    public List<Price> getInitialPriceOfSymbol(String symbol) {
-        return priceDomainService.getInitialPriceOfSymbol(symbol);
+    public List<Price> getInitialPriceOfSymbolName(String symbolName) {
+        return priceDomainService.getInitialPriceOfSymbolName(symbolName);
     }
 }

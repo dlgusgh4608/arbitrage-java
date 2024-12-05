@@ -2,14 +2,16 @@ package main.arbitrage.infrastructure.upbit.pub.websocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import main.arbitrage.domain.symbol.entity.Symbol;
+import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.websocket.client.BaseWebSocketClient;
 import main.arbitrage.application.collector.dto.TradeDto;
 import main.arbitrage.application.collector.dto.OrderbookDto;
 import main.arbitrage.infrastructure.websocket.client.handler.ExchangeWebSocketHandler;
-import main.arbitrage.global.constant.SupportedSymbol;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -25,12 +27,18 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class UpbitWebSocket extends BaseWebSocketClient {
+    private final SymbolVariableService symbolVariableService;
     private static final String WS_URL = "wss://api.upbit.com/websocket/v1";
-    private static final List<String> SYMBOLS = SupportedSymbol.getApplySymbols();
+    private List<String> symbols;
     private static boolean isRunning = false;
     private final ObjectMapper objectMapper;
 
     private WebSocketSession session;
+
+    @PostConstruct
+    private void init() {
+        symbols = symbolVariableService.getSupportedSymbols().stream().map(Symbol::getName).toList();
+    }
 
     @Override
     public void connect() {
@@ -44,7 +52,7 @@ public class UpbitWebSocket extends BaseWebSocketClient {
             session = client.execute(handler, WS_URL).get();
             isRunning = true;
 
-            sendSubscribeMessage(SYMBOLS);
+            sendSubscribeMessage(symbols);
             sendPing();
         } catch (InterruptedException | ExecutionException | IOException e) {
             log.error("Upbit WebSocket Connect Error {}", WS_URL, e);

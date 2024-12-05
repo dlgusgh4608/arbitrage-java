@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 
 import lombok.Getter;
 import main.arbitrage.domain.price.entity.Price;
+import main.arbitrage.domain.symbol.entity.Symbol;
 
 
 @Getter
@@ -19,7 +20,7 @@ public class PriceDto {
 
     public static PriceDto from(Price price) {
         PriceDto dto = new PriceDto();
-        dto.symbol = price.getSymbol();
+        dto.symbol = price.getSymbol().getName();
         dto.premium = price.getPremium();
         dto.upbit = price.getUpbit();
         dto.binance = price.getBinance();

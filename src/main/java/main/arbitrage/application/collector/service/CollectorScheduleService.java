@@ -9,7 +9,8 @@ import main.arbitrage.application.collector.dto.ChartDto;
 import main.arbitrage.application.collector.dto.OrderbookPair;
 import main.arbitrage.domain.price.entity.Price;
 import main.arbitrage.domain.price.service.PriceDomainService;
-import main.arbitrage.global.constant.SupportedSymbol;
+import main.arbitrage.domain.symbol.entity.Symbol;
+import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.websocket.server.handler.ChartServerWebSocketHandler;
 import main.arbitrage.infrastructure.websocket.server.handler.PremiumServerWebSocketHandler;
 import main.arbitrage.infrastructure.event.dto.PremiumDto;
@@ -17,7 +18,6 @@ import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.application.collector.dto.TradePair;
 import main.arbitrage.infrastructure.event.EventEmitter;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import main.arbitrage.global.util.json.TypedJsonNode;
@@ -30,8 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@EnableScheduling
 public class CollectorScheduleService {
+    private final SymbolVariableService symbolVariableService;
     private final ExchangeTradeCollector exchangeCollector;
     private final PremiumCalculationService premiumCalculator;
     private final TradeValidationService tradeValidator;
@@ -73,7 +73,7 @@ public class CollectorScheduleService {
     }
 
     private void processAllSymbols(ExchangeRate exchangeRate) {
-        List<CompletableFuture<Void>> futures = SupportedSymbol.getApplySymbols()
+        List<CompletableFuture<Void>> futures = symbolVariableService.getSupportedSymbols()
                 .stream()
                 .map(symbol -> calculateAndEmitAsync(exchangeRate, symbol))
                 .toList();
@@ -82,14 +82,15 @@ public class CollectorScheduleService {
     }
 
     @Async
-    private CompletableFuture<Void> calculateAndEmitAsync(ExchangeRate exchangeRate, String symbol) {
+    private CompletableFuture<Void> calculateAndEmitAsync(ExchangeRate exchangeRate, Symbol symbol) {
         return CompletableFuture.runAsync(() -> {
             try {
-                TradePair tradePair = exchangeCollector.collectTrades(symbol);
-                OrderbookPair orderbookPair = exchangeCollector.collectOrderbooks(symbol);
+                String symbolName = symbol.getName();
+                TradePair tradePair = exchangeCollector.collectTrades(symbolName);
+                OrderbookPair orderbookPair = exchangeCollector.collectOrderbooks(symbolName);
 
                 if (!tradeValidator.isValidTradePair(tradePair.getUpbit(), tradePair.getBinance())) {
-                    log.warn("Invalid trade pair for symbol: {}", symbol);
+                    log.warn("Invalid trade pair for symbol: {}", symbolName);
                     return;
                 }
 
@@ -97,11 +98,11 @@ public class CollectorScheduleService {
                         tradePair.getUpbit(),
                         tradePair.getBinance(),
                         exchangeRate.getRate(),
-                        symbol
+                        symbolName
                 );
 
                 Price price = Price.builder()
-                        .symbol(premium.getSymbol())
+                        .symbol(symbol)
                         .exchangeRate(exchangeRate)
                         .premium(premium.getPremium())
                         .upbit(premium.getDomestic())
@@ -110,17 +111,17 @@ public class CollectorScheduleService {
                         .binanceTradeAt(premium.getOverseasTradeAt())
                         .build();
 
-                priceMap.put(symbol, price);
+                priceMap.put(symbolName, price);
                 emitPremium(premium);
-                emitOrderbook(symbol, premium, orderbookPair);
+                emitOrderbook(symbolName, premium, orderbookPair);
             } catch (Exception e) {
                 log.error("Error processing symbol {}: ", symbol, e);
             }
         });
     }
 
-    private void emitOrderbook(String symbol, PremiumDto premium, OrderbookPair orderbookPair) {
-        chartServerWebSocketHandler.sendMessage(new ChartDto(symbol, premium, orderbookPair));
+    private void emitOrderbook(String symbolName, PremiumDto premium, OrderbookPair orderbookPair) {
+        chartServerWebSocketHandler.sendMessage(new ChartDto(symbolName, premium, orderbookPair));
     }
 
     private void emitPremium(PremiumDto premium) {

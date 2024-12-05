@@ -3,6 +3,9 @@ package main.arbitrage.presentation.client;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import main.arbitrage.domain.symbol.entity.Symbol;
+import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,12 +20,12 @@ import main.arbitrage.domain.oauthUser.dto.OAuthUserDto;
 import main.arbitrage.domain.oauthUser.store.OAuthUserStore;
 import main.arbitrage.domain.price.dto.PriceDto;
 import main.arbitrage.domain.price.entity.Price;
-import main.arbitrage.global.constant.SupportedSymbol;
 
 @Controller
 @RequestMapping("/")
 @RequiredArgsConstructor
 public class MainController {
+    private final SymbolVariableService symbolVariableService;
     private final OAuthUserStore authUserStore;
     private final CollectorService collectorService;
 
@@ -61,14 +64,20 @@ public class MainController {
             @RequestParam(name = "symbol", required = true, defaultValue = "btc") String symbol,
             Model model
     ) {
-        if (!SupportedSymbol.getApplySymbols().contains(symbol.toLowerCase())) {
+        List<String> supportedSymbolNames = symbolVariableService.getSupportedSymbols()
+                .stream()
+                .map(Symbol::getName)
+                .toList();
+
+        if (!supportedSymbolNames.contains(symbol.toLowerCase())) {
             return "redirect:/";
         }
 
-        List<Price> prices = collectorService.getInitialPriceOfSymbol(symbol);
+        List<Price> prices = collectorService.getInitialPriceOfSymbolName(symbol);
         List<PriceDto> priceDTOs = prices.stream()
                 .map(PriceDto::from)
                 .collect(Collectors.toList());
+
 
         model.addAttribute("prices", priceDTOs);
 

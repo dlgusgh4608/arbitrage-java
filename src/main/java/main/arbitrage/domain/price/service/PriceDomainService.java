@@ -42,12 +42,12 @@ public class PriceDomainService {
         priceBuffer.add(price);
     }
 
-    public List<Price> getInitialPriceOfSymbol(String symbol) {
-        List<Price> prices = priceRepository.findBySymbolOfPageable(symbol, PageRequest.of(0, 3000));
+    public List<Price> getInitialPriceOfSymbolName(String symbolName) {
+        List<Price> prices = priceRepository.findBySymbolOfPageable(symbolName, PageRequest.of(0, 3000));
 
         System.out.println(prices.size());
 
-        List<Price> restPrices = priceBuffer.getBufferedDataOfSymbol(symbol);
+        List<Price> restPrices = priceBuffer.getBufferedDataOfSymbol(symbolName);
         List<Price> allPrices = new ArrayList<>();
 
         allPrices.addAll(prices);

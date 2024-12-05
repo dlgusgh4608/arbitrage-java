@@ -1,4 +1,4 @@
-package main.arbitrage.application.exchangeRate;
+package main.arbitrage.application.exchangeRate.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,13 +7,11 @@ import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateBuildAndSaveService;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateGetService;
 import main.arbitrage.infrastructure.event.EventEmitter;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-@EnableScheduling
 public class ExchangeRateService {
     private final ExchangeRateBuildAndSaveService exchangeRateBuildAndSaveService;
     private final ExchangeRateGetService exchangeRateGetService;

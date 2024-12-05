@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
+import main.arbitrage.domain.symbol.entity.Symbol;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -21,8 +22,9 @@ public class Price {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long price_id;
 
-    @Column(name = "symbol", length = 5)
-    private String symbol;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "symbol_id", nullable = false)
+    private Symbol symbol;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "exchange_rate_id", nullable = false)
@@ -48,7 +50,7 @@ public class Price {
 
     @Builder
     public Price(
-            String symbol,
+            Symbol symbol,
             ExchangeRate exchangeRate,
             BigDecimal premium,
             BigDecimal upbit,
