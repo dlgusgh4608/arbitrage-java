@@ -3,8 +3,6 @@ package main.arbitrage.application.user.service;
 import java.util.Optional;
 import java.util.UUID;
 
-import main.arbitrage.domain.oauthUser.dto.OAuthUserRegisterRequest;
-import main.arbitrage.domain.oauthUser.entity.OAuthUser;
 import main.arbitrage.domain.oauthUser.service.OAuthUserService;
 import main.arbitrage.infrastructure.oauthValidator.google.GoogleApiClient;
 import main.arbitrage.infrastructure.oauthValidator.kakao.KakaoApiClient;
@@ -17,7 +15,7 @@ import main.arbitrage.auth.jwt.JwtUtil;
 import main.arbitrage.infrastructure.email.dto.EmailMessageDto;
 import main.arbitrage.infrastructure.email.service.EmailMessageService;
 import main.arbitrage.domain.user.dto.UserLoginDto;
-import main.arbitrage.domain.user.dto.UserRegisterDto;
+import main.arbitrage.domain.user.dto.UserSignupDto;
 import main.arbitrage.domain.user.dto.UserTokenDto;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.user.service.UserService;
@@ -52,65 +50,62 @@ public class UserApplicationService {
         return aesCrypto.encrypt(code);
     }
 
-    public boolean checkCode(String originCode, String encryptedCode) throws Exception {
-        return aesCrypto.decrypt(encryptedCode).equals(originCode);
+    public boolean checkCode(String originCode, String encryptedCode) {
+        try {
+            return aesCrypto.decrypt(encryptedCode).equals(originCode);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Transactional
-    public UserTokenDto register(UserRegisterDto req) throws Exception {
+    public UserTokenDto signup(UserSignupDto req) {
         if (userService.existsByEmail(req.getEmail())) {
             throw new IllegalArgumentException("This email is already in use");
         }
 
-        if (!checkCode(req.getCode(), req.getEncryptedCode())) {
-            throw new IllegalArgumentException("Invalid Code");
+        String code = req.getCode();
+        String encryptedCode = req.getEncryptedCode();
+        String accessToken = req.getAccessToken();
+        String provider = req.getProvider();
+        String providerId = req.getProviderId();
+
+        if (!code.isEmpty() && !encryptedCode.isEmpty()) {
+            // OAuth login이 아닐시 code와 encryptedCode가 반드시 존재해야함
+            if (!checkCode(code, encryptedCode)) throw new IllegalArgumentException("Invalid value");
+
+            return userTokenResponseBuilder(userService.create(req));
+        } else if (!accessToken.isEmpty() && !provider.isEmpty() && !providerId.isEmpty()) {
+            if (!isCorrectOAuthToken(req)) throw new IllegalArgumentException("Invalid value");
+
+            User user = userService.create(req);
+            oAuthUserService.create(user, req);
+
+            return userTokenResponseBuilder(user);
+        } else {
+            throw new IllegalArgumentException("Invalid value");
         }
-
-        User user = userService.create(User.builder()
-                .email(req.getEmail())
-                .password(req.getPassword())
-                .build()
-        );
-
-        return userTokenResponseBuilder(user);
     }
 
-    @Transactional
-    public UserTokenDto oAuthUserRegister(OAuthUserRegisterRequest req) throws Exception {
+    private boolean isCorrectOAuthToken(UserSignupDto req) {
         String provider = req.getProvider(); // provider is only kakao, google
-
-        System.out.println(provider);
 
         switch (provider.toLowerCase()) {
             case "google" -> {
                 if (!googleApiClient.validateUser(req.getAccessToken(), req.getProviderId(), req.getEmail())) {
-                    System.out.println(1);
-                    throw new IllegalArgumentException("invalid Value");
+                    return false;
                 }
             }
             case "kakao" -> {
                 if (!kakaoApiClient.validateUser(req.getAccessToken(), req.getProviderId(), req.getEmail())) {
-                    System.out.println(2);
-                    throw new IllegalArgumentException("invalid Value");
+                    return false;
                 }
             }
-            default -> throw new Exception("invalid provider");
+            default -> {
+                return false;
+            }
         }
-
-        User user = userService.create(User.builder()
-                .email(req.getEmail())
-                .password(req.getPassword())
-                .build()
-        );
-
-        oAuthUserService.create(OAuthUser.builder()
-                .providerId(req.getProviderId())
-                .provider(provider)
-                .user(user)
-                .build()
-        );
-
-        return userTokenResponseBuilder(user);
+        return true;
     }
 
     @Transactional

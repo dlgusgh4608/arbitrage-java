@@ -2,7 +2,7 @@ package main.arbitrage.presentation.controller.priv;
 
 import jakarta.validation.Valid;
 import main.arbitrage.domain.userEnv.dto.UserEnvFormDto;
-import main.arbitrage.presentation.controller.priv.constant.PrivateUrlConstants;
+import main.arbitrage.presentation.controller.priv.constant.PrivateControllerUrlConstants;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -12,10 +12,10 @@ import lombok.RequiredArgsConstructor;
 
 
 @Controller
-@RequestMapping(PrivateUrlConstants.DEFAULT_URL)
+@RequestMapping(PrivateControllerUrlConstants.DEFAULT_URL)
 @RequiredArgsConstructor
 public class PrivateController {
-    @GetMapping(PrivateUrlConstants.USER_ENV_REGISTER)
+    @GetMapping(PrivateControllerUrlConstants.USER_ENV_REGISTER)
     public String envRegisterGet(Model model) {
         UserEnvFormDto userEnvFormDto = new UserEnvFormDto();
 
@@ -24,7 +24,7 @@ public class PrivateController {
         return "pages/envRegister";
     }
 
-    @PostMapping(PrivateUrlConstants.USER_ENV_REGISTER)
+    @PostMapping(PrivateControllerUrlConstants.USER_ENV_REGISTER)
     public String envRegisterPost(
             @Valid @ModelAttribute("formDto") UserEnvFormDto userEnvFormDto,
             BindingResult bindingResult

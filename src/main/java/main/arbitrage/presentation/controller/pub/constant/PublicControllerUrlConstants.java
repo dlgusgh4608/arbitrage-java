@@ -2,7 +2,7 @@ package main.arbitrage.presentation.controller.pub.constant;
 
 import java.util.List;
 
-public final class PublicUrlConstants {
+public final class PublicControllerUrlConstants {
     public static final String DEFAULT_URL = "/";
     public static final String MAIN = "";
     public static final String LOGIN = "login";

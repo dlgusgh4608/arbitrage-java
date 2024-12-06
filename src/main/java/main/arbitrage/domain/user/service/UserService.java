@@ -1,6 +1,7 @@
 package main.arbitrage.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
+import main.arbitrage.domain.user.dto.UserSignupDto;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.user.repository.UserRepository;
 
@@ -15,16 +16,10 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public User create(User user) {
-        String email = user.getEmail();
-        if (email == null) throw new IllegalArgumentException("Email is required!");
-
-        String password = user.getPassword();
-        if (password == null) throw new IllegalArgumentException("Password is required!");
-
+    public User create(UserSignupDto userSignupDto) {
         User Encodeuser = User.builder()
-                .email(email)
-                .password(passwordEncoder.encode(password))
+                .email(userSignupDto.getEmail())
+                .password(passwordEncoder.encode(userSignupDto.getPassword()))
                 .build();
 
         return userRepository.save(Encodeuser);

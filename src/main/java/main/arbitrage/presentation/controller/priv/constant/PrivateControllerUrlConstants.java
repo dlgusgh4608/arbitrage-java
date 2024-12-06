@@ -2,7 +2,7 @@ package main.arbitrage.presentation.controller.priv.constant;
 
 import java.util.List;
 
-public final class PrivateUrlConstants {
+public final class PrivateControllerUrlConstants {
     public static final String DEFAULT_URL = "/";
     public static final String USER_ENV_REGISTER = "user-env/register";
 

@@ -1,6 +1,7 @@
 package main.arbitrage.config;
 
-import main.arbitrage.presentation.controller.pub.constant.PublicUrlConstants;
+import main.arbitrage.presentation.controller.pub.constant.PublicControllerUrlConstants;
+import main.arbitrage.presentation.restController.pub.constant.PublicRestControllerUrlConstants;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,15 +46,12 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests((authorizeRequests) ->
-                                authorizeRequests
-//                                .requestMatchers("/").permitAll() // main page
-//                                .requestMatchers("/chart").permitAll() // chart
-                                        .requestMatchers(PublicUrlConstants.PUBLIC_URLS.toArray(String[]::new)).permitAll()
-                                        .requestMatchers("/ws/**").permitAll()
-                                        .requestMatchers("/login/**", "/api/users/login/**").permitAll() // login
-                                        .requestMatchers("/signup/**", "/api/users/signup/**").permitAll() // signup
-                                        .requestMatchers("/logout/**", "/api/users/logout/**").permitAll() // logout
-                                        .anyRequest().authenticated()
+                        authorizeRequests
+                                .requestMatchers(PublicControllerUrlConstants.PUBLIC_URLS.toArray(String[]::new)).permitAll()
+                                .requestMatchers(PublicRestControllerUrlConstants.PUBLIC_URLS.toArray(String[]::new)).permitAll()
+                                .requestMatchers("/ws/**").permitAll()
+                                .requestMatchers("/logout/**", "/api/users/logout/**").permitAll() // logout
+                                .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 ->
                         oauth2

@@ -9,9 +9,10 @@ import main.arbitrage.application.user.service.UserApplicationService;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.domain.user.dto.UserLoginDto;
+import main.arbitrage.domain.user.dto.UserSignupDto;
 import main.arbitrage.domain.user.dto.UserTokenDto;
 import main.arbitrage.global.util.cookie.CookieUtil;
-import main.arbitrage.presentation.controller.pub.constant.PublicUrlConstants;
+import main.arbitrage.presentation.controller.pub.constant.PublicControllerUrlConstants;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,7 +28,7 @@ import main.arbitrage.domain.price.dto.PriceDto;
 import main.arbitrage.domain.price.entity.Price;
 
 @Controller
-@RequestMapping(PublicUrlConstants.DEFAULT_URL)
+@RequestMapping(PublicControllerUrlConstants.DEFAULT_URL)
 @RequiredArgsConstructor
 public class PublicController {
     private final UserApplicationService userApplicationService;
@@ -38,7 +39,7 @@ public class PublicController {
     /**
      * only public
      */
-    @GetMapping(PublicUrlConstants.LOGIN)
+    @GetMapping(PublicControllerUrlConstants.LOGIN)
     public String getLogin(
             Model model,
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -54,7 +55,7 @@ public class PublicController {
     /**
      * only public
      */
-    @PostMapping(PublicUrlConstants.LOGIN)
+    @PostMapping(PublicControllerUrlConstants.LOGIN)
     public String postLogin(
             @Valid @ModelAttribute("formDto") UserLoginDto userLoginDto,
             BindingResult bindingResult,
@@ -68,7 +69,7 @@ public class PublicController {
         try {
             UserTokenDto userTokenDto = userApplicationService.login(userLoginDto);
             setCookies(userTokenDto, response);
-            
+
             return "redirect:/";
         } catch (IllegalArgumentException e) {
             bindingResult.reject("loginError", e.getMessage());
@@ -79,7 +80,7 @@ public class PublicController {
     /**
      * only public
      */
-    @GetMapping(PublicUrlConstants.SIGNUP)
+    @GetMapping(PublicControllerUrlConstants.SIGNUP)
     public String getSignup(
             Model model,
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -94,15 +95,42 @@ public class PublicController {
             }
         }
 
+        model.addAttribute("formDto", new UserSignupDto());
+
         return "pages/signup";
     }
 
-    @GetMapping(PublicUrlConstants.MAIN)
+    /**
+     * only public
+     */
+    @PostMapping(PublicControllerUrlConstants.SIGNUP)
+    public String postSignup(
+            @Valid @ModelAttribute("formDto") UserSignupDto userSignupDto,
+            BindingResult bindingResult,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            HttpServletResponse response
+    ) {
+        if (userDetails != null) return "redirect:/";
+
+        if (bindingResult.hasErrors()) return "pages/signup";
+
+        try {
+            UserTokenDto userTokenDto = userApplicationService.signup(userSignupDto);
+            setCookies(userTokenDto, response);
+
+            return "redirect:/";
+        } catch (IllegalArgumentException e) {
+            bindingResult.reject("signupError", e.getMessage());
+            return "pages/signup";
+        }
+    }
+
+    @GetMapping(PublicControllerUrlConstants.MAIN)
     public String getMain(Model model) {
         return "pages/main";
     }
 
-    @GetMapping(PublicUrlConstants.CHART)
+    @GetMapping(PublicControllerUrlConstants.CHART)
     public String getChart(
             @RequestParam(name = "symbol", required = true, defaultValue = "btc") String symbol,
             Model model
