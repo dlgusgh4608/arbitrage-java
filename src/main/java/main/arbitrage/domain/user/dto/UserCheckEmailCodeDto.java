@@ -1,4 +1,4 @@
-package main.arbitrage.domain.user.dto.request;
+package main.arbitrage.domain.user.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserCheckMailRequest {
+public class UserCheckEmailCodeDto {
     @NotBlank(message = "이메일은 필수 입력값입니다.")
     private String originCode;
 
@@ -16,7 +16,7 @@ public class UserCheckMailRequest {
     private String encryptedCode;
 
     @Builder
-    public UserCheckMailRequest(String originCode, String encryptedCode) {
+    public UserCheckEmailCodeDto(String originCode, String encryptedCode) {
         this.originCode = originCode;
         this.encryptedCode = encryptedCode;
     }

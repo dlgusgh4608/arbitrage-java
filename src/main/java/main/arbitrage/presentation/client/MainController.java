@@ -3,10 +3,10 @@ package main.arbitrage.presentation.client;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
+import main.arbitrage.domain.user.dto.UserLoginDto;
 import main.arbitrage.domain.userEnv.dto.UserEnvFormDto;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -36,7 +36,11 @@ public class MainController {
     }
 
     @GetMapping("/login")
-    public String login(Model model, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public String login(
+//            @Valid @ModelAttribute("formDto") UserLoginDto userLoginDto,
+            Model model,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
         if (userDetails != null) return "redirect:/";
 
         return "pages/login";
@@ -95,7 +99,10 @@ public class MainController {
     }
 
     @PostMapping("/user-env/register")
-    public String envRegisterPost(@Valid @ModelAttribute("formDto") UserEnvFormDto dto, BindingResult bindingResult) {
+    public String envRegisterPost(
+            @Valid @ModelAttribute("formDto") UserEnvFormDto dto,
+            BindingResult bindingResult
+    ) {
         if (bindingResult.hasErrors()) {
             return "pages/env-register";
         }

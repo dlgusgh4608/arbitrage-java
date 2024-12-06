@@ -10,12 +10,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.user.service.UserApplicationService;
 import main.arbitrage.domain.oauthUser.dto.OAuthUserRegisterRequest;
-import main.arbitrage.domain.user.dto.request.UserCheckMailRequest;
-import main.arbitrage.domain.user.dto.request.UserLoginRequest;
-import main.arbitrage.domain.user.dto.request.UserRegisterRequest;
-import main.arbitrage.domain.user.dto.request.UserSendMailRequest;
-import main.arbitrage.domain.user.dto.response.UserSendMailResponse;
-import main.arbitrage.domain.user.dto.response.UserTokenResponse;
+import main.arbitrage.domain.user.dto.UserCheckEmailCodeDto;
+import main.arbitrage.domain.user.dto.UserLoginDto;
+import main.arbitrage.domain.user.dto.UserRegisterDto;
+import main.arbitrage.domain.user.dto.UserExistEmailReqDto;
+import main.arbitrage.domain.user.dto.UserExistEmailResDto;
+import main.arbitrage.domain.user.dto.UserTokenDto;
 import main.arbitrage.global.util.cookie.CookieUtil;
 import main.arbitrage.infrastructure.email.dto.EmailMessageDto;
 
@@ -26,23 +26,23 @@ public class UserController {
     private final UserApplicationService userApplicationService;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody UserRegisterRequest request, HttpServletResponse response) throws Exception {
-        UserTokenResponse userTokenResponse = userApplicationService.register(request);
-        setCookies(userTokenResponse, response);
+    public ResponseEntity<?> signup(@RequestBody UserRegisterDto request, HttpServletResponse response) throws Exception {
+        UserTokenDto userTokenDto = userApplicationService.register(request);
+        setCookies(userTokenDto, response);
 
         return ResponseEntity.status(302).header("Location", "/").build();
     }
 
     @PostMapping("/signup/oauth")
     public ResponseEntity<?> oAuthSignup(@RequestBody OAuthUserRegisterRequest request, HttpServletResponse response) throws Exception {
-        UserTokenResponse userTokenResponse = userApplicationService.oAuthUserRegister(request);
-        setCookies(userTokenResponse, response);
+        UserTokenDto userTokenDto = userApplicationService.oAuthUserRegister(request);
+        setCookies(userTokenDto, response);
 
         return ResponseEntity.status(302).header("Location", "/").build();
     }
 
     @PostMapping("/signup/send-email")
-    public ResponseEntity<?> sendEmail(@RequestBody UserSendMailRequest request) throws Exception {
+    public ResponseEntity<?> sendEmail(@RequestBody UserExistEmailReqDto request) throws Exception {
         String code = userApplicationService.sendEmail(
                 EmailMessageDto.builder()
                         .to(request.getEmail())
@@ -50,11 +50,11 @@ public class UserController {
                         .build()
         );
 
-        return ResponseEntity.ok(UserSendMailResponse.builder().code(code).build());
+        return ResponseEntity.ok(UserExistEmailResDto.builder().code(code).build());
     }
 
     @PostMapping("/signup/check-code")
-    public ResponseEntity<?> checkCode(@RequestBody UserCheckMailRequest request) throws Exception {
+    public ResponseEntity<?> checkCode(@RequestBody UserCheckEmailCodeDto request) throws Exception {
         boolean ok = userApplicationService.checkCode(request.getOriginCode(), request.getEncryptedCode());
 
 
@@ -66,25 +66,25 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserLoginRequest request, HttpServletResponse response) {
-        UserTokenResponse userTokenResponse = userApplicationService.login(request);
-        setCookies(userTokenResponse, response);
+    public ResponseEntity<?> login(@RequestBody UserLoginDto request, HttpServletResponse response) {
+        UserTokenDto userTokenDto = userApplicationService.login(request);
+        setCookies(userTokenDto, response);
 
         return ResponseEntity.status(302).header("Location", "/").build();
     }
 
-    private void setCookies(UserTokenResponse userTokenResponse, HttpServletResponse response) {
+    private void setCookies(UserTokenDto userTokenDto, HttpServletResponse response) {
         CookieUtil.addCookie(
                 response,
                 "refreshToken",
-                userTokenResponse.getRefreshToken(),
-                userTokenResponse.getRefreshTokenTTL().intValue(),
+                userTokenDto.getRefreshToken(),
+                userTokenDto.getRefreshTokenTTL().intValue(),
                 true
         );
         CookieUtil.addCookie(
                 response,
                 "accessToken",
-                userTokenResponse.getAccessToken(),
+                userTokenDto.getAccessToken(),
                 -1,
                 true
         );

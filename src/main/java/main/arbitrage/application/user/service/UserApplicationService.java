@@ -16,9 +16,9 @@ import lombok.RequiredArgsConstructor;
 import main.arbitrage.auth.jwt.JwtUtil;
 import main.arbitrage.infrastructure.email.dto.EmailMessageDto;
 import main.arbitrage.infrastructure.email.service.EmailMessageService;
-import main.arbitrage.domain.user.dto.request.UserLoginRequest;
-import main.arbitrage.domain.user.dto.request.UserRegisterRequest;
-import main.arbitrage.domain.user.dto.response.UserTokenResponse;
+import main.arbitrage.domain.user.dto.UserLoginDto;
+import main.arbitrage.domain.user.dto.UserRegisterDto;
+import main.arbitrage.domain.user.dto.UserTokenDto;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.user.service.UserService;
 import main.arbitrage.global.util.aes.AESCrypto;
@@ -57,7 +57,7 @@ public class UserApplicationService {
     }
 
     @Transactional
-    public UserTokenResponse register(UserRegisterRequest req) throws Exception {
+    public UserTokenDto register(UserRegisterDto req) throws Exception {
         if (userService.existsByEmail(req.getEmail())) {
             throw new IllegalArgumentException("This email is already in use");
         }
@@ -76,7 +76,7 @@ public class UserApplicationService {
     }
 
     @Transactional
-    public UserTokenResponse oAuthUserRegister(OAuthUserRegisterRequest req) throws Exception {
+    public UserTokenDto oAuthUserRegister(OAuthUserRegisterRequest req) throws Exception {
         String provider = req.getProvider(); // provider is only kakao, google
 
         System.out.println(provider);
@@ -114,7 +114,7 @@ public class UserApplicationService {
     }
 
     @Transactional
-    public UserTokenResponse login(UserLoginRequest req) {
+    public UserTokenDto login(UserLoginDto req) {
         Optional<User> userOptional = userService.findByEmail(req.getEmail());
 
         if (userOptional.isEmpty()) {
@@ -130,12 +130,12 @@ public class UserApplicationService {
         return userTokenResponseBuilder(user);
     }
 
-    private UserTokenResponse userTokenResponseBuilder(User user) {
+    private UserTokenDto userTokenResponseBuilder(User user) {
         String accessToken = jwtUtil.createToken(user.getUserId(), user.getEmail());
         String refreshToken = refreshTokenService.createRefreshToken(user.getEmail(), UUID.randomUUID().toString());
         Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(user.getEmail());
 
-        return UserTokenResponse.builder()
+        return UserTokenDto.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .refreshTokenTTL(refreshTokenTTL)

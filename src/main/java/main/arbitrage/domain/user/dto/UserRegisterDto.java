@@ -1,4 +1,4 @@
-package main.arbitrage.domain.user.dto.request;
+package main.arbitrage.domain.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserRegisterRequest {
+public class UserRegisterDto {
 
     @NotBlank(message = "이메일은 필수 입력값입니다.")
     @Email(message = "올바른 이메일 형식이 아닙니다.")
@@ -33,7 +33,7 @@ public class UserRegisterRequest {
     private String encryptedCode;
 
     @Builder
-    public UserRegisterRequest(String email, String password, String code, String encryptedCode) {
+    public UserRegisterDto(String email, String password, String code, String encryptedCode) {
         this.email = email;
         this.password = password;
         this.code = code;

@@ -1,11 +1,11 @@
-package main.arbitrage.domain.user.dto.response;
+package main.arbitrage.domain.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Builder;
 
 @Getter
-public class UserTokenResponse {
+public class UserTokenDto {
 
     @JsonProperty("access_token")
     private String accessToken;
@@ -17,7 +17,7 @@ public class UserTokenResponse {
     private Long refreshTokenTTL;
 
     @Builder
-    public UserTokenResponse(String accessToken, String refreshToken, Long refreshTokenTTL) {
+    public UserTokenDto(String accessToken, String refreshToken, Long refreshTokenTTL) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
         this.refreshTokenTTL = refreshTokenTTL;

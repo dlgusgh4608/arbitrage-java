@@ -1,16 +1,16 @@
-package main.arbitrage.domain.user.dto.response;
+package main.arbitrage.domain.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Builder;
 
 @Getter
-public class UserSendMailResponse {
+public class UserExistEmailResDto {
     @JsonProperty("code")
     private String code;
 
     @Builder
-    public UserSendMailResponse(String code) {
+    public UserExistEmailResDto(String code) {
         this.code = code;
     }
 }
