@@ -30,8 +30,8 @@
 
                     if(hasErrors) emailRegister()
 
-                    const isLoginError = /*[[${#fields.hasErrors('loginError')}]]*/ false;
-                    if(isLoginError) alert("아이디 혹은 비밀번호가 잘못되었습니다.")
+                    const hasServerError = /*[[${#fields.hasGlobalErrors()}]]*/ false;
+                    if(hasServerError) alert("아이디 혹은 비밀번호가 잘못되었습니다.")
                 </script>
             </form>
         </article>

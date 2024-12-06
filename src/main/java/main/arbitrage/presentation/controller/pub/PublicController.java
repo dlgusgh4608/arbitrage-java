@@ -72,7 +72,7 @@ public class PublicController {
 
             return "redirect:/";
         } catch (IllegalArgumentException e) {
-            bindingResult.reject("loginError", e.getMessage());
+            bindingResult.reject("serverError", e.getMessage());
             return "pages/login";
         }
     }
@@ -120,7 +120,7 @@ public class PublicController {
 
             return "redirect:/";
         } catch (IllegalArgumentException e) {
-            bindingResult.reject("signupError", e.getMessage());
+            bindingResult.reject("serverError", e.getMessage());
             return "pages/signup";
         }
     }
