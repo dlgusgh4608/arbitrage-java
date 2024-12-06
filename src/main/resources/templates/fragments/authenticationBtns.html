@@ -48,6 +48,14 @@
             </a>
         </div>
     </div>
+    <script th:inline="javascript">
+        function emailRegister() {
+            $('#step1').css('display', 'none')
+            $('#step2').css('display', 'block')
+        }
+
+        $('#stepToEmail').on('click', () => emailRegister())
+    </script>
 </article>
 </body>
 </html>

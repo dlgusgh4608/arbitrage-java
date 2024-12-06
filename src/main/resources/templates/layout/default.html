@@ -16,7 +16,7 @@
     <!-- layout css -->
     <link rel="stylesheet" href="/css/layout.css">
     <!-- header css -->
-    <link rel="stylesheet" href="/css/components/header.css">
+    <link rel="stylesheet" href="/css/header.css">
     <!--  jQuery  -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <!-- getCookie -->
@@ -29,9 +29,9 @@
     <th:block layout:fragment="css"></th:block>
 </head>
 <body>
-    <header th:replace="components/header :: header"></header>
+    <header th:replace="fragments/header :: header"></header>
     <main class="content-wrap" layout:fragment="content"></main>
-    <footer th:replace="components/footer :: footer"></footer>
+    <footer th:replace="fragments/footer :: footer"></footer>
     <th:block layout:fragment="script"></th:block>
 </body>
 <!-- bootstrap js -->

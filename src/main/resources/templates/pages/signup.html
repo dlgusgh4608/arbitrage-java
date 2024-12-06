@@ -11,7 +11,7 @@
 <main layout:fragment="content">
     <section class="container-xxl pt-5 d-flex flex-column justify-content-center align-items-center">
         <h2 class="text-center mb-5">회원가입</h2>
-        <th:block th:replace="/components/authenticationBtns :: authenticationBtns"></th:block>
+        <th:block th:replace="/fragments/authenticationBtns :: authenticationBtns"></th:block>
         <article class="wrapper" id="step2" style="display: none;">
             <form action="/#" method="post" id="signupForm">
                 <label for="email" class="fs-6 form-label">이메일</label>
@@ -59,12 +59,12 @@
             $('#btnEmailCheck').attr("disabled", true)
         }
 
-        function emailRegister() {
-            $('#step1').css('display', 'none')
-            $('#step2').css('display', 'block')
-        }
+        // function emailRegister() {
+        //     $('#step1').css('display', 'none')
+        //     $('#step2').css('display', 'block')
+        // }
 
-        $('#stepToEmail').on('click', () => emailRegister())
+        // $('#stepToEmail').on('click', () => emailRegister())
 
         $('#btnEmailCheck').on('click', async () => {
             const email = $('#email').val()

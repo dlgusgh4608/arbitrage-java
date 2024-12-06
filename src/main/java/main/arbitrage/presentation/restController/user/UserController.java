@@ -1,4 +1,4 @@
-package main.arbitrage.presentation.api.user;
+package main.arbitrage.presentation.restController.user;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -63,14 +63,6 @@ public class UserController {
         } else {
             return ResponseEntity.badRequest().build();
         }
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserLoginDto request, HttpServletResponse response) {
-        UserTokenDto userTokenDto = userApplicationService.login(request);
-        setCookies(userTokenDto, response);
-
-        return ResponseEntity.status(302).header("Location", "/").build();
     }
 
     private void setCookies(UserTokenDto userTokenDto, HttpServletResponse response) {

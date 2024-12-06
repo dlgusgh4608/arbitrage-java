@@ -4,7 +4,7 @@
 <head>
     <title>API 키 등록</title>
     <th:block layout:fragment="css">
-        <link rel="stylesheet" th:href="@{/css/env-register.css}">
+        <link rel="stylesheet" th:href="@{/css/envRegister.css}">
     </th:block>
 </head>
 <body>
@@ -39,12 +39,12 @@
                     <div class="mb-3">
                         <label for="upbitAccessKey" class="form-label fs-6">Access Key</label>
                         <input type="text" class="form-control" id="upbitAccessKey" th:field="*{upbitAccessKey}">
-                        <p class="valid-warning" th:errors=*{upbitAccessKey}></p>
+                        <div class="valid-warning" th:errors=*{upbitAccessKey}></div>
                     </div>
                     <div class="mb-3">
                         <label for="upbitSecretKey" class="form-label fs-6">Secret Key</label>
                         <input type="password" class="form-control" id="upbitSecretKey" th:field="*{upbitSecretKey}">
-                        <p class="valid-warning" th:errors=*{upbitSecretKey}></p>
+                        <div class="valid-warning" th:errors=*{upbitSecretKey}></div>
                     </div>
                 </div>
 
@@ -78,13 +78,13 @@
                     <div class="mb-3">
                         <label for="binanceAccessKey" class="form-label fs-6">Access Key</label>
                         <input type="text" class="form-control" id="binanceAccessKey" th:field="*{binanceAccessKey}">
-                        <p class="valid-warning" th:errors=*{binanceAccessKey}></p>
+                        <div class="valid-warning" th:errors=*{binanceAccessKey}></div>
                     </div>
                     <div class="mb-3">
                         <label for="binanceSecretKey" class="form-label fs-6">Secret Key</label>
                         <input type="password" class="form-control" id="binanceSecretKey"
                                th:field="*{binanceSecretKey}">
-                        <p class="valid-warning" th:errors=*{binanceSecretKey}></p>
+                        <div class="valid-warning" th:errors=*{binanceSecretKey}></div>
                     </div>
                 </div>
 

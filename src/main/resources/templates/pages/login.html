@@ -11,40 +11,31 @@
 <main layout:fragment="content">
     <section class="container-xxl pt-5 d-flex flex-column justify-content-center align-items-center">
         <h2 class="text-center mb-5">로그인</h2>
-        <th:block th:replace="/components/authenticationBtns :: authenticationBtns"></th:block>
+        <th:block th:replace="/fragments/authenticationBtns :: authenticationBtns"></th:block>
         <article class="wrapper" id="step2" style="display: none;">
-            <form action="/#" method="post" id="loginForm">
-                <label for="email" class="fs-6 form-label">이메일</label>
+            <form method="post" th:action th:object="${formDto}">
                 <div class="mb-3">
-                    <input type="text" class="form-control" id="email" name="email" placeholder="이메일을 입력해주세요.">
+                    <label for="email" class="fs-6 form-label">이메일</label>
+                    <input type="text" class="form-control" id="email" th:field="*{email}" placeholder="이메일을 입력해주세요.">
+                    <p class="valid-warning" th:errors=*{email}></p>
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label fs-6">비밀번호</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
+                    <input type="password" class="form-control" id="password" th:field="*{password}">
+                    <p class="valid-warning" th:errors=*{password}></p>
                 </div>
                 <button type="submit" class="btn btn-primary">로그인</button>
+                <script th:inline="javascript">
+                    const hasErrors = /*[[${#fields.hasErrors('*')}]]*/ false;
+
+                    if(hasErrors) emailRegister()
+
+                    const isLoginError = /*[[${#fields.hasErrors('loginError')}]]*/ false;
+                    if(isLoginError) alert("아이디 혹은 비밀번호가 잘못되었습니다.")
+                </script>
             </form>
         </article>
     </section>
-    <script th:inline="javascript">
-        $('#stepToEmail').on('click', () => {
-            $('#step1').css('display', 'none')
-            $('#step2').css('display', 'block')
-        })
-
-        $('#loginForm').on('submit', async (e) => {
-            e.preventDefault()
-            const email = $('#email').val()
-            const password = $('#password').val()
-
-            if(!email) return alert('이메일을 입력해주세요.')
-            if(!password) return alert('비밀번호를 입력해주세요.')
-
-            const { success, data } = await fetcher('post', '/api/users/login', { email, password })
-        })
-    </script>
 </main>
-
-
 </body>
 </html>
