@@ -1,11 +1,16 @@
 package main.arbitrage.application.user.service;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import main.arbitrage.domain.oauthUser.service.OAuthUserService;
+import main.arbitrage.domain.userEnv.dto.UserEnvDto;
 import main.arbitrage.infrastructure.oauthValidator.google.GoogleApiClient;
 import main.arbitrage.infrastructure.oauthValidator.kakao.KakaoApiClient;
+import main.arbitrage.infrastructure.upbit.priv.rest.UpbitPrivateRestService;
+import okhttp3.OkHttpClient;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +37,9 @@ public class UserApplicationService {
     private final RefreshTokenService refreshTokenService;
     private final JwtUtil jwtUtil;
 
+    private final OkHttpClient okHttpClient;
+    private final ObjectMapper objectMapper;
+
     private final GoogleApiClient googleApiClient;
     private final KakaoApiClient kakaoApiClient;
 
@@ -46,14 +54,6 @@ public class UserApplicationService {
         String code = emailMessageService.sendMail(emailMessageDto, "email");
 
         return AESCrypto.encrypt(code);
-    }
-
-    public boolean checkCode(String originCode, String encryptedCode) {
-        try {
-            return AESCrypto.decrypt(encryptedCode).equals(originCode);
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     @Transactional
@@ -85,6 +85,46 @@ public class UserApplicationService {
         }
     }
 
+    @Transactional
+    public UserTokenDto login(UserLoginDto req) {
+        Optional<User> userOptional = userService.findByEmail(req.getEmail());
+
+        if (userOptional.isEmpty()) {
+            throw new IllegalArgumentException("Invalid info");
+        }
+
+        User user = userOptional.get();
+
+        if (!userService.matchPassword(req.getPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Invalid info");
+        }
+
+        return userTokenResponseBuilder(user);
+    }
+
+    @Transactional
+    public void registerUserEnv(UserEnvDto req) throws IOException {
+        // upbit accessKey와 secretKey를 지갑 잔액을 조회함으로써 올바른 키가 맞는지 증명
+        UpbitPrivateRestService upbitPrivateRestService =
+                new UpbitPrivateRestService(req.getUpbitAccessKey(), req.getUpbitSecretKey(), okHttpClient, objectMapper);
+
+        upbitPrivateRestService.getAccount();
+
+        // binance accessKey와 secretKey를 지갑 잔액을 조회함으로써 올바른 키가 맞는지 증명
+    }
+
+    private UserTokenDto userTokenResponseBuilder(User user) {
+        String accessToken = jwtUtil.createToken(user.getUserId(), user.getEmail());
+        String refreshToken = refreshTokenService.createRefreshToken(user.getEmail(), UUID.randomUUID().toString());
+        Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(user.getEmail());
+
+        return UserTokenDto.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .refreshTokenTTL(refreshTokenTTL)
+                .build();
+    }
+
     private boolean isCorrectOAuthToken(UserSignupDto req) {
         String provider = req.getProvider(); // provider is only kakao, google
 
@@ -106,32 +146,11 @@ public class UserApplicationService {
         return true;
     }
 
-    @Transactional
-    public UserTokenDto login(UserLoginDto req) {
-        Optional<User> userOptional = userService.findByEmail(req.getEmail());
-
-        if (userOptional.isEmpty()) {
-            throw new IllegalArgumentException("Invalid info");
+    public boolean checkCode(String originCode, String encryptedCode) {
+        try {
+            return AESCrypto.decrypt(encryptedCode).equals(originCode);
+        } catch (Exception e) {
+            return false;
         }
-
-        User user = userOptional.get();
-
-        if (!userService.matchPassword(req.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Invalid info");
-        }
-
-        return userTokenResponseBuilder(user);
-    }
-
-    private UserTokenDto userTokenResponseBuilder(User user) {
-        String accessToken = jwtUtil.createToken(user.getUserId(), user.getEmail());
-        String refreshToken = refreshTokenService.createRefreshToken(user.getEmail(), UUID.randomUUID().toString());
-        Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(user.getEmail());
-
-        return UserTokenDto.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .refreshTokenTTL(refreshTokenTTL)
-                .build();
     }
 }

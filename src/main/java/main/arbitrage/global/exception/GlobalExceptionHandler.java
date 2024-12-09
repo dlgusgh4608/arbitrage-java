@@ -2,6 +2,7 @@ package main.arbitrage.global.exception;
 
 import java.sql.SQLException;
 
+import main.arbitrage.infrastructure.upbit.priv.rest.exception.UpbitPrivateRestException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -137,6 +138,22 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAllException(Exception e) {
         log.error("Unexpected error: {}", e.getMessage());
         return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
+    }
+
+    @ExceptionHandler(UpbitPrivateRestException.class)
+    public ResponseEntity<ErrorResponse> handleUpbitPrivateRestException(UpbitPrivateRestException e) {
+        log.error("Upbit Private RestAPI error: ({}) {}", e.getErrorCode(), e.getMessage());
+
+        String message = switch (e.getErrorCode()) {
+            case "invalid_query_payload" -> "잘못된 API 키 형식입니다.";
+            case "jwt_verification" -> "잘못된 API 키입니다.";
+            case "expired_access_key" -> "만료된 API 키입니다.";
+            case "no_authorization_i_p" -> "허용되지 않은 IP 주소입니다.";
+            case "out_of_scope" -> "권한이 없는 API 키입니다.";
+            default -> "API 키 검증 중 오류가 발생했습니다.";
+        };
+
+        return createErrorResponse(HttpStatus.BAD_REQUEST, message);
     }
 
     private ResponseEntity<ErrorResponse> createErrorResponse(HttpStatus status, String message) {

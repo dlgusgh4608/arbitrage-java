@@ -89,6 +89,15 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100">등록하기</button>
+
+                <script th:inline="javascript">
+                    const hasServerError = /*[[${#fields.hasGlobalErrors()}]]*/ false;
+
+                    if (hasServerError) {
+                        const errorMessages = /*[[${#fields.errors()}]]*/ [];
+                        alert(errorMessages[0].concat(' 다시 시도해주세요.'))
+                    }
+                </script>
             </form>
         </article>
     </section>

@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UserEnvFormDto {
+public class UserEnvDto {
 
     @NotBlank(message = "업비트 액세스키는 필수 값 입니다.")
     private String upbitAccessKey;
