@@ -1,6 +1,5 @@
 package main.arbitrage.global.util.calculator;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,16 +12,6 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class CalculatorTest {
-
-    private FinancialCalculator financeCalc;
-    private PercentageCalculator precentCalc;
-
-    @BeforeEach
-    void setUp() {
-        financeCalc = new FinancialCalculator();
-        precentCalc = new PercentageCalculator();
-    }
-
     @Nested
     @DisplayName("프리미엄 계산 테스트")
     class PremiumTest {
@@ -42,7 +31,7 @@ public class CalculatorTest {
             BigDecimal expectedPremium = new BigDecimal(expected);
 
             // when
-            BigDecimal result = financeCalc.calculatePremium(domesticPrice, overseasPrice);
+            BigDecimal result = FinancialCalculator.calculatePremium(domesticPrice, overseasPrice);
 
             // then
             assertThat(result).isEqualByComparingTo(expectedPremium);
@@ -69,7 +58,7 @@ public class CalculatorTest {
             BigDecimal expectedValue = new BigDecimal(expected);
 
             // when
-            BigDecimal result = financeCalc.calculateKneeValue(maxValue, minValue);
+            BigDecimal result = FinancialCalculator.calculateKneeValue(maxValue, minValue);
 
             // then
             assertThat(result).isEqualByComparingTo(expectedValue);
@@ -96,7 +85,7 @@ public class CalculatorTest {
             BigDecimal expectedValue = new BigDecimal(expected);
 
             // when
-            BigDecimal result = financeCalc.calculateShoulderValue(maxValue, minValue);
+            BigDecimal result = FinancialCalculator.calculateShoulderValue(maxValue, minValue);
 
             // then
             assertThat(result).isEqualByComparingTo(expectedValue);
@@ -121,7 +110,7 @@ public class CalculatorTest {
             BigDecimal partValue = new BigDecimal(part);
             BigDecimal expectedValue = new BigDecimal(expected);
 
-            BigDecimal result = precentCalc.calculatePercentage(totalValue, partValue);
+            BigDecimal result = PercentageCalculator.calculatePercentage(totalValue, partValue);
 
             assertThat(result).isEqualByComparingTo(expectedValue);
         }
@@ -135,19 +124,19 @@ public class CalculatorTest {
 
         // when & then
         assertThatThrownBy(() ->
-                financeCalc.calculatePremium(null, value)
+                FinancialCalculator.calculatePremium(null, value)
         ).isInstanceOf(NullPointerException.class);
 
         assertThatThrownBy(() ->
-                financeCalc.calculateKneeValue(null, value)
+                FinancialCalculator.calculateKneeValue(null, value)
         ).isInstanceOf(NullPointerException.class);
 
         assertThatThrownBy(() ->
-                financeCalc.calculateShoulderValue(null, value)
+                FinancialCalculator.calculateShoulderValue(null, value)
         ).isInstanceOf(NullPointerException.class);
 
         assertThatThrownBy(() ->
-                precentCalc.calculatePercentage(null, value)
+                PercentageCalculator.calculatePercentage(null, value)
         ).isInstanceOf(NullPointerException.class);
     }
 }

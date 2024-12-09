@@ -29,8 +29,6 @@ public class UserApplicationService {
     private final EmailMessageService emailMessageService;
     private final UserService userService;
     private final OAuthUserService oAuthUserService;
-
-    private final AESCrypto aesCrypto;
     private final RefreshTokenService refreshTokenService;
     private final JwtUtil jwtUtil;
 
@@ -47,12 +45,12 @@ public class UserApplicationService {
 
         String code = emailMessageService.sendMail(emailMessageDto, "email");
 
-        return aesCrypto.encrypt(code);
+        return AESCrypto.encrypt(code);
     }
 
     public boolean checkCode(String originCode, String encryptedCode) {
         try {
-            return aesCrypto.decrypt(encryptedCode).equals(originCode);
+            return AESCrypto.decrypt(encryptedCode).equals(originCode);
         } catch (Exception e) {
             return false;
         }

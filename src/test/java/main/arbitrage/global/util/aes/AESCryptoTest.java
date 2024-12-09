@@ -9,12 +9,9 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class AESCryptoTest {
 
-    private AESCrypto aesCrypto;
-
     @BeforeEach
     void setUp() {
-        aesCrypto = new AESCrypto();
-        ReflectionTestUtils.setField(aesCrypto, "SECRET_KEY", "testSecretKey");
+        ReflectionTestUtils.setField(AESCrypto.class, "SECRET_KEY", "testSecretKey");
     }
 
     @Test
@@ -24,8 +21,8 @@ public class AESCryptoTest {
         String text = "helloWorld";
 
         // when
-        String encryptStr = aesCrypto.encrypt(text);
-        String decryptStr = aesCrypto.decrypt(encryptStr);
+        String encryptStr = AESCrypto.encrypt(text);
+        String decryptStr = AESCrypto.decrypt(encryptStr);
 
 
         // then

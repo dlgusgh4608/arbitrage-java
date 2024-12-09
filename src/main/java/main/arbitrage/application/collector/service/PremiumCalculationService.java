@@ -12,20 +12,17 @@ import java.math.BigDecimal;
 @Service
 @RequiredArgsConstructor
 public class PremiumCalculationService {
-    private final FinancialCalculator financialCalculator;
-    private final CurrencyConverter currencyConverter;
-
     public PremiumDto calculatePremium(
             TradeDto domestic,
             TradeDto overseas,
             double usdToKrw,
             String symbol
     ) {
-        BigDecimal domesticPriceUsd = currencyConverter.krwToUsd(
+        BigDecimal domesticPriceUsd = CurrencyConverter.krwToUsd(
                 domestic.getPrice(),
                 usdToKrw
         );
-        BigDecimal premium = financialCalculator.calculatePremium(
+        BigDecimal premium = FinancialCalculator.calculatePremium(
                 domesticPriceUsd,
                 overseas.getPrice()
         );
