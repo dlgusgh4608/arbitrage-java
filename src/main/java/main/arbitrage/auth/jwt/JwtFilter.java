@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
-import main.arbitrage.auth.security.CustomUserDetails;
+import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.global.util.cookie.CookieUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,7 +26,6 @@ import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtFilter extends OncePerRequestFilter {
-
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
 
@@ -137,7 +136,10 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private void saveUserAuthContext(JwtDto tokenDto) {
-        UserDetails userDetails = new CustomUserDetails(tokenDto);
+        UserDetails userDetails = User.builder()
+                .userId(tokenDto.getUserId())
+                .email(tokenDto.getEmail())
+                .build();
 
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(

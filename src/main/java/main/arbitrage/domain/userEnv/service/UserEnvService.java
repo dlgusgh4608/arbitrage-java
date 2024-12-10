@@ -1,6 +1,7 @@
 package main.arbitrage.domain.userEnv.service;
 
 import lombok.RequiredArgsConstructor;
+import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.repository.UserEnvRepository;
 import org.springframework.stereotype.Service;
 
@@ -11,5 +12,9 @@ public class UserEnvService {
 
     public boolean existsByUserId(Long userId) {
         return userEnvRepository.existsById(userId);
+    }
+
+    public void create(UserEnv userEnv) {
+        userEnvRepository.save(userEnv);
     }
 }

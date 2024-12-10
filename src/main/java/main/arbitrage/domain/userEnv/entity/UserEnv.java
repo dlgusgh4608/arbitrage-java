@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import main.arbitrage.domain.user.entity.User;
 
 @Entity
 @Table(name = "user_env")
@@ -12,9 +13,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEnv {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_env_id", nullable = false)
-    private Long userEnvId;
+    @Column(name = "user_id")
+    private Long userId;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(name = "upbit_access_key")
     private String upbitAccessKey;
@@ -30,11 +35,13 @@ public class UserEnv {
 
     @Builder
     public UserEnv(
+            User user,
             String upbitAccessKey,
             String upbitSecretKey,
             String binanceAccessKey,
             String binanceSecretKey
     ) {
+        this.user = user;
         this.upbitAccessKey = upbitAccessKey;
         this.upbitSecretKey = upbitSecretKey;
         this.binanceAccessKey = binanceAccessKey;

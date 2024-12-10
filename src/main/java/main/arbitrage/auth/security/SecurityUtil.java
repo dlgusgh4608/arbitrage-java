@@ -1,5 +1,7 @@
 package main.arbitrage.auth.security;
 
+import main.arbitrage.domain.user.entity.User;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -8,24 +10,28 @@ import org.springframework.stereotype.Component;
 public class SecurityUtil {
 
     public static Long getUserId() {
-        CustomUserDetails userDetails = isAuthorized();
-        return userDetails.getUserId();
+        User user = isAuthorized();
+        return user.getUserId();
     }
 
     public static String getEmail() {
-        CustomUserDetails userDetails = isAuthorized();
-        return userDetails.getEmail();
+        User user = isAuthorized();
+        return user.getEmail();
     }
 
-    private static CustomUserDetails isAuthorized() {
+    public static User getUser() {
+        return isAuthorized();
+    }
+
+    private static User isAuthorized() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        User user = (User) authentication.getPrincipal();
 
         if (!authentication.isAuthenticated()) {
-            throw new RuntimeException("Unauthorized");
+            throw new BadCredentialsException("Unauthorized");
         }
 
-        return userDetails;
+        return user;
     }
 }

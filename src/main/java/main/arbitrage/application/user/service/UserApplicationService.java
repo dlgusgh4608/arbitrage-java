@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import main.arbitrage.auth.security.SecurityUtil;
 import main.arbitrage.domain.oauthUser.service.OAuthUserService;
 import main.arbitrage.domain.userEnv.dto.UserEnvDto;
@@ -34,6 +35,8 @@ import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
 @Service
 @RequiredArgsConstructor
 public class UserApplicationService {
+    private final HttpServletResponse response;
+
     private final EmailMessageService emailMessageService;
     private final UserService userService;
     private final OAuthUserService oAuthUserService;
@@ -112,8 +115,12 @@ public class UserApplicationService {
     public void registerUserEnv(UserEnvDto req) throws Exception {
         Long userId = SecurityUtil.getUserId();
 
+        Optional<User> optionalUser = userService.findByEmail(SecurityUtil.getEmail());
+
+        if (optionalUser.isEmpty()) throw new IllegalArgumentException("user is not found");
+
         // 업데이트가 아니기에 userEnv에 이미 등록된 user이면 throw
-        if (userEnvService.existsByUserId(userId)) throw new IllegalArgumentException("UserEnv already exists");
+        if (userEnvService.existsByUserId(userId)) throw new IllegalArgumentException("Key가 이미 등록되어 있습니다.");
 
         // upbit accessKey와 secretKey를 지갑 잔액을 조회함으로써 올바른 키가 맞는지 증명
         UpbitPrivateRestService upbitPrivateRestService =
@@ -126,6 +133,8 @@ public class UserApplicationService {
                 new BinancePrivateRestService(req.getBinanceAccessKey(), req.getBinanceSecretKey(), okHttpClient, objectMapper);
 
         binancePrivateRestService.getAccount();
+
+        userEnvService.create(UserEnvDto.toEntity(req, optionalUser.get(), aesCrypto));
     }
 
     private UserTokenDto userTokenResponseBuilder(User user) {

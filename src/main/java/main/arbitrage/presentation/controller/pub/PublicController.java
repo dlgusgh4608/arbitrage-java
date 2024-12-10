@@ -6,11 +6,13 @@ import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import main.arbitrage.application.user.service.UserApplicationService;
+import main.arbitrage.auth.security.SecurityUtil;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.domain.user.dto.UserLoginDto;
 import main.arbitrage.domain.user.dto.UserSignupDto;
 import main.arbitrage.domain.user.dto.UserTokenDto;
+import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.global.util.cookie.CookieUtil;
 import main.arbitrage.presentation.controller.pub.constant.PublicControllerUrlConstants;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.collector.service.CollectorService;
-import main.arbitrage.auth.security.CustomUserDetails;
 import main.arbitrage.domain.oauthUser.dto.OAuthUserDto;
 import main.arbitrage.domain.oauthUser.store.OAuthUserStore;
 import main.arbitrage.domain.price.dto.PriceDto;
@@ -42,7 +43,7 @@ public class PublicController {
     @GetMapping(PublicControllerUrlConstants.LOGIN)
     public String getLogin(
             Model model,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal User userDetails
     ) {
         if (userDetails != null) return "redirect:/";
 
@@ -59,10 +60,10 @@ public class PublicController {
     public String postLogin(
             @Valid @ModelAttribute("formDto") UserLoginDto userLoginDto,
             BindingResult bindingResult,
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal User user,
             HttpServletResponse response
     ) {
-        if (userDetails != null) return "redirect:/";
+        if (user != null) return "redirect:/";
 
         if (bindingResult.hasErrors()) return "pages/login";
 
@@ -83,10 +84,10 @@ public class PublicController {
     @GetMapping(PublicControllerUrlConstants.SIGNUP)
     public String getSignup(
             Model model,
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal User user,
             @RequestParam(name = "uid", required = false) String uid
     ) {
-        if (userDetails != null) return "redirect:/";
+        if (user != null) return "redirect:/";
 
         if (uid != null) {
             OAuthUserDto oauthUserDto = authUserStore.getAndRemove(uid);
@@ -107,10 +108,10 @@ public class PublicController {
     public String postSignup(
             @Valid @ModelAttribute("formDto") UserSignupDto userSignupDto,
             BindingResult bindingResult,
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal User user,
             HttpServletResponse response
     ) {
-        if (userDetails != null) return "redirect:/";
+        if (user != null) return "redirect:/";
 
         if (bindingResult.hasErrors()) return "pages/signup";
 

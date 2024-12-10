@@ -5,13 +5,17 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import main.arbitrage.domain.userEnv.entity.UserEnv;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
+import java.util.List;
 
 @Entity
 @Table(name = "`user`")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id", nullable = false)
@@ -23,9 +27,20 @@ public class User {
     @Column(name = "password", nullable = false, length = 60)
     private String password;
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public String getUsername() {
+        return "";
+    }
+
     @Builder
-    public User(String email, String password) {
-        this.email = email;
+    public User(Long userId, String password, String email) {
+        this.userId = userId;
         this.password = password;
+        this.email = email;
     }
 }
