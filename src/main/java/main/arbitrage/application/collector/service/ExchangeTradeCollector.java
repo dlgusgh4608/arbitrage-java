@@ -3,8 +3,8 @@ package main.arbitrage.application.collector.service;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.collector.dto.OrderbookPair;
 import main.arbitrage.application.collector.dto.TradePair;
-import main.arbitrage.infrastructure.binance.pub.websocket.BinanceWebSocket;
-import main.arbitrage.infrastructure.upbit.pub.websocket.UpbitWebSocket;
+import main.arbitrage.infrastructure.exchange.binance.pub.websocket.BinanceWebSocket;
+import main.arbitrage.infrastructure.exchange.upbit.pub.websocket.UpbitWebSocket;
 import org.springframework.stereotype.Service;
 
 @Service

@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.upbit.priv.rest.exception;
+package main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception;
 
 import lombok.Getter;
 

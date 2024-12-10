@@ -3,7 +3,7 @@ package main.arbitrage.presentation.controller.priv;
 import jakarta.validation.Valid;
 import main.arbitrage.application.user.service.UserApplicationService;
 import main.arbitrage.domain.userEnv.dto.UserEnvDto;
-import main.arbitrage.infrastructure.upbit.priv.rest.exception.UpbitPrivateRestException;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
 import main.arbitrage.presentation.controller.priv.constant.PrivateControllerUrlConstants;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

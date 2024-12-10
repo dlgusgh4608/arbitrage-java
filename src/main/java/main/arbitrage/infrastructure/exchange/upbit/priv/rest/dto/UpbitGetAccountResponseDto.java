@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.upbit.priv.rest.dto;
+package main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto;
 
 import lombok.*;
 

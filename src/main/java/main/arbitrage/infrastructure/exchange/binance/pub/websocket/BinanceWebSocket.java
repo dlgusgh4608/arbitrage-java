@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.binance.pub.websocket;
+package main.arbitrage.infrastructure.exchange.binance.pub.websocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

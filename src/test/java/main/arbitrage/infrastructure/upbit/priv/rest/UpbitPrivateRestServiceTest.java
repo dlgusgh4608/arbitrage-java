@@ -5,7 +5,8 @@ import static org.mockito.Mockito.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import main.arbitrage.infrastructure.upbit.priv.rest.exception.UpbitPrivateRestException;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
 import okhttp3.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

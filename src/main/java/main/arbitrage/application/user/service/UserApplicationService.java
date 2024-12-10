@@ -7,9 +7,10 @@ import java.util.UUID;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import main.arbitrage.domain.oauthUser.service.OAuthUserService;
 import main.arbitrage.domain.userEnv.dto.UserEnvDto;
+import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
 import main.arbitrage.infrastructure.oauthValidator.google.GoogleApiClient;
 import main.arbitrage.infrastructure.oauthValidator.kakao.KakaoApiClient;
-import main.arbitrage.infrastructure.upbit.priv.rest.UpbitPrivateRestService;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
 import okhttp3.OkHttpClient;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -111,6 +112,10 @@ public class UserApplicationService {
         upbitPrivateRestService.getAccount();
 
         // binance accessKey와 secretKey를 지갑 잔액을 조회함으로써 올바른 키가 맞는지 증명
+        BinancePrivateRestService binancePrivateRestService =
+                new BinancePrivateRestService(req.getBinanceAccessKey(), req.getBinanceSecretKey(), okHttpClient, objectMapper);
+
+        binancePrivateRestService.getAccount();
     }
 
     private UserTokenDto userTokenResponseBuilder(User user) {
