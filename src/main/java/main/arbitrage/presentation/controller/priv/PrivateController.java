@@ -3,7 +3,6 @@ package main.arbitrage.presentation.controller.priv;
 import jakarta.validation.Valid;
 import main.arbitrage.application.user.service.UserApplicationService;
 import main.arbitrage.domain.userEnv.dto.UserEnvDto;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
 import main.arbitrage.presentation.controller.priv.constant.PrivateControllerUrlConstants;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -41,7 +40,7 @@ public class PrivateController {
             userApplicationService.registerUserEnv(userEnvDto);
 
             return "redirect:/";
-        } catch (UpbitPrivateRestException | IOException e) {
+        } catch (Exception e) {
             bindingResult.reject("serverError", e.getMessage());
             return "pages/envRegister";
         }

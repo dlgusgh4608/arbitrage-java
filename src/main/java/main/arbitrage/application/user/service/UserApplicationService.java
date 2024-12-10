@@ -5,8 +5,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import main.arbitrage.auth.security.SecurityUtil;
 import main.arbitrage.domain.oauthUser.service.OAuthUserService;
 import main.arbitrage.domain.userEnv.dto.UserEnvDto;
+import main.arbitrage.domain.userEnv.service.UserEnvService;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
 import main.arbitrage.infrastructure.oauthValidator.google.GoogleApiClient;
 import main.arbitrage.infrastructure.oauthValidator.kakao.KakaoApiClient;
@@ -36,6 +38,9 @@ public class UserApplicationService {
     private final UserService userService;
     private final OAuthUserService oAuthUserService;
     private final RefreshTokenService refreshTokenService;
+    private final UserEnvService userEnvService;
+    private final AESCrypto aesCrypto;
+
     private final JwtUtil jwtUtil;
 
     private final OkHttpClient okHttpClient;
@@ -54,7 +59,7 @@ public class UserApplicationService {
 
         String code = emailMessageService.sendMail(emailMessageDto, "email");
 
-        return AESCrypto.encrypt(code.getBytes());
+        return aesCrypto.encrypt(code.getBytes());
     }
 
     @Transactional
@@ -104,7 +109,12 @@ public class UserApplicationService {
     }
 
     @Transactional
-    public void registerUserEnv(UserEnvDto req) throws IOException {
+    public void registerUserEnv(UserEnvDto req) throws Exception {
+        Long userId = SecurityUtil.getUserId();
+
+        // 업데이트가 아니기에 userEnv에 이미 등록된 user이면 throw
+        if (userEnvService.existsByUserId(userId)) throw new IllegalArgumentException("UserEnv already exists");
+
         // upbit accessKey와 secretKey를 지갑 잔액을 조회함으로써 올바른 키가 맞는지 증명
         UpbitPrivateRestService upbitPrivateRestService =
                 new UpbitPrivateRestService(req.getUpbitAccessKey(), req.getUpbitSecretKey(), okHttpClient, objectMapper);
@@ -153,7 +163,7 @@ public class UserApplicationService {
 
     public boolean checkCode(String originCode, String encryptedCode) {
         try {
-            return AESCrypto.decrypt(encryptedCode).equals(originCode);
+            return aesCrypto.decrypt(encryptedCode).equals(originCode);
         } catch (Exception e) {
             return false;
         }

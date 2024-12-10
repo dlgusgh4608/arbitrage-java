@@ -17,11 +17,13 @@
                 <label for="email" class="fs-6 form-label">이메일</label>
                 <div class="mb-3 d-flex">
                     <div class="w-75 me-1">
-                        <input type="text" class="form-control" id="email" th:field="*{email}" placeholder="이메일을 입력해주세요.">
+                        <input type="text" class="form-control" id="email" th:field="*{email}"
+                               placeholder="이메일을 입력해주세요.">
                     </div>
                     <div class="w-25">
                         <button type="button" class="w-100 btn btn-outline-primary" id="btnEmailCheck">
-                            <span id="btnEmailCheckSpinner" class="spinner-border spinner-border-sm" aria-hidden="true" style="display: none;"></span>
+                            <span id="btnEmailCheckSpinner" class="spinner-border spinner-border-sm" aria-hidden="true"
+                                  style="display: none;"></span>
                             이메일 확인
                         </button>
                     </div>
@@ -37,7 +39,7 @@
                     </div>
                 </div>
                 <div class="valid-warning" th:errors=*{code}></div>
-                
+
                 <div class="mb-3">
                     <label for="password" class="form-label fs-6">비밀번호</label>
                     <input type="password" class="form-control" id="password" th:field="*{password}">
@@ -54,7 +56,7 @@
                 <input type="hidden" th:field="*{accessToken}">
                 <input type="hidden" th:field="*{provider}">
                 <input type="hidden" th:field="*{providerId}">
-                
+
                 <button type="submit" class="btn btn-primary">가입하기</button>
                 <script th:inline="javascript">
                     const hasErrors = /*[[${#fields.hasErrors('*')}]]*/ false;
@@ -100,6 +102,7 @@
                     $('#btnEmailCheck').attr("disabled", false)
                     if(data.status === 400) alert('잘못된 이메일 입니다.')
                     if(data.status === 409) alert('이미 사용중인 이메일 입니다.')
+                    if(data.status === 500) alert('알 수 없는 에러입니다. 다시 시도해주세요.')
                 }
 
                 $('#btnEmailCheckSpinner').css('display', 'none')
@@ -130,6 +133,7 @@
                 $('#email').attr("readonly", true)
             }else {
                 if(data.status === 400) return alert('인증번호가 올바르지 않습니다.')
+                if(data.status === 500) alert('알 수 없는 에러입니다. 다시 시도해주세요.')
             }
         })
 

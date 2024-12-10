@@ -1,6 +1,8 @@
 package main.arbitrage.global.util.aes;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -10,13 +12,14 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
 
+@Component
 public final class AESCrypto {
     private final static String ALGORITHM = "AES/CBC/PKCS5PADDING";
 
     @Value("${mail.secret}")
-    private static String SECRET_KEY;
+    private String SECRET_KEY;
 
-    public static String encrypt(byte[] textBytes) throws Exception {
+    public String encrypt(byte[] textBytes) throws Exception {
         // 키 생성
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] keyBytes = digest.digest(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
@@ -41,7 +44,7 @@ public final class AESCrypto {
         return Base64.getEncoder().encodeToString(combined);
     }
 
-    public static String decrypt(String encryptedText) throws Exception {
+    public String decrypt(String encryptedText) throws Exception {
         byte[] combined = Base64.getDecoder().decode(encryptedText);
 
         // IV 추출
