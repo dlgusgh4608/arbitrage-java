@@ -50,7 +50,7 @@ class BinancePrivateRestServiceTest {
 
             assertThatThrownBy(() -> binancePrivateRestService.getAccount())
                     .isInstanceOf(BinancePrivateRestException.class)
-                    .hasMessage("유효하지 않은 API 키 입니다.")
+                    .hasMessage("(바이낸스) 유효하지 않은 API 키 입니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "BAD_API_KEY_FMT");
         }
 
@@ -61,7 +61,7 @@ class BinancePrivateRestServiceTest {
 
             assertThatThrownBy(() -> binancePrivateRestService.getAccount())
                     .isInstanceOf(BinancePrivateRestException.class)
-                    .hasMessage("이 요청에 대한 서명이 유효하지 않습니다.")
+                    .hasMessage("(바이낸스) 이 요청에 대한 서명이 유효하지 않습니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "INVALID_SIGNATURE");
         }
 
@@ -72,7 +72,7 @@ class BinancePrivateRestServiceTest {
 
             assertThatThrownBy(() -> binancePrivateRestService.getAccount())
                     .isInstanceOf(BinancePrivateRestException.class)
-                    .hasMessage("타임스탬프가 recvWindow를 벗어났습니다.")
+                    .hasMessage("(바이낸스) 타임스탬프가 recvWindow를 벗어났습니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "INVALID_TIMESTAMP");
         }
 
@@ -83,7 +83,7 @@ class BinancePrivateRestServiceTest {
 
             assertThatThrownBy(() -> binancePrivateRestService.getAccount())
                     .isInstanceOf(BinancePrivateRestException.class)
-                    .hasMessage("API 키, IP 또는 권한이 유효하지 않습니다.")
+                    .hasMessage("(바이낸스) API 키, IP 또는 권한이 유효하지 않습니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "INVALID_API_KEY_IP_PERMISSION");
         }
 

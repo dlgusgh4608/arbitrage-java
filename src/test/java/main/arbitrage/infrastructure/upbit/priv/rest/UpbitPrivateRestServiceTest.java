@@ -54,7 +54,7 @@ class UpbitPrivateRestServiceTest {
             // when & then
             assertThatThrownBy(() -> upbitPrivateRestService.getAccount())
                     .isInstanceOf(UpbitPrivateRestException.class)
-                    .hasMessage("JWT 헤더의 페이로드가 올바르지 않습니다.")
+                    .hasMessage("(업비트) JWT 헤더의 페이로드가 올바르지 않습니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "invalid_query_payload");
         }
 
@@ -67,7 +67,7 @@ class UpbitPrivateRestServiceTest {
             // when & then
             assertThatThrownBy(shortKeyService::getAccount)
                     .isInstanceOf(UpbitPrivateRestException.class)
-                    .hasMessage("JWT 헤더 검증에 실패했습니다.")
+                    .hasMessage("(업비트) JWT 헤더 검증에 실패했습니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "jwt_verification");
         }
 
@@ -81,7 +81,7 @@ class UpbitPrivateRestServiceTest {
             // when & then
             assertThatThrownBy(() -> upbitPrivateRestService.getAccount())
                     .isInstanceOf(UpbitPrivateRestException.class)
-                    .hasMessage("JWT 헤더 검증에 실패했습니다.")
+                    .hasMessage("(업비트) JWT 헤더 검증에 실패했습니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "jwt_verification");
         }
 
@@ -95,7 +95,7 @@ class UpbitPrivateRestServiceTest {
             // when & then
             assertThatThrownBy(() -> upbitPrivateRestService.getAccount())
                     .isInstanceOf(UpbitPrivateRestException.class)
-                    .hasMessage("API 키가 만료되었습니다.")
+                    .hasMessage("(업비트) API 키가 만료되었습니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "expired_access_key");
         }
 
@@ -109,7 +109,7 @@ class UpbitPrivateRestServiceTest {
             // when & then
             assertThatThrownBy(() -> upbitPrivateRestService.getAccount())
                     .isInstanceOf(UpbitPrivateRestException.class)
-                    .hasMessage("허용되지 않은 IP 주소입니다.")
+                    .hasMessage("(업비트) 허용되지 않은 IP 주소입니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "no_authorization_i_p");
         }
 
