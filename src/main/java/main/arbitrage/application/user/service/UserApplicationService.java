@@ -54,7 +54,7 @@ public class UserApplicationService {
 
         String code = emailMessageService.sendMail(emailMessageDto, "email");
 
-        return AESCrypto.encrypt(code);
+        return AESCrypto.encrypt(code.getBytes());
     }
 
     @Transactional

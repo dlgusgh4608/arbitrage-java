@@ -21,7 +21,7 @@ public class AESCryptoTest {
         String text = "helloWorld";
 
         // when
-        String encryptStr = AESCrypto.encrypt(text);
+        String encryptStr = AESCrypto.encrypt(text.getBytes());
         String decryptStr = AESCrypto.decrypt(encryptStr);
 
 

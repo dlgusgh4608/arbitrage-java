@@ -16,7 +16,7 @@ public final class AESCrypto {
     @Value("${mail.secret}")
     private static String SECRET_KEY;
 
-    public static String encrypt(String plainText) throws Exception {
+    public static String encrypt(byte[] textBytes) throws Exception {
         // 키 생성
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         byte[] keyBytes = digest.digest(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
@@ -31,7 +31,7 @@ public final class AESCrypto {
         // 암호화
         Cipher cipher = Cipher.getInstance(ALGORITHM);
         cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
-        byte[] encrypted = cipher.doFinal(plainText.getBytes());
+        byte[] encrypted = cipher.doFinal(textBytes);
 
         // IV와 암호화된 데이터 결합
         byte[] combined = new byte[iv.length + encrypted.length];
