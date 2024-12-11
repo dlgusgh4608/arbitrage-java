@@ -1,0 +1,89 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/default}">
+<head>
+    <title>내 프로필</title>
+    <th:block layout:fragment="css">
+        <link rel="stylesheet" th:href="@{/css/profile.css}">
+    </th:block>
+</head>
+<body>
+<main layout:fragment="content">
+    <!-- 유저 정보 섹션 -->
+    <section class="container-xxl pt-5">
+        <article class="article">
+            <div class="profile-item">
+                <div class="profile-title">
+                    <h2>닉네임</h2>
+                    <a>
+                        <span>프리미엄</span>
+                    </a>
+                </div>
+                <div class="profile-social">
+                    <!-- 회원 연결 후 소셜로그인 연동에 따라 색상 부여 -->
+                    <div class="social-item">
+                        <th:block th:replace="/fragments/svg/google :: black"></th:block>
+                    </div>
+                    <div class="social-item">
+                        <th:block th:replace="/fragments/svg/kakao :: black"></th:block>
+                    </div>
+                </div>
+            </div>
+            <div class="env-item">
+                <div class="env-label-wrap">
+                    <div class="env-label-title">거래소 연결 상태</div>
+                    <a href="/user/env-register">연결하기</a>
+                </div>
+                <div class="env-value-wrap">
+                    <div>
+                        <span class="env-value-title">업비트</span>
+                        <span>
+                            <th:block th:replace="/fragments/svg/circle :: green"></th:block>
+                        </span>
+                    </div>
+                    <div>
+                        <span class="env-value-title">바이낸스</span>
+                        <span>
+                            <th:block th:replace="/fragments/svg/circle :: red"></th:block>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </section>
+    
+    <!-- 상단 지갑 정보 섹션 -->
+    <section class="container-xxl">
+        <article class="article">
+            <div class="item">
+                <div class="wallet-label">총 자산</div>
+                <div class="wallet-value"
+                    th:text="${'-'}">
+                    -
+                </div>
+            </div>
+            <div class="item">
+                <div class="wallet-label">업비트 KRW</div>
+                <div class="wallet-value" 
+                        th:text="${upbitKrw != null ? #numbers.formatDecimal(upbitKrw, 0, 'COMMA', 0, 'POINT') + '원' : '-'}">
+                    -
+                </div>
+            </div>
+            <div class="item">
+                <div class="wallet-label">바이낸스 USDT [ USDⓈ-M Futures ]</div>
+                <div class="wallet-value" 
+                        th:text="${binanceUsdt != null ? #numbers.formatDecimal(binanceUsdt, 0, 'COMMA', 2, 'POINT') + ' USDT' : '-'}">
+                    -
+                </div>
+            </div>
+            
+        </article>
+    </section>
+
+    <!-- 거래내역 섹션 -->
+    <!-- <section class="container-xxl pt-5">
+        
+    </section> -->
+</main>
+</body>
+</html>
