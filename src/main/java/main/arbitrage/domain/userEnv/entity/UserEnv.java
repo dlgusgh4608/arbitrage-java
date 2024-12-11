@@ -1,11 +1,10 @@
 package main.arbitrage.domain.userEnv.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import main.arbitrage.domain.user.entity.User;
+import main.arbitrage.domain.userEnv.dto.UserEnvDto;
+import main.arbitrage.global.util.aes.AESCrypto;
 
 @Entity
 @Table(name = "user_env")
@@ -32,6 +31,14 @@ public class UserEnv {
 
     @Column(name = "binance_secret_key")
     private String binanceSecretKey;
+
+    public void updateEnv(UserEnvDto userEnvDto, AESCrypto aesCrypto) throws Exception {
+        this.upbitAccessKey = aesCrypto.encrypt(userEnvDto.getUpbitAccessKey().getBytes());
+        this.upbitSecretKey = aesCrypto.encrypt(userEnvDto.getUpbitSecretKey().getBytes());
+        this.binanceAccessKey = aesCrypto.encrypt(userEnvDto.getBinanceAccessKey().getBytes());
+        this.binanceSecretKey = aesCrypto.encrypt(userEnvDto.getBinanceSecretKey().getBytes());
+    }
+
 
     @Builder
     public UserEnv(

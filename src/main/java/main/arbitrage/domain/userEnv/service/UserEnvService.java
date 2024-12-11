@@ -5,16 +5,22 @@ import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.repository.UserEnvRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserEnvService {
     private final UserEnvRepository userEnvRepository;
 
-    public boolean existsByUserId(Long userId) {
-        return userEnvRepository.existsById(userId);
+    public Optional<UserEnv> findByUserId(Long userId) {
+        return userEnvRepository.findById(userId);
     }
 
     public void create(UserEnv userEnv) {
+        userEnvRepository.save(userEnv);
+    }
+
+    public void update(UserEnv userEnv) {
         userEnvRepository.save(userEnv);
     }
 }

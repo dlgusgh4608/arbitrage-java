@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import main.arbitrage.auth.security.SecurityUtil;
 import main.arbitrage.domain.oauthUser.service.OAuthUserService;
 import main.arbitrage.domain.userEnv.dto.UserEnvDto;
+import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
 import main.arbitrage.infrastructure.oauthValidator.google.GoogleApiClient;
@@ -119,9 +120,6 @@ public class UserApplicationService {
 
         if (optionalUser.isEmpty()) throw new IllegalArgumentException("user is not found");
 
-        // 업데이트가 아니기에 userEnv에 이미 등록된 user이면 throw
-        if (userEnvService.existsByUserId(userId)) throw new IllegalArgumentException("Key가 이미 등록되어 있습니다.");
-
         // upbit accessKey와 secretKey를 지갑 잔액을 조회함으로써 올바른 키가 맞는지 증명
         UpbitPrivateRestService upbitPrivateRestService =
                 new UpbitPrivateRestService(req.getUpbitAccessKey(), req.getUpbitSecretKey(), okHttpClient, objectMapper);
@@ -134,7 +132,14 @@ public class UserApplicationService {
 
         binancePrivateRestService.getAccount();
 
-        userEnvService.create(UserEnvDto.toEntity(req, optionalUser.get(), aesCrypto));
+        Optional<UserEnv> optionalUserEnv = userEnvService.findByUserId(userId);
+
+        if (optionalUserEnv.isEmpty()) {
+            userEnvService.create(UserEnvDto.toEntity(req, optionalUser.get(), aesCrypto));
+        } else {
+            UserEnv userEnv = optionalUserEnv.get();
+            userEnv.updateEnv(req, aesCrypto);
+        }
     }
 
     private UserTokenDto userTokenResponseBuilder(User user) {
