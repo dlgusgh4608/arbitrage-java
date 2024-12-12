@@ -17,6 +17,7 @@ import main.arbitrage.infrastructure.event.dto.PremiumDto;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.application.collector.dto.TradePair;
 import main.arbitrage.infrastructure.event.EventEmitter;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -35,29 +36,27 @@ public class CollectorScheduleService {
     private final ExchangeTradeCollector exchangeCollector;
     private final PremiumCalculationService premiumCalculator;
     private final TradeValidationService tradeValidator;
-    private final EventEmitter emitter;
-    private final ObjectMapper objectMapper;
     private final PriceDomainService priceDomainService;
     private final PremiumServerWebSocketHandler premiumServerWebSocketHandler;
     private final ChartServerWebSocketHandler chartServerWebSocketHandler;
     private final ConcurrentHashMap<String, Price> priceMap = new ConcurrentHashMap<>();
 
-    private TypedJsonNode<ExchangeRate> exchangeRate;
+    private ExchangeRate exchangeRate;
+
+    @EventListener
+    public void customExchangeRate(ExchangeRate rate) {
+        exchangeRate = rate;
+    }
 
     @PostConstruct
     private void initialize() {
-        emitter.on("updateUsdToKrw", data ->
-                exchangeRate = TypedJsonNode.of(data, ExchangeRate.class)
-        );
-
         exchangeCollector.initialize();
     }
 
     @Scheduled(fixedRate = 300) // .3초
     protected void calculatePremium() {
         if (exchangeRate == null) return;
-        ExchangeRate ex = exchangeRate.convertToType(objectMapper);
-        processAllSymbols(ex);
+        processAllSymbols(exchangeRate);
     }
 
     @Scheduled(cron = "* * * * * *") // 1초

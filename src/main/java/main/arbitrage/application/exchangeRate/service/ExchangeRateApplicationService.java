@@ -8,6 +8,7 @@ import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
 import main.arbitrage.infrastructure.crawler.UsdToKrwCrawler;
 import main.arbitrage.infrastructure.event.EventEmitter;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -16,8 +17,9 @@ import org.springframework.stereotype.Service;
 public class ExchangeRateApplicationService {
     private final UsdToKrwCrawler usdToKrwCrawler;
     private final ExchangeRateService exchangeRateService;
-    private final ObjectMapper objectMapper;
-    private final EventEmitter emitter;
+    private final ApplicationEventPublisher publisher;
+    //    private final ObjectMapper objectMapper;
+//    private final EventEmitter emitter;
 
     @Scheduled(fixedDelay = 1000 * 10) // 10sec
     protected void scheduleOnEmit() {
@@ -34,8 +36,6 @@ public class ExchangeRateApplicationService {
 
         if (exchangeRate == null) return;
 
-        JsonNode rateTojsonNode = objectMapper.valueToTree(exchangeRate);
-//
-        emitter.emit("updateUsdToKrw", rateTojsonNode);
+        publisher.publishEvent(exchangeRate);
     }
 }
