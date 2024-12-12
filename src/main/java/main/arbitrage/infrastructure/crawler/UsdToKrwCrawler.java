@@ -9,7 +9,7 @@ import java.io.IOException;
 
 @Component
 @Slf4j
-public class UsdToKrw {
+public class UsdToKrwCrawler {
     private static final String GOOGLE_FINANCE_USD_TO_KRW_URL = "https://www.google.com/finance/quote/USD-KRW";
     private static final String CURRENT_SELECTOR = "div.YMlKec.fxKbKc"; // 환율 셀렉터 -> 나중에 구글이 수정하면 바꿔야함.
 
