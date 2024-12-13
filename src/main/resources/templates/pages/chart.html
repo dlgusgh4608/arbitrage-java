@@ -45,28 +45,28 @@
                     <div>Upbit</div>
                     <div>Binance</div>
                 </div>
-                
-                
+
+
                 <!-- 매도 asks -->
                 <div class="order-list asks mb-2">
-                    <div class="order-row d-flex justify-content-between">
-                        <div class="w-50 d-flex justify-content-between pe-2">
-                            <div>
+                    <div th:each="num : ${#numbers.sequence(1, 10)}" class="order-row d-flex justify-content-between">
+                        <div id="upbit" class="w-50 d-flex justify-content-between pe-2">
+                            <div id="size">
                                 <!-- 업비트 order size -->
-                                 -,---
+                                -,---
                             </div>
-                            <div class="text-danger">
+                            <div id="price" class="text-danger">
                                 <!-- 업비트 order price -->
-                                 -,---
+                                -,---
                             </div>
                         </div>
-                        <div class="w-50 d-flex justify-content-between ps-2">
-                            <div class="text-danger">
+                        <div id="binance" class="w-50 d-flex justify-content-between ps-2">
+                            <div id="price" class="text-danger">
                                 <!-- 바이낸스 order price -->
                                 -,---
-                                
+
                             </div>
-                            <div>
+                            <div id="size">
                                 <!-- 바이낸스 order size -->
                                 -,---
                             </div>
@@ -79,24 +79,24 @@
                 </div>
                 <!-- 매수 bids -->
                 <div class="order-list bids mt-2">
-                    <div class="order-row d-flex justify-content-between">
-                        <div class="w-50 d-flex justify-content-between pe-2">
-                            <div>
+                    <div th:each="num : ${#numbers.sequence(1, 10)}" class="order-row d-flex justify-content-between">
+                        <div id="upbit" class="w-50 d-flex justify-content-between pe-2">
+                            <div id="size">
                                 <!-- 업비트 order size -->
-                                 -,---
+                                -,---
                             </div>
-                            <div class="text-success">
+                            <div id="price" class="text-success">
                                 <!-- 업비트 order price -->
-                                 -,---
+                                -,---
                             </div>
                         </div>
-                        <div class="w-50 d-flex justify-content-between ps-2">
-                            <div class="text-success">
+                        <div id="binance" class="w-50 d-flex justify-content-between ps-2">
+                            <div id="price" class="text-success">
                                 <!-- 바이낸스 order price -->
                                 -,---
-                                
+
                             </div>
-                            <div>
+                            <div id="size">
                                 <!-- 바이낸스 order size -->
                                 -,---
                             </div>
@@ -299,65 +299,26 @@
                 }
             })
 
-            const getOrderbookHTML = ({ upbit, binance }) => {
-                const getAskItem = (upbit, binance) => `
-                    <div class="order-row d-flex justify-content-between">
-                        <div class="w-50 d-flex justify-content-between pe-2">
-                            <div>
-                                ${upbit.size.toFixed(3)}
-                            </div>
-                            <div class="text-danger">
-                                ${upbit.price.toLocaleString()}
-                            </div>
-                        </div>
-                        <div class="w-50 d-flex justify-content-between ps-2">
-                            <div class="text-danger">
-                                ${binance.price}
-                            </div>
-                            <div>
-                                ${binance.size}
-                            </div>
-                        </div>
-                    </div>
-                `.trim()
+            const setOrderbook = (cls = '', { upbit, binance }) => {
+                $(`.${cls}`).children().each((index, wrapper) => {
+                    const orderPages = $(wrapper)
 
-                const getBidItem = (upbit, binance) => `
-                    <div class="order-row d-flex justify-content-between">
-                        <div class="w-50 d-flex justify-content-between pe-2">
-                            <div>
-                                ${upbit.size.toFixed(3)}
-                            </div>
-                            <div class="text-success">
-                                ${upbit.price.toLocaleString()}
-                            </div>
-                        </div>
-                        <div class="w-50 d-flex justify-content-between ps-2">
-                            <div class="text-success">
-                                ${binance.price}
-                            </div>
-                            <div>
-                                ${binance.size}
-                            </div>
-                        </div>
-                    </div>
-                `.trim()
-
-                const askItems = upbit.asks.map((v, i) => getAskItem(v, binance.asks[i]))
-                const bidItems = upbit.bids.map((v, i) => getBidItem(v, binance.bids[i]))
-
-                return {
-                    asks: askItems.join(''),
-                    bids: bidItems.join('')
-                }
+                    const upbitPage = orderPages.find('#upbit')
+                    const binancePage = orderPages.find('#binance')
+                    
+                    $(upbitPage).find('#size').text(upbit[cls]?.[index]?.size.toFixed(3))
+                    $(upbitPage).find('#price').text(upbit[cls]?.[index]?.price.toLocaleString())
+                    $(binancePage).find('#size').text(binance[cls]?.[index]?.size.toFixed(3))
+                    $(binancePage).find('#price').text(binance[cls]?.[index]?.price.toLocaleString())
+                })
             }
 
             chartWs.onmessage = (message) => {
                 const { premium, orderbookPair } = JSON.parse(message.data)
-                const { asks, bids } = getOrderbookHTML(orderbookPair)
-                
 
-                $('.asks').html(asks)
-                $('.bids').html(bids)
+                setOrderbook('asks', orderbookPair)
+                setOrderbook('bids', orderbookPair)
+                
                 $('.premium').text(`${premium.premium}%`)
 
                 updateCandleOfMinutes(aMinuteChartData, premium)
