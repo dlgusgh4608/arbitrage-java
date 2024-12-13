@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class UserService {
     public User create(UserSignupDto userSignupDto) {
         User Encodeuser = User.builder()
                 .email(userSignupDto.getEmail())
+                .nickname(UUID.randomUUID().toString())
                 .password(passwordEncoder.encode(userSignupDto.getPassword()))
                 .build();
 
@@ -37,5 +39,9 @@ public class UserService {
         if (email == null) throw new IllegalArgumentException("Email is required!");
 
         return userRepository.findByEmail(email);
+    }
+
+    public Optional<User> findByUserId(Long userId) {
+        return userRepository.findById(userId);
     }
 }

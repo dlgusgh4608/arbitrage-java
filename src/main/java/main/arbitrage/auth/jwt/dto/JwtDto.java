@@ -5,17 +5,21 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class JwtDto {
     private Long userId;
     private String email;
-    private boolean isExpired;
+    private String nickname;
+    private Long expiredAt;
 
     @Builder
-    public JwtDto(Long userId, String email, boolean isExpired) {
+    public JwtDto(Long userId, String email, String nickname, Long expiredAt) {
         this.userId = userId;
         this.email = email;
-        this.isExpired = isExpired;
+        this.nickname = nickname;
+        this.expiredAt = expiredAt;
     }
 }

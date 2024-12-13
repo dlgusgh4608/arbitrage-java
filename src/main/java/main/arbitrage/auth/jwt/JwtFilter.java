@@ -1,6 +1,7 @@
 package main.arbitrage.auth.jwt;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -66,8 +67,11 @@ public class JwtFilter extends OncePerRequestFilter {
             // 이 토큰은 내가 만든 토큰인가?
             JwtDto tokenInfo = jwtUtil.getTokenInfo(accessToken);
 
-            // 엑세스 토큰이 만료되지 않았을때.
-            if (!tokenInfo.isExpired()) {
+            // 현재 시각 초단위 ( JWT에 저장하면 초단위로 데이터를 출력한다. )
+            Long nowTimeToSec = Math.floorDiv(System.currentTimeMillis(), 1000);
+
+            // 엑세스 토큰이 만료되지 않았을때. (토큰이 5분 이상 남았을때)
+            if (nowTimeToSec < tokenInfo.getExpiredAt() - 60 * 5) {
                 saveUserAuthContext(tokenInfo);
                 filterChain.doFilter(request, response);
                 return;
@@ -89,6 +93,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
             Long userId = tokenInfo.getUserId();
             String email = tokenInfo.getEmail();
+            String nickname = tokenInfo.getNickname();
 
             // email을 통해 refresh token을 redis에서 받아옴.
             String foundRefreshToken = refreshTokenService.findRefreshToken(email);
@@ -110,13 +115,11 @@ public class JwtFilter extends OncePerRequestFilter {
              * access token도 정상적인 key로 만들어졌을때
              * 새로운 access, refresh token을 만들고 response Header 및 cookie 에 넣어주고 next.
              * */
-            String newAccessToken = jwtUtil.createToken(userId, email);
+            String newAccessToken = jwtUtil.createToken(userId, email, nickname);
             Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(email);
             String newRefreshToken = refreshTokenService.updateRefreshToken(email, UUID.randomUUID().toString(), refreshTokenTTL);
-
-            // 쿠키를 구워요
-            CookieUtil.addCookie(response, "refreshToken", newRefreshToken, refreshTokenTTL.intValue(), true);
-            CookieUtil.addCookie(response, "accessToken", newAccessToken, -1, true);
+            
+            CookieUtil.setCookie(response, newAccessToken, newRefreshToken, refreshTokenTTL);
 
             log.info("새로운 액세스 토큰: {}\n새로운 리프레시 토큰: {}", newAccessToken, newRefreshToken);
 
@@ -131,14 +134,14 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     private boolean isPublicUrl(String requestURI) {
-        return requestURI.equals("/api/users/login") ||
-                requestURI.startsWith("/api/users/signup");
+        return requestURI.equals("/api/login") || requestURI.equals("/api/signup");
     }
 
     private void saveUserAuthContext(JwtDto tokenDto) {
         UserDetails userDetails = User.builder()
                 .userId(tokenDto.getUserId())
                 .email(tokenDto.getEmail())
+                .nickname(tokenDto.getNickname())
                 .build();
 
         UsernamePasswordAuthenticationToken authentication =

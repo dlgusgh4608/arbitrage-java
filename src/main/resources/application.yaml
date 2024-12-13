@@ -69,5 +69,5 @@ mail:
   secret: ${MAIL_SECRET}
 
 token:
-  access: 3600000 # 1hour
+  access: 1800000 # 30minutes
   refresh: 604800000 # 7days

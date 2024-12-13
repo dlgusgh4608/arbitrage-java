@@ -9,10 +9,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserCheckEmailCodeDto {
-    @NotBlank(message = "이메일은 필수 입력값입니다.")
+    @NotBlank(message = "originCode is empty")
     private String originCode;
 
-    @NotBlank(message = "비밀번호는 필수 입력값입니다.")
+    @NotBlank(message = "encryptedCode is empty")
     private String encryptedCode;
 
     @Builder

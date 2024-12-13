@@ -99,12 +99,12 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private void createJwtAndSetCookie(HttpServletResponse response, User user) {
         Long userId = user.getUserId();
         String email = user.getEmail();
+        String nickname = user.getNickname();
 
-        String accessToken = jwtUtil.createToken(userId, email);
+        String accessToken = jwtUtil.createToken(userId, email, nickname);
         Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(email);
         String refreshToken = refreshTokenService.updateRefreshToken(email, UUID.randomUUID().toString(), refreshTokenTTL);
 
-        CookieUtil.addCookie(response, "refreshToken", refreshToken, refreshTokenTTL.intValue(), true);
-        CookieUtil.addCookie(response, "accessToken", accessToken, -1, true);
+        CookieUtil.setCookie(response, accessToken, refreshToken, refreshTokenTTL);
     }
 }

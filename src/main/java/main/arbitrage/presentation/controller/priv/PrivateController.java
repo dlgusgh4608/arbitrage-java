@@ -1,6 +1,7 @@
 package main.arbitrage.presentation.controller.priv;
 
 import jakarta.validation.Valid;
+import main.arbitrage.application.user.dto.UserProfileDto;
 import main.arbitrage.application.user.service.UserApplicationService;
 import main.arbitrage.domain.userEnv.dto.UserEnvDto;
 import main.arbitrage.presentation.controller.priv.constant.PrivateControllerUrlConstants;
@@ -10,8 +11,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
-
-import java.io.IOException;
 
 
 @Controller
@@ -44,5 +43,13 @@ public class PrivateController {
             bindingResult.reject("serverError", e.getMessage());
             return "pages/envRegister";
         }
+    }
+
+    @GetMapping(PrivateControllerUrlConstants.USER_PROFILE)
+    public String profileGet(Model model) throws Exception {
+        UserProfileDto userProfileDto = userApplicationService.getUserProfile();
+        model.addAttribute("profile", userProfileDto);
+
+        return "pages/profile";
     }
 }

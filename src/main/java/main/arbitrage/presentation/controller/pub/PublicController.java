@@ -69,7 +69,7 @@ public class PublicController {
 
         try {
             UserTokenDto userTokenDto = userApplicationService.login(userLoginDto);
-            setCookies(userTokenDto, response);
+            CookieUtil.setCookie(response, userTokenDto);
 
             return "redirect:/";
         } catch (IllegalArgumentException e) {
@@ -117,7 +117,7 @@ public class PublicController {
 
         try {
             UserTokenDto userTokenDto = userApplicationService.signup(userSignupDto);
-            setCookies(userTokenDto, response);
+            CookieUtil.setCookie(response, userTokenDto);
 
             return "redirect:/";
         } catch (IllegalArgumentException e) {
@@ -154,23 +154,5 @@ public class PublicController {
         model.addAttribute("prices", priceDTOs);
 
         return "pages/chart";
-    }
-
-
-    private void setCookies(UserTokenDto userTokenDto, HttpServletResponse response) {
-        CookieUtil.addCookie(
-                response,
-                "refreshToken",
-                userTokenDto.getRefreshToken(),
-                userTokenDto.getRefreshTokenTTL().intValue(),
-                true
-        );
-        CookieUtil.addCookie(
-                response,
-                "accessToken",
-                userTokenDto.getAccessToken(),
-                -1,
-                true
-        );
     }
 }

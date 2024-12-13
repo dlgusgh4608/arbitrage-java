@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import main.arbitrage.domain.user.dto.UserTokenDto;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -47,5 +48,39 @@ public final class CookieUtil {
                                     response.addCookie(cookie);
                                 })
                 );
+    }
+
+    public static void setCookie(HttpServletResponse response, UserTokenDto userTokenDto) {
+        CookieUtil.addCookie(
+                response,
+                "refreshToken",
+                userTokenDto.getRefreshToken(),
+                userTokenDto.getRefreshTokenTTL().intValue(),
+                true
+        );
+        CookieUtil.addCookie(
+                response,
+                "accessToken",
+                userTokenDto.getAccessToken(),
+                -1,
+                true
+        );
+    }
+
+    public static void setCookie(HttpServletResponse response, String accessToken, String refreshToken, Long refreshTTL) {
+        CookieUtil.addCookie(
+                response,
+                "refreshToken",
+                refreshToken,
+                refreshTTL.intValue(),
+                true
+        );
+        CookieUtil.addCookie(
+                response,
+                "accessToken",
+                accessToken,
+                -1,
+                true
+        );
     }
 }

@@ -9,25 +9,45 @@
 </head>
 <body>
 <main layout:fragment="content">
+    <!-- 모달 -->
+    <div class="modal fade" id="nicknameModal" tabindex="-1" aria-labelledby="nicknameModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="border-bottom: none;">
+                    <h5 class="modal-title" id="nicknameModalLabel">닉네임 수정</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="nicknameInput" class="form-control" th:value="${profile.nickname}"
+                           th:placeholder="${profile.nickname}"/>
+                    <p id="nickname-counter" style="display: none; font-size: .875rem">
+                        <span id="nickname-count" style="font-size: .875rem">0</span>
+                        <span>/ 60</span>
+                    </p>
+                    <p class="valid-warning" style="font-size: 0.7rem">닉네임으로 실제 이름이나 소셜 계정 이름을 사용하지 않는 것이 좋습니다.</p>
+                </div>
+                <div class="modal-footer" style="border-top: none;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" id="saveNicknameBtn">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <!-- 유저 정보 섹션 -->
     <section class="container-xxl pt-5">
         <article class="article">
             <div class="profile-item">
                 <div class="profile-title">
-                    <h2>닉네임</h2>
+                    <div id="nickname" class="profile-nickname" th:text="${profile.nickname}">닉네임</div>
                     <a>
-                        <span>프리미엄</span>
+                        [ Normal ]
                     </a>
                 </div>
-                <div class="profile-social">
-                    <!-- 회원 연결 후 소셜로그인 연동에 따라 색상 부여 -->
-                    <div class="social-item">
-                        <th:block th:replace="/fragments/svg/google :: black"></th:block>
-                    </div>
-                    <div class="social-item">
-                        <th:block th:replace="/fragments/svg/kakao :: black"></th:block>
-                    </div>
-                </div>
+                <span class="profile-edit" id="editNicknameBtn">
+                    <th:block th:replace="/fragments/svg/edit :: black"></th:block>
+                </span>
             </div>
             <div class="env-item">
                 <div class="env-label-wrap">
@@ -38,45 +58,80 @@
                     <div>
                         <span class="env-value-title">업비트</span>
                         <span>
-                            <th:block th:replace="/fragments/svg/circle :: green"></th:block>
+                            <th:block
+                                    th:replace="/fragments/svg/circle :: ${profile.upbitBalance != null ? 'green' : 'red'}"></th:block>
                         </span>
                     </div>
                     <div>
                         <span class="env-value-title">바이낸스</span>
                         <span>
-                            <th:block th:replace="/fragments/svg/circle :: red"></th:block>
+                            <th:block
+                                    th:replace="/fragments/svg/circle :: ${profile.binanceBalance != null ? 'green' : 'red'}"></th:block>
                         </span>
                     </div>
                 </div>
             </div>
         </article>
     </section>
-    
+
+
     <!-- 상단 지갑 정보 섹션 -->
     <section class="container-xxl">
-        <article class="article">
+        <article class="article"
+                 th:with="
+                     upbitBalance=${profile.upbitBalance != null ? profile.upbitBalance : 0},
+                     binanceBalance=${profile.binanceBalance != null ? profile.binanceBalance : 0},
+                     exchangeRate=${profile.exchangeRate != null ? profile.exchangeRate : 0}
+                 "
+        >
             <div class="item">
                 <div class="wallet-label">총 자산</div>
                 <div class="wallet-value"
-                    th:text="${'-'}">
+                     th:text="${
+                         upbitBlanace != 0 && binanceBalance != 0 && exchangeRate != 0
+                             ? #numbers.formatDecimal(upbitBalance + binanceBalance * exchangeRate, 0, 'COMMA', 0, 'POINT') + '원'
+                             : '-'
+                         }"
+                >
                     -
                 </div>
             </div>
             <div class="item">
                 <div class="wallet-label">업비트 KRW</div>
-                <div class="wallet-value" 
-                        th:text="${upbitKrw != null ? #numbers.formatDecimal(upbitKrw, 0, 'COMMA', 0, 'POINT') + '원' : '-'}">
+                <div class="wallet-value"
+                     th:text="${
+                     upbitBalance != 0
+                         ? #numbers.formatDecimal(upbitBalance, 0, 'COMMA', 0, 'POINT') + '원'
+                         : '-'
+                     }"
+                >
                     -
                 </div>
             </div>
             <div class="item">
                 <div class="wallet-label">바이낸스 USDT [ USDⓈ-M Futures ]</div>
-                <div class="wallet-value" 
-                        th:text="${binanceUsdt != null ? #numbers.formatDecimal(binanceUsdt, 0, 'COMMA', 2, 'POINT') + ' USDT' : '-'}">
+                <div class="wallet-value"
+                     th:text="${
+                     binanceBalance != 0
+                         ? #numbers.formatDecimal(binanceBalance, 0, 'COMMA', 4, 'POINT') + 'USDT'
+                         : '-'
+                     }"
+                >
                     -
                 </div>
             </div>
-            
+            <div class="item">
+                <div class="wallet-label">원달러</div>
+                <div class="wallet-value"
+                     th:text="${
+                     exchangeRate != 0
+                         ? exchangeRate + '원'
+                         : '-'
+                     }"
+                >
+                    -
+                </div>
+            </div>
         </article>
     </section>
 
@@ -84,6 +139,54 @@
     <!-- <section class="container-xxl pt-5">
         
     </section> -->
+
+    <script th:inline="javascript">
+        const defaultNickname = /*[[${profile.nickname}]]*/ ''
+        
+        $('#editNicknameBtn').on('click', () => {
+            $('#nicknameInput').val(defaultNickname)
+            const modal = new bootstrap.Modal($('#nicknameModal'));
+            modal.show();
+        })
+
+        $("#saveNicknameBtn").on('click', async () => {
+            const newNickname = $('#nicknameInput').val().trim();
+
+            if(!newNickname) return alert('변경할 닉네임을 입력해주세요.')
+            if(defaultNickname === newNickname) return alert('변경할 닉네임을 입력해주세요.')
+
+            const modal = bootstrap.Modal.getInstance($('#nicknameModal'));
+
+            const payload = { nickname: newNickname }
+
+            const { success, data } = await fetcher('PATCH', '/api/edit-nickname', payload)
+
+            if(success) {
+                $('#nickname').text(newNickname)
+                modal.hide()
+            }else {
+                if(data.status === 400) {
+                    alert('중복된 닉네임입니다.')
+                }else {
+                    alert('알 수 없는 에러입니다. 다시 시도해주세요.')
+                }
+            }
+        })
+
+        $('#nicknameInput').keyup(e => {
+            const inputLength = e.target.value.trim().length
+
+            $('#nickname-counter').css('display', 'block')
+            $('#nickname-count').text(inputLength)
+
+            if(inputLength > 60) {
+                $('#nickname-count').addClass('valid-warning')
+            }else {
+                $('#nickname-count').removeClass('valid-warning')
+            }
+
+        })
+    </script>
 </main>
 </body>
 </html>

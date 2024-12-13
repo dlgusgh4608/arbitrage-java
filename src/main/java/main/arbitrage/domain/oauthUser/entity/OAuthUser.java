@@ -25,6 +25,9 @@ public class OAuthUser {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(name = "user_id", insertable = false, updatable = false)
+    private Long userId;
+
     @Builder
     public OAuthUser(String providerId, String provider, User user) {
         this.providerId = providerId;

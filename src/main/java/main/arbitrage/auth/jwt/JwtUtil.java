@@ -30,13 +30,33 @@ public class JwtUtil {
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String createToken(Long userId, String email) {
+    public String createToken(Long userId, String email, String nickname) {
         Map<String, String> claims = new HashMap<>();
         claims.put("userId", userId.toString());
         claims.put("email", email);
+        claims.put("nickname", nickname);
 
         Date now = new Date();
         Date validity = new Date(now.getTime() + tokenTTL);
+
+        return Jwts
+                .builder()
+                .subject("access")
+                .claims(claims)
+                .issuedAt(now)
+                .expiration(validity)
+                .signWith(key)
+                .compact();
+    }
+
+    public String createToken(Long userId, String email, String nickname, Long restTTL) {
+        Map<String, String> claims = new HashMap<>();
+        claims.put("userId", userId.toString());
+        claims.put("email", email);
+        claims.put("nickname", nickname);
+
+        Date now = new Date();
+        Date validity = new Date(restTTL);
 
         return Jwts
                 .builder()
@@ -60,7 +80,8 @@ public class JwtUtil {
             return JwtDto.builder()
                     .userId(Long.parseLong(jwtClaim.get("userId", String.class)))
                     .email(jwtClaim.get("email", String.class))
-                    .isExpired(false)
+                    .nickname(jwtClaim.get("nickname", String.class))
+                    .expiredAt(jwtClaim.get("exp", Long.class))
                     .build();
         } catch (ExpiredJwtException e) { // access token이 만료되었을때에도 사용자값 return
             Claims jwtClaim = e.getClaims();
@@ -68,7 +89,8 @@ public class JwtUtil {
             return JwtDto.builder()
                     .userId(Long.parseLong(jwtClaim.get("userId", String.class)))
                     .email(jwtClaim.get("email", String.class))
-                    .isExpired(true)
+                    .nickname(jwtClaim.get("nickname", String.class))
+                    .expiredAt(jwtClaim.get("exp", Long.class))
                     .build();
         } catch (Exception e) {
             log.info("Invalid JWT, {}", e.getMessage());

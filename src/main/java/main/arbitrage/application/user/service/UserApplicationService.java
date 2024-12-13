@@ -1,17 +1,22 @@
 package main.arbitrage.application.user.service;
 
-import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletResponse;
+import main.arbitrage.application.user.dto.UserProfileDto;
 import main.arbitrage.auth.security.SecurityUtil;
+import main.arbitrage.domain.exchangeRate.dto.ExchangeRateDto;
+import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
 import main.arbitrage.domain.oauthUser.service.OAuthUserService;
+import main.arbitrage.domain.user.dto.UserEditNicknameDto;
 import main.arbitrage.domain.userEnv.dto.UserEnvDto;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
+import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.BinanceGetAccountResponseDto;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.UpbitGetAccountResponseDto;
 import main.arbitrage.infrastructure.oauthValidator.google.GoogleApiClient;
 import main.arbitrage.infrastructure.oauthValidator.kakao.KakaoApiClient;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
@@ -36,11 +41,10 @@ import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
 @Service
 @RequiredArgsConstructor
 public class UserApplicationService {
-    private final HttpServletResponse response;
-
     private final EmailMessageService emailMessageService;
     private final UserService userService;
     private final OAuthUserService oAuthUserService;
+    private final ExchangeRateService exchangeRateService;
     private final RefreshTokenService refreshTokenService;
     private final UserEnvService userEnvService;
     private final AESCrypto aesCrypto;
@@ -142,8 +146,87 @@ public class UserApplicationService {
         }
     }
 
+    @Transactional
+    public UserProfileDto getUserProfile() throws Exception {
+        Long userId = SecurityUtil.getUserId();
+
+        // userId에 해당하는 env가 있는지 확인
+        Optional<UserEnv> userEnvOptional = userEnvService.findByUserId(userId);
+
+        // builder 변수 할당
+        UserProfileDto.UserProfileDtoBuilder userProfileDtoBuilder = UserProfileDto.builder();
+
+        if (userEnvOptional.isEmpty()) {
+            // env가 없으면 upbit와 binance의 wallet 정보를 받아올 수 없음.
+            userProfileDtoBuilder.binanceBalance(null).upbitBalance(null);
+        } else {
+            // env를 통하여 각각의 거래소의 service를 생성
+            UserEnv userEnv = userEnvOptional.get();
+            UpbitPrivateRestService upbitPrivateRestService =
+                    new UpbitPrivateRestService(
+                            aesCrypto.decrypt(userEnv.getUpbitAccessKey()),
+                            aesCrypto.decrypt(userEnv.getUpbitSecretKey()),
+                            okHttpClient,
+                            objectMapper
+                    );
+
+            BinancePrivateRestService binancePrivateRestService =
+                    new BinancePrivateRestService(
+                            aesCrypto.decrypt(userEnv.getBinanceAccessKey()),
+                            aesCrypto.decrypt(userEnv.getBinanceSecretKey()),
+                            okHttpClient,
+                            objectMapper
+                    );
+
+            // 각각 거래소의 지갑정보를 받아옴
+            List<UpbitGetAccountResponseDto> upbitAccountList = upbitPrivateRestService.getAccount();
+            List<BinanceGetAccountResponseDto> binanceAccountList = binancePrivateRestService.getAccount();
+
+            // 지갑 정보에서 KRW와 USDT를 필터링
+            Optional<UpbitGetAccountResponseDto> upbitKRW = upbitAccountList.stream().filter(upbitAccount -> upbitAccount.getCurrency().equals("KRW")).findFirst();
+            Optional<BinanceGetAccountResponseDto> binanceUSDT = binanceAccountList.stream().filter(binanceAccount -> binanceAccount.getAsset().equals("USDT")).findFirst();
+
+            // builder에 build하기
+            if (upbitKRW.isEmpty()) {
+                userProfileDtoBuilder.upbitBalance(null);
+            } else {
+                userProfileDtoBuilder.upbitBalance(Double.parseDouble(upbitKRW.get().getBalance()));
+            }
+
+            if (binanceUSDT.isEmpty()) {
+                userProfileDtoBuilder.binanceBalance(null);
+            } else {
+                userProfileDtoBuilder.binanceBalance(Double.parseDouble(binanceUSDT.get().getBalance()));
+            }
+        }
+
+        ExchangeRateDto exchangeRateDto = exchangeRateService.getExchangeRate("USD", "KRW");
+
+        userProfileDtoBuilder.nickname(SecurityUtil.getNickname());
+        userProfileDtoBuilder.exchangeRate(exchangeRateDto.getRate());
+
+        return userProfileDtoBuilder.build();
+    }
+
+    @Transactional
+    public UserTokenDto updateNickname(UserEditNicknameDto req) {
+        Long userId = SecurityUtil.getUserId();
+        String nickname = req.getNickname();
+
+        Optional<User> userOptional = userService.findByUserId(userId);
+
+        if (userOptional.isEmpty()) throw new IllegalArgumentException("user is not found");
+
+        User user = userOptional.get();
+        if (user.getNickname().equals(nickname)) throw new IllegalArgumentException("Same nickname");
+
+        user.updateUserNickname(nickname);
+
+        return userTokenResponseBuilder(user);
+    }
+
     private UserTokenDto userTokenResponseBuilder(User user) {
-        String accessToken = jwtUtil.createToken(user.getUserId(), user.getEmail());
+        String accessToken = jwtUtil.createToken(user.getUserId(), user.getEmail(), user.getNickname());
         String refreshToken = refreshTokenService.createRefreshToken(user.getEmail(), UUID.randomUUID().toString());
         Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(user.getEmail());
 
@@ -182,4 +265,6 @@ public class UserApplicationService {
             return false;
         }
     }
+
+
 }

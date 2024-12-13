@@ -19,9 +19,15 @@ public class SecurityUtil {
         return user.getEmail();
     }
 
+    public static String getNickname() {
+        User user = isAuthorized();
+        return user.getNickname();
+    }
+
     public static User getUser() {
         return isAuthorized();
     }
+
 
     private static User isAuthorized() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

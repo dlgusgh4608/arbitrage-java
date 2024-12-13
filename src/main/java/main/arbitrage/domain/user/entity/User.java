@@ -21,8 +21,11 @@ public class User implements UserDetails {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "email", nullable = false, length = 30)
+    @Column(name = "email", nullable = false, length = 30, unique = true)
     private String email;
+
+    @Column(name = "nickname", nullable = false, length = 60, unique = true)
+    private String nickname;
 
     @Column(name = "password", nullable = false, length = 60)
     private String password;
@@ -38,9 +41,15 @@ public class User implements UserDetails {
     }
 
     @Builder
-    public User(Long userId, String password, String email) {
+    public User(Long userId, String password, String email, String nickname) {
         this.userId = userId;
         this.password = password;
         this.email = email;
+        this.nickname = nickname;
     }
+
+    public void updateUserNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
 }

@@ -2,11 +2,13 @@ package main.arbitrage.domain.oauthUser.repository;
 
 import main.arbitrage.domain.oauthUser.entity.OAuthUser;
 import main.arbitrage.domain.oauthUser.entity.OAuthUserId;
+import main.arbitrage.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -25,4 +27,6 @@ public interface OAuthUserRepository extends JpaRepository<OAuthUser, OAuthUserI
             @Param("provider") String provider,
             @Param("providerId") String providerId
     );
+
+    List<OAuthUser> findByUserId(Long userId);
 }

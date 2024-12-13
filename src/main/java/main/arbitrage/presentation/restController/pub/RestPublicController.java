@@ -1,11 +1,10 @@
 package main.arbitrage.presentation.restController.pub;
 
+import jakarta.validation.Valid;
 import main.arbitrage.presentation.restController.pub.constant.PublicRestControllerUrlConstants;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.user.service.UserApplicationService;
@@ -21,7 +20,7 @@ public class RestPublicController {
     private final UserApplicationService userApplicationService;
 
     @PostMapping(PublicRestControllerUrlConstants.SEND_EMAIL)
-    public ResponseEntity<?> postSendEmail(@RequestBody UserExistEmailReqDto request) throws Exception {
+    public ResponseEntity<?> postSendEmail(@Valid @RequestBody UserExistEmailReqDto request) throws Exception {
         String code = userApplicationService.sendEmail(
                 EmailMessageDto.builder()
                         .to(request.getEmail())
@@ -32,7 +31,7 @@ public class RestPublicController {
     }
 
     @PostMapping(PublicRestControllerUrlConstants.CHECK_CODE)
-    public ResponseEntity<?> postCheckCode(@RequestBody UserCheckEmailCodeDto request) throws Exception {
+    public ResponseEntity<?> postCheckCode(@Valid @RequestBody UserCheckEmailCodeDto request) {
         boolean ok = userApplicationService.checkCode(request.getOriginCode(), request.getEncryptedCode());
         if (ok) {
             return ResponseEntity.ok().build();

@@ -14,7 +14,9 @@
 }
 
 .profile-item {
-  flex: 2;
+  display: flex;
+  justify-content: space-between;
+  flex: 3;
   padding: 1.5rem;
   background-color: #fff;
   border-radius: 0.8rem;
@@ -23,16 +25,24 @@
 
 .profile-title {
   display: flex;
-  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
-.profile-social {
-  display: flex;
-  align-items: center;
+.profile-nickname {
+    font-size: 1.2rem;
+    font-weight: bold;
+    max-width: 15rem;
+    word-break: break-all;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    overflow: hidden !important;
+    line-height: 1.5rem;
+    -webkit-line-clamp: 2 !important;
+    margin-right: 1rem;
 }
 
-.social-item {
-  margin-right: 1rem;
+.profile-edit {
+ cursor: pointer;
 }
 
 .env-item {
