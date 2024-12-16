@@ -16,7 +16,7 @@ public interface PriceRepository extends JpaRepository<Price, Long> {
             FROM Price p
             JOIN p.symbol s
             WHERE s.name = :symbolName
-            ORDER BY p.price_id DESC
+            ORDER BY p.id DESC
             """)
     List<Price> findBySymbolOfPageable(
             @Param("symbolName") String symbolName,

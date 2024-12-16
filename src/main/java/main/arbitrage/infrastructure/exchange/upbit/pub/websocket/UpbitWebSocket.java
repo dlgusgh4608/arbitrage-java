@@ -108,7 +108,7 @@ public class UpbitWebSocket extends BaseWebSocketClient {
 
         TradeDto trade = TradeDto.builder()
                 .symbol(symbol)
-                .price(new BigDecimal(data.get("trade_price").asText()))
+                .price(Double.parseDouble(data.get("trade_price").asText()))
                 .timestamp(data.get("trade_timestamp").asLong())
                 .build();
 
@@ -136,8 +136,8 @@ public class UpbitWebSocket extends BaseWebSocketClient {
         for (int i = 0; i < 10; i++) {
             JsonNode unit = units.get(i);
             orderbooksUnits[i] = OrderbookDto.OrderbookUnit.builder()
-                    .price(new BigDecimal(unit.get(type.concat("_price")).asText()))
-                    .size(new BigDecimal(unit.get(type.concat("_size")).asText()))
+                    .price(Double.parseDouble(unit.get(type.concat("_price")).asText()))
+                    .size(Double.parseDouble(unit.get(type.concat("_size")).asText()))
                     .build();
         }
 

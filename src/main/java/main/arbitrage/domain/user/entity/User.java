@@ -5,6 +5,10 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "`user`")
@@ -13,21 +17,28 @@ import lombok.NoArgsConstructor;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "id", nullable = false)
+    private Long id;
 
-    @Column(name = "email", nullable = false, length = 30, unique = true)
+    @Column(name = "email", nullable = false, unique = true, columnDefinition = "VARCHAR(100)")
     private String email;
 
-    @Column(name = "nickname", nullable = false, length = 60, unique = true)
+    @Column(name = "nickname", nullable = false, unique = true, columnDefinition = "VARCHAR(60)")
     private String nickname;
 
-    @Column(name = "password", nullable = false, length = 60)
+    @Column(name = "password", nullable = false, columnDefinition = "CHAR(60)")
     private String password;
 
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
     @Builder
-    public User(Long userId, String password, String email, String nickname) {
-        this.userId = userId;
+    public User(String password, String email, String nickname) {
         this.password = password;
         this.email = email;
         this.nickname = nickname;

@@ -98,7 +98,7 @@ public class BinanceWebSocket extends BaseWebSocketClient {
 
         TradeDto trade = TradeDto.builder()
                 .symbol(symbol)
-                .price(new BigDecimal(data.get("p").asText()))
+                .price(Double.parseDouble(data.get("p").asText()))
                 .timestamp(data.get("T").asLong())
                 .build();
 
@@ -124,8 +124,8 @@ public class BinanceWebSocket extends BaseWebSocketClient {
         for (int i = 0; i < 10; i++) {
             JsonNode unit = units.get(i);
             orderbooksUnits[i] = OrderbookDto.OrderbookUnit.builder()
-                    .price(new BigDecimal(unit.get(0).asText()))
-                    .size(new BigDecimal(unit.get(1).asText()))
+                    .price(Double.parseDouble(unit.get(0).asText()))
+                    .size(Double.parseDouble(unit.get(1).asText()))
                     .build();
         }
         return orderbooksUnits;

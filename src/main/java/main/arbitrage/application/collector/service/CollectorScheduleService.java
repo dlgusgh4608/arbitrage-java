@@ -92,7 +92,7 @@ public class CollectorScheduleService {
                     log.warn("Invalid trade pair for symbol: {}", symbolName);
                     return;
                 }
-
+                
                 PremiumDto premium = premiumCalculator.calculatePremium(
                         tradePair.getUpbit(),
                         tradePair.getBinance(),
@@ -104,10 +104,10 @@ public class CollectorScheduleService {
                         .symbol(symbol)
                         .exchangeRate(exchangeRate)
                         .premium(premium.getPremium())
-                        .upbit(premium.getDomestic())
-                        .binance(premium.getOverseas())
-                        .upbitTradeAt(premium.getDomesticTradeAt())
-                        .binanceTradeAt(premium.getOverseasTradeAt())
+                        .upbit(premium.getUpbit())
+                        .binance(premium.getBinance())
+                        .upbitTradeAt(premium.getUpbitTradeAt())
+                        .binanceTradeAt(premium.getBinanceTradeAt())
                         .build();
 
                 priceMap.put(symbolName, price);

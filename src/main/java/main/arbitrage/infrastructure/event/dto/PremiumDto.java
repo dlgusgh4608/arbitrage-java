@@ -9,10 +9,10 @@ import java.math.BigDecimal;
 @Getter
 public class PremiumDto {
     private String symbol;
-    private BigDecimal premium;
-    private BigDecimal domestic;
-    private BigDecimal overseas;
+    private double premium;
+    private double upbit;
+    private double binance;
     private double usdToKrw;
-    private Long domesticTradeAt;
-    private Long overseasTradeAt;
+    private Long upbitTradeAt;
+    private Long binanceTradeAt;
 }

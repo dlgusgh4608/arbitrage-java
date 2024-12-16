@@ -97,7 +97,7 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     }
 
     private void createJwtAndSetCookie(HttpServletResponse response, User user) {
-        Long userId = user.getUserId();
+        Long userId = user.getId();
         String email = user.getEmail();
         String nickname = user.getNickname();
 

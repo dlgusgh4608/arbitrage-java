@@ -5,6 +5,10 @@ import lombok.*;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.userEnv.dto.UserEnvDto;
 import main.arbitrage.global.util.aes.AESCrypto;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user_env")
@@ -31,6 +35,14 @@ public class UserEnv {
 
     @Column(name = "binance_secret_key")
     private String binanceSecretKey;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 
     public void updateEnv(UserEnvDto userEnvDto, AESCrypto aesCrypto) throws Exception {
         this.upbitAccessKey = aesCrypto.encrypt(userEnvDto.getUpbitAccessKey().getBytes());

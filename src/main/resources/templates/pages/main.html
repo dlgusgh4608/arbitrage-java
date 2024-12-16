@@ -122,15 +122,15 @@
         const handleMessage = (message) => {
             const dataOfJson = JSON.parse(message.data)
 
-            const { symbol, premium, domestic, overseas } = dataOfJson
+            const { symbol, premium, upbit, binance } = dataOfJson
 
             const premiumEle = $(`#${symbol}`).find('#premium')
             const upbitEle = $(`#${symbol}`).find('#upbit')
             const binanceEle = $(`#${symbol}`).find('#binance')
 
             premiumEle.text(premium.toLocaleString() + '%')
-            upbitEle.text('₩' + domestic.toLocaleString())
-            binanceEle.text('$' + overseas.toLocaleString())
+            upbitEle.text('₩' + upbit.toLocaleString())
+            binanceEle.text('$' + binance.toLocaleString())
 
             const prevPremium = prev[symbol].premium
             const prevupbit = prev[symbol].upbit
@@ -139,12 +139,12 @@
 
 
             premiumEle.css('color', getColor(prevPremium, premium))
-            upbitEle.css('color', getColor(prevupbit, domestic))
-            binanceEle.css('color', getColor(prevBinance, overseas))
+            upbitEle.css('color', getColor(prevupbit, upbit))
+            binanceEle.css('color', getColor(prevBinance, binance))
 
             prev[symbol].premium = premium
-            prev[symbol].upbit = domestic
-            prev[symbol].binance = overseas
+            prev[symbol].upbit = upbit
+            prev[symbol].binance = binance
         }
 
         ws.onmessage = handleMessage

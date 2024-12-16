@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.symbol.entity.Symbol;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -20,7 +19,8 @@ public class Price {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long price_id;
+    @Column(name = "id")
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "symbol_id", nullable = false)
@@ -30,39 +30,46 @@ public class Price {
     @JoinColumn(name = "exchange_rate_id", nullable = false)
     private ExchangeRate exchangeRate;
 
-    @Column(name = "premium", nullable = false)
-    private BigDecimal premium;
+    @Column(name = "premium", nullable = false, columnDefinition = "REAL")
+    private float premium;
 
-    @Column(name = "upbit", nullable = false)
-    private BigDecimal upbit;
+    @Column(name = "upbit", nullable = false, columnDefinition = "DOUBLE PRECISION")
+    private double upbit;
 
-    @Column(name = "binance", nullable = false)
-    private BigDecimal binance;
+    @Column(name = "binance", nullable = false, columnDefinition = "REAL")
+    private float binance;
 
-    @Column(name = "upbit_trade_at", nullable = false)
+    @Column(name = "upbit_trade_at", nullable = false, columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
     private Timestamp upbitTradeAt;
 
-    @Column(name = "binance_trade_at", nullable = false)
+    @Column(name = "binance_trade_at", nullable = false, columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
     private Timestamp binanceTradeAt;
 
     @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP(0) WITHOUT TIME ZONE")
     private Timestamp createdAt;
 
+    /*
+     * Timestamp의 괄호안의 숫자
+     * 0 -> 초단위
+     * 3 -> 밀리초
+     * 6 -> 마이크로초
+     * */
+
     @Builder
     public Price(
             Symbol symbol,
             ExchangeRate exchangeRate,
-            BigDecimal premium,
-            BigDecimal upbit,
-            BigDecimal binance,
+            double premium,
+            double upbit,
+            double binance,
             Long upbitTradeAt,
             Long binanceTradeAt
     ) {
         this.symbol = symbol;
         this.exchangeRate = exchangeRate;
-        this.premium = premium;
+        this.premium = (float) premium;
         this.upbit = upbit;
-        this.binance = binance;
+        this.binance = (float) binance;
         this.upbitTradeAt = new Timestamp(upbitTradeAt);
         this.binanceTradeAt = new Timestamp(binanceTradeAt);
     }

@@ -25,10 +25,12 @@
             <article class="w-100 shadow bg-white rounded">
                 <div class="d-flex d-flex justify-content-between align-items-center">
                     <div class="dropdown p-3">
-                        <div class="dropdown-toggle fw-bold fs-5" style="cursor: pointer;" data-bs-toggle="dropdown" th:text="${#strings.toUpperCase(param.symbol)}"></div>
+                        <div class="dropdown-toggle fw-bold fs-5" style="cursor: pointer;" data-bs-toggle="dropdown"
+                             th:text="${#strings.toUpperCase(param.symbol)}"></div>
                         <ul class="dropdown-menu">
                             <li th:each="symbol : ${supportedSymbols}">
-                                <a class="dropdown-item" th:href="@{/chart(symbol=${symbol})}" th:text="${symbol}">symbol name</a>
+                                <a class="dropdown-item" th:href="@{/chart(symbol=${symbol})}" th:text="${symbol}">symbol
+                                    name</a>
                             </li>
                         </ul>
                     </div>
@@ -41,10 +43,10 @@
             <article class="w-100 shadow bg-white rounded position-relative">
                 <div class="d-flex position-absolute top-0 start-0">
                     <!-- <div class="d-flex align-items-center">Time: </div> -->
-                    <button id="min" class="btn custom-btn" style="font-weight: 600;" >1m</button>
-                    <button id="min3" class="btn custom-btn" style="font-weight: 500;" >3m</button>
-                    <button id="min5" class="btn custom-btn" style="font-weight: 500;" >5m</button>
-                    <button id="min15" class="btn custom-btn" style="font-weight: 500;" >15m</button>
+                    <button id="min" class="btn custom-btn" style="font-weight: 600;">1m</button>
+                    <button id="min3" class="btn custom-btn" style="font-weight: 500;">3m</button>
+                    <button id="min5" class="btn custom-btn" style="font-weight: 500;">5m</button>
+                    <button id="min15" class="btn custom-btn" style="font-weight: 500;">15m</button>
                 </div>
 
                 <canvas id="candlestickChart" style="width:100% !important; height: 600px !important;"></canvas>
@@ -58,7 +60,8 @@
                 </div>
                 <div class="order-list asks mb-2">
                     <div th:each="num : ${#numbers.sequence(1, 7)}" class="order-row d-flex justify-content-between">
-                        <div id="upbit" class="w-50 d-flex justify-content-between pe-2" style="border: 1px solid transparent">
+                        <div id="upbit" class="w-50 d-flex justify-content-between pe-2"
+                             style="border: 1px solid transparent">
                             <div id="price" class="text-danger">
                                 -,---
                             </div>
@@ -66,7 +69,8 @@
                                 -,---
                             </div>
                         </div>
-                        <div id="binance" class="w-50 d-flex justify-content-between ps-2" style="border: 1px solid transparent">
+                        <div id="binance" class="w-50 d-flex justify-content-between ps-2"
+                             style="border: 1px solid transparent">
                             <div id="size">
                                 -,---
 
@@ -82,7 +86,8 @@
                 </div>
                 <div class="order-list bids mt-2">
                     <div th:each="num : ${#numbers.sequence(1, 7)}" class="order-row d-flex justify-content-between">
-                        <div id="upbit" class="w-50 d-flex justify-content-between pe-2" style="border: 1px solid transparent">
+                        <div id="upbit" class="w-50 d-flex justify-content-between pe-2"
+                             style="border: 1px solid transparent">
                             <div id="price" class="text-success">
                                 -,---
                             </div>
@@ -90,7 +95,8 @@
                                 -,---
                             </div>
                         </div>
-                        <div id="binance" class="w-50 d-flex justify-content-between ps-2" style="border: 1px solid transparent">
+                        <div id="binance" class="w-50 d-flex justify-content-between ps-2"
+                             style="border: 1px solid transparent">
                             <div id="size">
                                 -,---
 
@@ -317,15 +323,15 @@
                     binancePriceEle.text(binancePriceValue.toFixed(3))
                     binanceSizeEle.text(binanceSizeValue.toLocaleString())
                     
-                    const { domestic, overseas } = premium
+                    const { upbit: upbitPrice, binance: binancePrice } = premium
 
-                    if(domestic === upbitPriceValue) {
+                    if(upbitPrice === upbitPriceValue) {
                         $(upbitPage).css('border', '1px solid #000')
                     }else {
                         $(upbitPage).css('border', '1px solid transparent')
                     }
 
-                    if(overseas === binancePriceValue) {
+                    if(binancePrice === binancePriceValue) {
                         $(binancePage).css('border', '1px solid #000')
                     }else {
                         $(binancePage).css('border', '1px solid transparent')
@@ -337,7 +343,7 @@
                 const { premium, orderbookPair } = JSON.parse(message.data)
 
                 const { upbit, binance } = orderbookPair
-                
+
                 setOrderbook('asks', { upbit: upbit.asks.reverse(), binance: binance.asks.reverse() }, premium)
                 setOrderbook('bids', { upbit: upbit.bids, binance: binance.bids }, premium)
                 

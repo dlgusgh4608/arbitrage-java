@@ -222,11 +222,11 @@ public class UserApplicationService {
 
         user.updateUserNickname(nickname);
 
-        return jwtUtil.createToken(user.getUserId(), user.getEmail(), user.getNickname(), SecurityUtil.getExpiredAt());
+        return jwtUtil.createToken(user.getId(), user.getEmail(), user.getNickname(), SecurityUtil.getExpiredAt());
     }
 
     private UserTokenDto userTokenResponseBuilder(User user) {
-        String accessToken = jwtUtil.createToken(user.getUserId(), user.getEmail(), user.getNickname());
+        String accessToken = jwtUtil.createToken(user.getId(), user.getEmail(), user.getNickname());
         String refreshToken = refreshTokenService.createRefreshToken(user.getEmail(), UUID.randomUUID().toString());
         Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(user.getEmail());
 

@@ -1,8 +1,7 @@
 package main.arbitrage.application.collector.service;
 
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.global.util.calculator.FinancialCalculator;
-import main.arbitrage.global.util.currency.CurrencyConverter;
+import main.arbitrage.global.util.math.MathUtil;
 import main.arbitrage.infrastructure.event.dto.PremiumDto;
 import main.arbitrage.application.collector.dto.TradeDto;
 import org.springframework.stereotype.Service;
@@ -13,28 +12,22 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class PremiumCalculationService {
     public PremiumDto calculatePremium(
-            TradeDto domestic,
-            TradeDto overseas,
+            TradeDto upbit,
+            TradeDto binance,
             double usdToKrw,
             String symbol
     ) {
-        BigDecimal domesticPriceUsd = CurrencyConverter.krwToUsd(
-                domestic.getPrice(),
-                usdToKrw
-        );
-        BigDecimal premium = FinancialCalculator.calculatePremium(
-                domesticPriceUsd,
-                overseas.getPrice()
-        );
+
+        double premium = MathUtil.calculatePremium(upbit.getPrice(), binance.getPrice(), usdToKrw);
 
         return PremiumDto.builder()
                 .symbol(symbol)
                 .premium(premium)
-                .domestic(domestic.getPrice())
-                .overseas(overseas.getPrice())
+                .upbit(upbit.getPrice())
+                .binance(binance.getPrice())
                 .usdToKrw(usdToKrw)
-                .domesticTradeAt(domestic.getTimestamp())
-                .overseasTradeAt(overseas.getTimestamp())
+                .upbitTradeAt(upbit.getTimestamp())
+                .binanceTradeAt(binance.getTimestamp())
                 .build();
     }
 }

@@ -9,6 +9,6 @@ import java.math.BigDecimal;
 @Builder
 public class TradeDto {
     private String symbol;
-    private BigDecimal price;
+    private double price;
     private long timestamp;
 }

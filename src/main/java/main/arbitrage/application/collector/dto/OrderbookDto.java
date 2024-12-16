@@ -15,7 +15,7 @@ public class OrderbookDto {
     @Builder
     @Getter
     public static class OrderbookUnit {
-        private BigDecimal price;
-        private BigDecimal size;
+        private double price;
+        private double size;
     }
 }

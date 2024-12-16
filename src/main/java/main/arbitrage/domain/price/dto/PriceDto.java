@@ -1,19 +1,17 @@
 package main.arbitrage.domain.price.dto;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import lombok.Getter;
 import main.arbitrage.domain.price.entity.Price;
-import main.arbitrage.domain.symbol.entity.Symbol;
 
 
 @Getter
 public class PriceDto {
     private String symbol;
-    private BigDecimal premium;
-    private BigDecimal upbit;
-    private BigDecimal binance;
+    private float premium;
+    private double upbit;
+    private float binance;
     private Timestamp upbitTradeAt;
     private Timestamp binanceTradeAt;
     private Timestamp createdAt;
