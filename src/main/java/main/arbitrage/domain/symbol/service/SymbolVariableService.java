@@ -1,22 +1,22 @@
-
 package main.arbitrage.domain.symbol.service;
 
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.respository.SymbolRepository;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+@Service
 @RequiredArgsConstructor
 public class SymbolVariableService implements CommandLineRunner {
+    private final List<String> DEFAULT_SYMBOLS = List.of("btc", "eth");
+
     private final SymbolRepository symbolRepository;
     private static final List<Symbol> symbols = new ArrayList<>();
     private static volatile boolean initialized = false;
-    private static final Object lock = new Object();
 
     @Override
     public void run(String... args) {
@@ -25,31 +25,25 @@ public class SymbolVariableService implements CommandLineRunner {
 
     private void initializeIfNeeded() {
         if (!initialized) {
-            synchronized (lock) {
+            synchronized (SymbolVariableService.class) {
                 if (!initialized) {
-                    initializedSymbol("btc");
-                    initializedSymbol("eth");
-                    setSymbols();
+                    initializeSymbols();
                     initialized = true;
                 }
             }
         }
     }
 
-    private void initializedSymbol(String name) {
-        if (!symbolRepository.existsByName(name)) {
-            Symbol symbol = Symbol.builder()
-                    .name(name)
-                    .use(true)
-                    .build();
-
-            symbolRepository.save(symbol);
-        }
-    }
-
-    private void setSymbols() {
+    private void initializeSymbols() {
+        DEFAULT_SYMBOLS.forEach(this::initializeSymbol);
         symbols.clear();
         symbols.addAll(symbolRepository.findAll());
+    }
+
+    private void initializeSymbol(String name) {
+        if (!symbolRepository.existsByName(name)) {
+            symbolRepository.save(Symbol.builder().name(name).use(true).build());
+        }
     }
 
     public List<Symbol> getAllSymbol() {
@@ -59,8 +53,6 @@ public class SymbolVariableService implements CommandLineRunner {
 
     public List<Symbol> getSupportedSymbols() {
         initializeIfNeeded();
-        return symbols.stream()
-                .filter(Symbol::isUse)
-                .toList();
+        return symbols.stream().filter(Symbol::isUse).toList();
     }
 }
