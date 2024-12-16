@@ -4,22 +4,7 @@
 <head>
     <title>차트</title>
     <th:block layout:fragment="css">
-        <style>
-            .order-book {
-                font-size: 0.9rem;
-            }
-            .order-row {
-                font-size: 0.85rem;
-            }
-            .text-success {
-                color: #26a69a !important;
-                font-weight: bold;
-            }
-            .text-danger {
-                color: #ef5350 !important;
-                font-weight: bold;
-            }
-        </style>
+        <link rel="stylesheet" th:href="@{/css/chart.css}">
     </th:block>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -35,86 +20,100 @@
 </head>
 <body>
 <main layout:fragment="content">
-    <section class="container-xxl d-flex pt-5" style="min-height: 600px;">
-        <article class="col-9 me-2 h-100">
-            <canvas id="candlestickChart" style="width:100% !important; height: 600px !important;"></canvas>
-        </article>
-        <article class="col-3 h-100 d-flex" style="min-height: 600px;">
-            <div class="my-auto w-100">
+    <section class="container-xxl d-flex pt-5 gap-2 main-section">
+        <section class="d-flex flex-column col-9 gap-2 chart-section">
+            <article class="w-100 shadow bg-white rounded">
+                <div class="d-flex d-flex justify-content-between align-items-center">
+                    <div class="dropdown p-3">
+                        <div class="dropdown-toggle fw-bold fs-5" style="cursor: pointer;" data-bs-toggle="dropdown" th:text="${#strings.toUpperCase(param.symbol)}"></div>
+                        <ul class="dropdown-menu">
+                            <li th:each="symbol : ${supportedSymbols}">
+                                <a class="dropdown-item" th:href="@{/chart(symbol=${symbol})}" th:text="${symbol}">symbol name</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="p-3">
+                        <span>환율: </span>
+                        <span id="usdToKrw">-</span>
+                    </div>
+                </div>
+            </article>
+            <article class="w-100 shadow bg-white rounded position-relative">
+                <div class="d-flex position-absolute top-0 start-0">
+                    <!-- <div class="d-flex align-items-center">Time: </div> -->
+                    <button id="min" class="btn custom-btn" style="font-weight: 600;" >1m</button>
+                    <button id="min3" class="btn custom-btn" style="font-weight: 500;" >3m</button>
+                    <button id="min5" class="btn custom-btn" style="font-weight: 500;" >5m</button>
+                    <button id="min15" class="btn custom-btn" style="font-weight: 500;" >15m</button>
+                </div>
+
+                <canvas id="candlestickChart" style="width:100% !important; height: 600px !important;"></canvas>
+            </article>
+        </section>
+        <section class="d-flex col-3 gap-2 order-section">
+            <article class="w-100 p-3 shadow bg-white rounded orderbook">
                 <div class="d-flex justify-content-between mb-3">
                     <div>Upbit</div>
                     <div>Binance</div>
                 </div>
-
-
-                <!-- 매도 asks -->
                 <div class="order-list asks mb-2">
-                    <div th:each="num : ${#numbers.sequence(1, 10)}" class="order-row d-flex justify-content-between">
-                        <div id="upbit" class="w-50 d-flex justify-content-between pe-2">
-                            <div id="size">
-                                <!-- 업비트 order size -->
+                    <div th:each="num : ${#numbers.sequence(1, 7)}" class="order-row d-flex justify-content-between">
+                        <div id="upbit" class="w-50 d-flex justify-content-between pe-2" style="border: 1px solid transparent">
+                            <div id="price" class="text-danger">
                                 -,---
                             </div>
-                            <div id="price" class="text-danger">
-                                <!-- 업비트 order price -->
+                            <div id="size">
                                 -,---
                             </div>
                         </div>
-                        <div id="binance" class="w-50 d-flex justify-content-between ps-2">
-                            <div id="price" class="text-danger">
-                                <!-- 바이낸스 order price -->
+                        <div id="binance" class="w-50 d-flex justify-content-between ps-2" style="border: 1px solid transparent">
+                            <div id="size">
                                 -,---
 
                             </div>
-                            <div id="size">
-                                <!-- 바이낸스 order size -->
+                            <div id="price" class="text-danger">
                                 -,---
                             </div>
                         </div>
                     </div>
                 </div>
-                <!-- 프리미엄 -->
                 <div class="d-flex justify-content-center py-2 border-top border-bottom">
                     <span class="premium h5 mb-0">-,---%</span>
                 </div>
-                <!-- 매수 bids -->
                 <div class="order-list bids mt-2">
-                    <div th:each="num : ${#numbers.sequence(1, 10)}" class="order-row d-flex justify-content-between">
-                        <div id="upbit" class="w-50 d-flex justify-content-between pe-2">
-                            <div id="size">
-                                <!-- 업비트 order size -->
+                    <div th:each="num : ${#numbers.sequence(1, 7)}" class="order-row d-flex justify-content-between">
+                        <div id="upbit" class="w-50 d-flex justify-content-between pe-2" style="border: 1px solid transparent">
+                            <div id="price" class="text-success">
                                 -,---
                             </div>
-                            <div id="price" class="text-success">
-                                <!-- 업비트 order price -->
+                            <div id="size">
                                 -,---
                             </div>
                         </div>
-                        <div id="binance" class="w-50 d-flex justify-content-between ps-2">
-                            <div id="price" class="text-success">
-                                <!-- 바이낸스 order price -->
+                        <div id="binance" class="w-50 d-flex justify-content-between ps-2" style="border: 1px solid transparent">
+                            <div id="size">
                                 -,---
 
                             </div>
-                            <div id="size">
-                                <!-- 바이낸스 order size -->
+                            <div id="price" class="text-success">
                                 -,---
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </article>
-    </section>
-    <section class="container-xxl pt-1">
-        <!-- 거래내역 작성할 예정 -->
-        <!-- 우선사항. 1. User profile에서 env등록 2. Java를 이용한 자동거래.-->
+            </article>
+            <article class="w-100 p-3 shadow bg-white rounded orderForm">
+                주문 하기 넣기 ㅋ
+            </article>
+        </section>
     </section>
     <script th:inline="javascript">
         $(function(){
             const [ symbol ] = [[${param.symbol}]]
             const prices = [[${prices}]]
             const chartWs = new WebSocket(`ws://localhost:8000/ws/chart/${symbol}`)
+
+            let defaultStepSize = 1
         
             const createCandleOfMinutes = (data) => {
                 const aMinuteMs = 60 * 1000;
@@ -154,7 +153,7 @@
                 return result
             }
             
-            const aMinuteChartData = createCandleOfMinutes(prices)
+            const chartDataSets = createCandleOfMinutes(prices)
             
             const updateCandleOfMinutes = (originArr, data) => {
                 // chart js 원본배열 참조함.
@@ -165,11 +164,6 @@
                 if(!originArr.at(-1)?.x) return
                 
                 if(originArr.at(-1).x !== roundedTimestamp) {
-                    // 새로운 데이터 생성
-                    if (originArr.length > 100) {
-                        originArr.shift();
-                    }
-                    
                     originArr.push({
                         x: roundedTimestamp,
                         o: data.premium,
@@ -191,7 +185,7 @@
                 data: {
                     datasets: [{
                         label: 'OHLC',
-                        data: aMinuteChartData,
+                        data: chartDataSets,
                         borderColors: {
                             up: '#26a69a',
                             down: '#ef5350',
@@ -212,7 +206,8 @@
                         x: {
                             type: 'time',
                             time: {
-                                unit: 'minute'
+                                unit: 'minute',
+                                stepSize: 1,
                             },
                             min: new Date(Date.now() - (60 * 1000 * 100)).getTime(),
                             // max: Date.now(),
@@ -236,6 +231,9 @@
                         mode: 'index'
                     },
                     plugins: {
+                        legend: {
+                            display: false
+                        },
                         tooltip: {
                             enabled: true,
                             mode: 'index',
@@ -299,31 +297,77 @@
                 }
             })
 
-            const setOrderbook = (cls = '', { upbit, binance }) => {
+            const setOrderbook = (cls = '', { upbit, binance }, premium) => {
                 $(`.${cls}`).children().each((index, wrapper) => {
                     const orderPages = $(wrapper)
 
                     const upbitPage = orderPages.find('#upbit')
                     const binancePage = orderPages.find('#binance')
                     
-                    $(upbitPage).find('#size').text(upbit[cls]?.[index]?.size.toFixed(3))
-                    $(upbitPage).find('#price').text(upbit[cls]?.[index]?.price.toLocaleString())
-                    $(binancePage).find('#size').text(binance[cls]?.[index]?.size.toFixed(3))
-                    $(binancePage).find('#price').text(binance[cls]?.[index]?.price.toLocaleString())
+                    const upbitSizeEle = $(upbitPage).find('#size')
+                    const upbitPriceEle = $(upbitPage).find('#price')
+                    const binanceSizeEle = $(binancePage).find('#size')
+                    const binancePriceEle = $(binancePage).find('#price')
+                    
+                    const { size: upbitSizeValue, price: upbitPriceValue } = upbit[index]
+                    const { size: binanceSizeValue, price: binancePriceValue } = binance[index]
+                    
+                    upbitSizeEle.text(upbitSizeValue.toFixed(3))
+                    upbitPriceEle.text(upbitPriceValue.toLocaleString())
+                    binancePriceEle.text(binancePriceValue.toFixed(3))
+                    binanceSizeEle.text(binanceSizeValue.toLocaleString())
+                    
+                    const { domestic, overseas } = premium
+
+                    if(domestic === upbitPriceValue) {
+                        $(upbitPage).css('border', '1px solid #000')
+                    }else {
+                        $(upbitPage).css('border', '1px solid transparent')
+                    }
+
+                    if(overseas === binancePriceValue) {
+                        $(binancePage).css('border', '1px solid #000')
+                    }else {
+                        $(binancePage).css('border', '1px solid transparent')
+                    }
                 })
             }
 
             chartWs.onmessage = (message) => {
                 const { premium, orderbookPair } = JSON.parse(message.data)
 
-                setOrderbook('asks', orderbookPair)
-                setOrderbook('bids', orderbookPair)
+                const { upbit, binance } = orderbookPair
+                
+                setOrderbook('asks', { upbit: upbit.asks.reverse(), binance: binance.asks.reverse() }, premium)
+                setOrderbook('bids', { upbit: upbit.bids, binance: binance.bids }, premium)
                 
                 $('.premium').text(`${premium.premium}%`)
+                $('#usdToKrw').text(premium.usdToKrw)
 
-                updateCandleOfMinutes(aMinuteChartData, premium)
+                updateCandleOfMinutes(chartDataSets, premium)
+
                 chart.update();
             }
+
+            $('.btn').on('click', e => {
+                const { id } = e.target
+                
+                const btnIds = ['min', 'min3', 'min5', 'min15']
+                
+                const idHash = {
+                    min: 1,
+                    min3: 3,
+                    min5: 5,
+                    min15: 15,
+                }
+
+                stepSize = idHash[id]
+                
+                const restBtnIds = btnIds.filter(btnId => btnId !== id)
+
+                $(`#${id}`).css('font-weight', 600)
+                restBtnIds.forEach(v => $(`#${v}`).css('font-weight', 500))
+            })
         })
     </script>
 </main>

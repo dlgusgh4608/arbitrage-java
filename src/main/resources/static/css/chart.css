@@ -1,0 +1,60 @@
+.order-row {
+  font-size: 0.75rem;
+}
+.text-success {
+  color: #26a69a !important;
+  font-weight: bold;
+}
+.text-danger {
+  color: #ef5350 !important;
+  font-weight: bold;
+}
+.main-section {
+  flex-direction: row;
+}
+.order-section {
+  flex-direction: column;
+}
+
+.orderbook {
+  height: 60%;
+}
+.orderForm {
+  height: 40%;
+}
+
+.custom-btn:hover {
+  background-color: rgba(0, 0, 0, .2);
+}
+
+
+@media(max-width: 1400px) {
+  .main-section {
+    flex-direction: column;
+  }
+  .chart-section {
+    width: 100%;
+  }
+  .order-section {
+    width: 100%;
+    flex-direction: row;
+  }
+  .orderbook {
+    width: 50%;
+  }
+  .orderForm {
+    width: 50%;
+  }
+}
+
+@media(max-width: 768px) {
+  .order-section {
+    flex-direction: column;
+  }
+  .orderbook {
+    width: 100%;
+  }
+  .orderForm {
+    width: 100%;
+  }
+}

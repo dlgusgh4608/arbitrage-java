@@ -136,21 +136,22 @@ public class PublicController {
             @RequestParam(name = "symbol", required = true, defaultValue = "btc") String symbol,
             Model model
     ) {
-        List<String> supportedSymbolNames = symbolVariableService.getSupportedSymbols()
+        List<String> supportedSymbols = symbolVariableService.getSupportedSymbols()
                 .stream()
-                .map(Symbol::getName)
+                .map(s -> s.getName().toUpperCase())
                 .toList();
 
-        if (!supportedSymbolNames.contains(symbol.toLowerCase())) {
+        if (!supportedSymbols.contains(symbol.toUpperCase())) {
             return "redirect:/";
         }
 
-        List<Price> prices = collectorService.getInitialPriceOfSymbolName(symbol);
+        List<Price> prices = collectorService.getInitialPriceOfSymbolName(symbol.toLowerCase());
         List<PriceDto> priceDTOs = prices.stream()
                 .map(PriceDto::from)
                 .collect(Collectors.toList());
 
 
+        model.addAttribute("supportedSymbols", supportedSymbols);
         model.addAttribute("prices", priceDTOs);
 
         return "pages/chart";
