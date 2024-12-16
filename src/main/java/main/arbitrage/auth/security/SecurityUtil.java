@@ -1,6 +1,6 @@
 package main.arbitrage.auth.security;
 
-import main.arbitrage.domain.user.entity.User;
+import main.arbitrage.auth.dto.AuthContext;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,34 +10,39 @@ import org.springframework.stereotype.Component;
 public class SecurityUtil {
 
     public static Long getUserId() {
-        User user = isAuthorized();
-        return user.getUserId();
+        AuthContext authContext = isAuthorized();
+        return authContext.getUserId();
     }
 
     public static String getEmail() {
-        User user = isAuthorized();
-        return user.getEmail();
+        AuthContext authContext = isAuthorized();
+        return authContext.getEmail();
     }
 
     public static String getNickname() {
-        User user = isAuthorized();
-        return user.getNickname();
+        AuthContext authContext = isAuthorized();
+        return authContext.getNickname();
     }
 
-    public static User getUser() {
+    public static Long getExpiredAt() {
+        AuthContext authContext = isAuthorized();
+        return authContext.getExpiredAt();
+    }
+
+    public static AuthContext getContext() {
         return isAuthorized();
     }
 
 
-    private static User isAuthorized() {
+    private static AuthContext isAuthorized() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        User user = (User) authentication.getPrincipal();
+        AuthContext authContext = (AuthContext) authentication.getPrincipal();
 
         if (!authentication.isAuthenticated()) {
             throw new BadCredentialsException("Unauthorized");
         }
 
-        return user;
+        return authContext;
     }
 }

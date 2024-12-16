@@ -1,15 +1,12 @@
 package main.arbitrage.auth.jwt;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
-import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.global.util.cookie.CookieUtil;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -20,7 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.auth.jwt.dto.JwtDto;
+import main.arbitrage.auth.dto.AuthContext;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
 
 @Component
@@ -65,10 +62,10 @@ public class JwtFilter extends OncePerRequestFilter {
             String accessToken = accessTokenCookie.get().getValue();
 
             // 이 토큰은 내가 만든 토큰인가?
-            JwtDto tokenInfo = jwtUtil.getTokenInfo(accessToken);
+            AuthContext tokenInfo = jwtUtil.getTokenInfo(accessToken);
 
             // 현재 시각 초단위 ( JWT에 저장하면 초단위로 데이터를 출력한다. )
-            Long nowTimeToSec = Math.floorDiv(System.currentTimeMillis(), 1000);
+            long nowTimeToSec = Math.floorDiv(System.currentTimeMillis(), 1000);
 
             // 엑세스 토큰이 만료되지 않았을때. (토큰이 5분 이상 남았을때)
             if (nowTimeToSec < tokenInfo.getExpiredAt() - 60 * 5) {
@@ -118,12 +115,12 @@ public class JwtFilter extends OncePerRequestFilter {
             String newAccessToken = jwtUtil.createToken(userId, email, nickname);
             Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(email);
             String newRefreshToken = refreshTokenService.updateRefreshToken(email, UUID.randomUUID().toString(), refreshTokenTTL);
-            
+
             CookieUtil.setCookie(response, newAccessToken, newRefreshToken, refreshTokenTTL);
 
             log.info("새로운 액세스 토큰: {}\n새로운 리프레시 토큰: {}", newAccessToken, newRefreshToken);
 
-            JwtDto newTokenInfo = jwtUtil.getTokenInfo(newAccessToken);
+            AuthContext newTokenInfo = jwtUtil.getTokenInfo(newAccessToken);
             saveUserAuthContext(newTokenInfo);
             filterChain.doFilter(request, response);
         } catch (Exception e) {
@@ -137,18 +134,12 @@ public class JwtFilter extends OncePerRequestFilter {
         return requestURI.equals("/api/login") || requestURI.equals("/api/signup");
     }
 
-    private void saveUserAuthContext(JwtDto tokenDto) {
-        UserDetails userDetails = User.builder()
-                .userId(tokenDto.getUserId())
-                .email(tokenDto.getEmail())
-                .nickname(tokenDto.getNickname())
-                .build();
-
+    private void saveUserAuthContext(AuthContext tokenDto) {
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
-                        userDetails,
+                        tokenDto,
                         null,
-                        userDetails.getAuthorities()
+                        tokenDto.getAuthorities()
                 );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);

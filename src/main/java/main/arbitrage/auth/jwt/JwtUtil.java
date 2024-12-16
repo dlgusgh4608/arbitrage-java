@@ -6,7 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.auth.jwt.dto.JwtDto;
+import main.arbitrage.auth.dto.AuthContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -68,7 +68,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    public JwtDto getTokenInfo(String token) {
+    public AuthContext getTokenInfo(String token) {
         try {
             Claims jwtClaim = Jwts
                     .parser()
@@ -77,7 +77,7 @@ public class JwtUtil {
                     .parseSignedClaims(token)
                     .getPayload();
 
-            return JwtDto.builder()
+            return AuthContext.builder()
                     .userId(Long.parseLong(jwtClaim.get("userId", String.class)))
                     .email(jwtClaim.get("email", String.class))
                     .nickname(jwtClaim.get("nickname", String.class))
@@ -86,7 +86,7 @@ public class JwtUtil {
         } catch (ExpiredJwtException e) { // access token이 만료되었을때에도 사용자값 return
             Claims jwtClaim = e.getClaims();
 
-            return JwtDto.builder()
+            return AuthContext.builder()
                     .userId(Long.parseLong(jwtClaim.get("userId", String.class)))
                     .email(jwtClaim.get("email", String.class))
                     .nickname(jwtClaim.get("nickname", String.class))
