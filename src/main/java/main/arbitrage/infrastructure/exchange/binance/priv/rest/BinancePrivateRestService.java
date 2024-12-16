@@ -21,6 +21,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class BinancePrivateRestService implements ExchangePrivateRestService {
@@ -62,6 +63,11 @@ public class BinancePrivateRestService implements ExchangePrivateRestService {
                 responseBody,
                 objectMapper.getTypeFactory().constructCollectionType(List.class, BinanceGetAccountResponseDto.class)
         );
+    }
+
+    public Optional<BinanceGetAccountResponseDto> getUSDT() throws IOException, BinancePrivateRestException {
+        List<BinanceGetAccountResponseDto> account = getAccount();
+        return account.stream().filter(binanceAccount -> binanceAccount.getAsset().equals("USDT")).findFirst();
     }
 
     @Override

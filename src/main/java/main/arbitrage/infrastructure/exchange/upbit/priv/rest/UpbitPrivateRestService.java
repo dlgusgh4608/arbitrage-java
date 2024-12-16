@@ -8,7 +8,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import main.arbitrage.infrastructure.exchange.ExchangePrivateRestService;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.UpbitGetAccountResponseDto;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.account.UpbitGetAccountResponseDto;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -20,10 +20,7 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class UpbitPrivateRestService implements ExchangePrivateRestService {
@@ -63,6 +60,11 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
                 responseBody,
                 objectMapper.getTypeFactory().constructCollectionType(List.class, UpbitGetAccountResponseDto.class)
         );
+    }
+
+    public Optional<UpbitGetAccountResponseDto> getKRW() throws UpbitPrivateRestException, IOException {
+        List<UpbitGetAccountResponseDto> account = getAccount();
+        return account.stream().filter(upbitAccount -> upbitAccount.getCurrency().equals("KRW")).findFirst();
     }
 
     @Override

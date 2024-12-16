@@ -1,6 +1,5 @@
 package main.arbitrage.application.user.service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,7 +15,9 @@ import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.BinanceGetAccountResponseDto;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.UpbitGetAccountResponseDto;
+import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
+import main.arbitrage.infrastructure.exchange.factory.dto.ExchangePrivateRestPair;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.account.UpbitGetAccountResponseDto;
 import main.arbitrage.infrastructure.oauthValidator.google.GoogleApiClient;
 import main.arbitrage.infrastructure.oauthValidator.kakao.KakaoApiClient;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
@@ -56,6 +57,8 @@ public class UserApplicationService {
 
     private final GoogleApiClient googleApiClient;
     private final KakaoApiClient kakaoApiClient;
+
+    private ExchangePrivateRestFactory exchangePrivateRestFactory;
 
     @Transactional
     public String sendEmail(EmailMessageDto emailMessageDto) throws Exception {
@@ -160,31 +163,13 @@ public class UserApplicationService {
             // env가 없으면 upbit와 binance의 wallet 정보를 받아올 수 없음.
             userProfileDtoBuilder.binanceBalance(null).upbitBalance(null);
         } else {
-            // env를 통하여 각각의 거래소의 service를 생성
+            // env를 통하여 거래소의 service를 생성
             UserEnv userEnv = userEnvOptional.get();
-            UpbitPrivateRestService upbitPrivateRestService =
-                    new UpbitPrivateRestService(
-                            aesCrypto.decrypt(userEnv.getUpbitAccessKey()),
-                            aesCrypto.decrypt(userEnv.getUpbitSecretKey()),
-                            okHttpClient,
-                            objectMapper
-                    );
-
-            BinancePrivateRestService binancePrivateRestService =
-                    new BinancePrivateRestService(
-                            aesCrypto.decrypt(userEnv.getBinanceAccessKey()),
-                            aesCrypto.decrypt(userEnv.getBinanceSecretKey()),
-                            okHttpClient,
-                            objectMapper
-                    );
+            ExchangePrivateRestPair upbitExchangePrivateRestPair = exchangePrivateRestFactory.create(userEnv);
 
             // 각각 거래소의 지갑정보를 받아옴
-            List<UpbitGetAccountResponseDto> upbitAccountList = upbitPrivateRestService.getAccount();
-            List<BinanceGetAccountResponseDto> binanceAccountList = binancePrivateRestService.getAccount();
-
-            // 지갑 정보에서 KRW와 USDT를 필터링
-            Optional<UpbitGetAccountResponseDto> upbitKRW = upbitAccountList.stream().filter(upbitAccount -> upbitAccount.getCurrency().equals("KRW")).findFirst();
-            Optional<BinanceGetAccountResponseDto> binanceUSDT = binanceAccountList.stream().filter(binanceAccount -> binanceAccount.getAsset().equals("USDT")).findFirst();
+            Optional<UpbitGetAccountResponseDto> upbitKRW = upbitExchangePrivateRestPair.getUpbit().getKRW();
+            Optional<BinanceGetAccountResponseDto> binanceUSDT = upbitExchangePrivateRestPair.getBinance().getUSDT();
 
             // builder에 build하기
             if (upbitKRW.isEmpty()) {
