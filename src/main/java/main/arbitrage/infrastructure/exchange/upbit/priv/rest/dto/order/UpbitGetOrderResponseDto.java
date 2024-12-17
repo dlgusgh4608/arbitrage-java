@@ -1,6 +1,8 @@
 package main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.*;
 
 import java.util.List;
@@ -8,12 +10,13 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class UpbitGetOrderResponseDto {
     private String uuid;
     private String side;
     private String ordType;
     private String price;
-    private String state;
+    private State state;
     private String market;
     private String createdAt;
     private String volume;
@@ -34,7 +37,7 @@ public class UpbitGetOrderResponseDto {
             String side,
             String ordType,
             String price,
-            String state,
+            State state,
             String market,
             String createdAt,
             String volume,
@@ -70,6 +73,7 @@ public class UpbitGetOrderResponseDto {
 
     @Getter
     @NoArgsConstructor(access = AccessLevel.PROTECTED)
+    @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static class Trade {
         private String market;
         private String uuid;
@@ -78,6 +82,7 @@ public class UpbitGetOrderResponseDto {
         private String funds;
         private String side;
         private String createdAt;
+        private String trend;
 
         @Builder
         private Trade(
@@ -87,7 +92,8 @@ public class UpbitGetOrderResponseDto {
                 String volume,
                 String funds,
                 String side,
-                String createdAt
+                String createdAt,
+                String trend
         ) {
             this.market = market;
             this.uuid = uuid;
@@ -96,6 +102,7 @@ public class UpbitGetOrderResponseDto {
             this.funds = funds;
             this.side = side;
             this.createdAt = createdAt;
+            this.trend = trend;
         }
     }
 }

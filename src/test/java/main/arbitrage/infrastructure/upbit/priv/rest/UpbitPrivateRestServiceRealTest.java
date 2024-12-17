@@ -2,17 +2,13 @@ package main.arbitrage.infrastructure.upbit.priv.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.account.UpbitGetAccountResponseDto;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.OrdType;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.Side;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitGetOrderResponseDto;
 import okhttp3.OkHttpClient;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.IOException;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -20,6 +16,8 @@ class UpbitPrivateRestServiceRealTest {
     private UpbitPrivateRestService upbitPrivateRestService;
     private final OkHttpClient okHttpClient = new OkHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private String uuid;
 
     @BeforeEach
     void setUp() {
@@ -30,7 +28,8 @@ class UpbitPrivateRestServiceRealTest {
 
     @Test
     @DisplayName("주문 테스트")
-    @Disabled("Real API Test")
+    @Order(1)
+    @Disabled("real-test")
     void orderTest() throws IOException {
         // given
         String market = "KRW-BTC";
@@ -44,5 +43,19 @@ class UpbitPrivateRestServiceRealTest {
         // then
         assertNotNull(uuid);
         System.out.println("Order UUID: " + uuid);
+        this.uuid = uuid;
+    }
+
+    @Test
+    @DisplayName("주문 테스트2")
+    @Order(2)
+    @Disabled("real-test")
+    void orderBuyAndGet() throws IOException, InterruptedException {
+        UpbitGetOrderResponseDto dto = upbitPrivateRestService.order(uuid, 5);
+
+        // then
+        System.out.println("getState: " + dto.getState());
+        System.out.println("getExecutedVolume: " + dto.getExecutedVolume());
+        System.out.println("getPaidFee: " + dto.getPaidFee());
     }
 }

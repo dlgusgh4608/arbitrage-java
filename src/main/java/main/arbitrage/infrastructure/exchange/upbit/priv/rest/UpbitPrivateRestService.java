@@ -10,9 +10,7 @@ import io.jsonwebtoken.security.Keys;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.exchange.ExchangePrivateRestService;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.account.UpbitGetAccountResponseDto;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.OrdType;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.Side;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitPostOrderRequestDto;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.*;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
 import okhttp3.*;
 
@@ -135,6 +133,46 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         return json.get("uuid").asText();
     }
 
+    public UpbitGetOrderResponseDto order(String uuid, int repeat) throws UpbitPrivateRestException, IOException, InterruptedException {
+        if (repeat == 0) {
+            throw new UpbitPrivateRestException("(업비트) 알 수 없는 에러가 발생했습니다.", "invalid_error");
+        }
+        if (uuid == null) {
+            throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
+        }
+
+        Map<String, Object> map = Map.of("uuid", uuid);
+
+        String token = generateToken(map);
+
+        System.out.println(SERVER_URI + "/v1/order" + "?" + generateQueryString(map));
+
+        Request request = new Request.Builder()
+                .url(SERVER_URI + "/v1/order" + "?" + generateQueryString(map))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Authorization", "Bearer " + token)
+                .get()
+                .build();
+
+        Response response = okHttpClient.newCall(request).execute();
+        String responseBody = response.body().string();
+        
+        if (!response.isSuccessful()) validateResponse(responseBody);
+
+        UpbitGetOrderResponseDto dto = objectMapper.readValue(responseBody, UpbitGetOrderResponseDto.class);
+
+        if (dto.getState().equals(State.wait) || dto.getState().equals(State.watch)) {
+            /*
+             * 본인은 node.js (싱글 쓰레드) 만 사용하다 보니 Thread.sleep을 사용하려니 무지한 내가 두려워 검색해보았다.
+             * 쓰레드에 대해 찾아보니 프로젝트 전반적으로 큰 수정이 필요할거같다.
+             * */
+            Thread.sleep(2000);
+            return order(uuid, repeat - 1);
+        }
+
+        return dto;
+    }
+
     @Override
     public void validateResponse(String responseBody) throws UpbitPrivateRestException, JsonProcessingException {
         JsonNode json = objectMapper.readTree(responseBody);
@@ -166,7 +204,7 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
                 throw new UpbitPrivateRestException("(업비트) 최소 매도 금액 미만입니다.", errorCode);
             case "withdraw_address_not_registerd":
                 throw new UpbitPrivateRestException("(업비트) 허용 되지 않은 출금 주소입니다.", errorCode);
-            case "validation_error":
+            case "validation_error", "invalid_parameter":
                 throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", errorCode);
             default:
                 throw new UpbitPrivateRestException("(업비트) 알 수 없는 에러가 발생했습니다.", errorCode);
