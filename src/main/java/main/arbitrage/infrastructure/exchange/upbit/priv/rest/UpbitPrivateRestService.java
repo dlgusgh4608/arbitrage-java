@@ -7,7 +7,6 @@ import io.jsonwebtoken.security.WeakKeyException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.exchange.ExchangePrivateRestService;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.account.UpbitGetAccountResponseDto;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.*;
@@ -15,13 +14,16 @@ import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPri
 import okhttp3.*;
 
 import javax.crypto.SecretKey;
-import javax.swing.text.html.parser.Entity;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class UpbitPrivateRestService implements ExchangePrivateRestService {
@@ -29,6 +31,7 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
     private final String secretKey;
     private final OkHttpClient okHttpClient;
     private final ObjectMapper objectMapper;
+    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     private static final String SERVER_URI = "https://api.upbit.com";
 
@@ -133,44 +136,45 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         return json.get("uuid").asText();
     }
 
-    public UpbitGetOrderResponseDto order(String uuid, int repeat) throws UpbitPrivateRestException, IOException, InterruptedException {
-        if (repeat == 0) {
-            throw new UpbitPrivateRestException("(업비트) 알 수 없는 에러가 발생했습니다.", "invalid_error");
-        }
-        if (uuid == null) {
-            throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
-        }
+    public UpbitGetOrderResponseDto order(String uuid, int repeat) {
+        CompletableFuture<UpbitGetOrderResponseDto> future = new CompletableFuture<>();
 
-        Map<String, Object> map = Map.of("uuid", uuid);
+        executor.schedule(() -> {
+            try {
+                Map<String, Object> map = Map.of("uuid", uuid);
 
-        String token = generateToken(map);
+                String token = generateToken(map);
 
-        System.out.println(SERVER_URI + "/v1/order" + "?" + generateQueryString(map));
+                Request request = new Request.Builder()
+                        .url(SERVER_URI + "/v1/order" + "?" + generateQueryString(map))
+                        .addHeader("Content-Type", "application/json")
+                        .addHeader("Authorization", "Bearer " + token)
+                        .get()
+                        .build();
 
-        Request request = new Request.Builder()
-                .url(SERVER_URI + "/v1/order" + "?" + generateQueryString(map))
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Authorization", "Bearer " + token)
-                .get()
-                .build();
+                Response response = okHttpClient.newCall(request).execute();
+                String responseBody = response.body().string();
 
-        Response response = okHttpClient.newCall(request).execute();
-        String responseBody = response.body().string();
-        
-        if (!response.isSuccessful()) validateResponse(responseBody);
+                if (!response.isSuccessful()) validateResponse(responseBody);
 
-        UpbitGetOrderResponseDto dto = objectMapper.readValue(responseBody, UpbitGetOrderResponseDto.class);
+                UpbitGetOrderResponseDto dto = objectMapper.readValue(responseBody, UpbitGetOrderResponseDto.class);
 
-        if (dto.getState().equals(State.wait) || dto.getState().equals(State.watch)) {
-            /*
-             * 본인은 node.js (싱글 쓰레드) 만 사용하다 보니 Thread.sleep을 사용하려니 무지한 내가 두려워 검색해보았다.
-             * 쓰레드에 대해 찾아보니 프로젝트 전반적으로 큰 수정이 필요할거같다.
-             * */
-            Thread.sleep(2000);
-            return order(uuid, repeat - 1);
-        }
+                if ((dto.getState().equals(State.wait) || dto.getState().equals(State.watch)) && repeat > 0) {
+                    future.complete(order(uuid, repeat - 1));
+                } else {
+                    future.complete(dto);
+                }
+            } catch (Exception e) {
+                future.completeExceptionally(e);
+            }
+        }, 2, TimeUnit.SECONDS);
 
-        return dto;
+        return future.join();
+    }
+
+    // 서비스 종료 시 실행
+    public void shutdown() {
+        executor.shutdown();
     }
 
     @Override

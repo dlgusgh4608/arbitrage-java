@@ -17,8 +17,6 @@ class UpbitPrivateRestServiceRealTest {
     private final OkHttpClient okHttpClient = new OkHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private String uuid;
-
     @BeforeEach
     void setUp() {
         String accessKey = "";  // 실제 업비트 Access Key 입력
@@ -29,7 +27,7 @@ class UpbitPrivateRestServiceRealTest {
     @Test
     @DisplayName("주문 테스트")
     @Order(1)
-    @Disabled("real-test")
+//    @Disabled("real-test")
     void orderTest() throws IOException {
         // given
         String market = "KRW-BTC";
@@ -43,14 +41,21 @@ class UpbitPrivateRestServiceRealTest {
         // then
         assertNotNull(uuid);
         System.out.println("Order UUID: " + uuid);
-        this.uuid = uuid;
     }
 
     @Test
-    @DisplayName("주문 테스트2")
+    @DisplayName("주문 가져오기 테스트")
     @Order(2)
     @Disabled("real-test")
     void orderBuyAndGet() throws IOException, InterruptedException {
+        // given
+        String market = "KRW-BTC";
+        Side side = Side.bid;  // 매수
+        OrdType ordType = OrdType.price;
+        Double price = 5000d;  // 5천원
+
+        // when
+        String uuid = upbitPrivateRestService.order(market, side, ordType, price, null);
         UpbitGetOrderResponseDto dto = upbitPrivateRestService.order(uuid, 5);
 
         // then
