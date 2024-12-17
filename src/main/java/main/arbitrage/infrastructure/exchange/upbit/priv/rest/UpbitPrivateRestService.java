@@ -7,14 +7,17 @@ import io.jsonwebtoken.security.WeakKeyException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.exchange.ExchangePrivateRestService;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.account.UpbitGetAccountResponseDto;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.OrdType;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.Side;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitPostOrderRequestDto;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 
 import javax.crypto.SecretKey;
+import javax.swing.text.html.parser.Entity;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -67,6 +70,71 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         return account.stream().filter(upbitAccount -> upbitAccount.getCurrency().equals("KRW")).findFirst();
     }
 
+    public String order(String market, Side side, OrdType ordType, Double price, Double volume) throws UpbitPrivateRestException, IOException {
+        if (market == null || side == null || ordType == null) {
+            throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
+        }
+
+        // orderType Validation
+        switch (ordType) {
+            case limit -> {
+                if (volume == null || price == null) {
+                    throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
+                }
+            }
+            case price -> {
+                if (price == null) {
+                    throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
+                }
+            }
+            case market -> {
+                if (volume == null) {
+                    throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
+                }
+            }
+        }
+
+        UpbitPostOrderRequestDto requestDto = UpbitPostOrderRequestDto.builder()
+                .market(market)
+                .side(side)
+                .ordType(ordType)
+                .price(price)
+                .volume(volume)
+                .build();
+
+        Map<String, Object> map = objectMapper.convertValue(requestDto, Map.class);
+
+        String token = generateToken(map);
+
+        RequestBody body = RequestBody.create(
+                MediaType.parse("application/json; charset=utf-8"),
+                objectMapper.writeValueAsString(map)
+        );
+
+        Request request = new Request.Builder()
+                .url(SERVER_URI + "/v1/orders")
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Authorization", "Bearer " + token)
+                .post(body)
+                .build();
+
+        Response response = okHttpClient.newCall(request).execute();
+
+        String responseBody = response.body().string();
+
+        /*
+         * responseBody에 있는 uuid를 통해 order를 조회해야합니다.
+         * response값은 아직 거래가 체결되지 않은 상태로 오기때문입니다.
+         * order get method를 state success가 나올때까지 2초 딜레이 3회 재귀 돌게하여 데이터 get
+         * */
+
+        if (!response.isSuccessful()) validateResponse(responseBody);
+
+        JsonNode json = objectMapper.readTree(responseBody);
+
+        return json.get("uuid").asText();
+    }
+
     @Override
     public void validateResponse(String responseBody) throws UpbitPrivateRestException, JsonProcessingException {
         JsonNode json = objectMapper.readTree(responseBody);
@@ -84,8 +152,24 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
                 throw new UpbitPrivateRestException("(업비트) 허용되지 않은 IP 주소입니다.", errorCode);
             case "out_of_scope":
                 throw new UpbitPrivateRestException("(업비트) 허용되지 않은 기능입니다.", errorCode);
+            case "create_ask_error":
+                throw new UpbitPrivateRestException("(업비트) 매수 주문 요청 정보가 올바르지 않습니다.", errorCode);
+            case "create_bid_error":
+                throw new UpbitPrivateRestException("(업비트) 매도 주문 요청 정보가 올바르지 않습니다.", errorCode);
+            case "insufficient_funds_ask":
+                throw new UpbitPrivateRestException("(업비트) 매수 가능 잔고가 부족합니다.", errorCode);
+            case "insufficient_funds_bid":
+                throw new UpbitPrivateRestException("(업비트) 매도 가능 잔고가 부족합니다.", errorCode);
+            case "under_min_total_ask":
+                throw new UpbitPrivateRestException("(업비트) 최소 매수 금액 미만입니다.", errorCode);
+            case "under_min_total_bid":
+                throw new UpbitPrivateRestException("(업비트) 최소 매도 금액 미만입니다.", errorCode);
+            case "withdraw_address_not_registerd":
+                throw new UpbitPrivateRestException("(업비트) 허용 되지 않은 출금 주소입니다.", errorCode);
+            case "validation_error":
+                throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", errorCode);
             default:
-                throw new UpbitPrivateRestException("(업비트) 알 수 없는 에러가 발생했습니다.", "UNKNOWN_ERROR");
+                throw new UpbitPrivateRestException("(업비트) 알 수 없는 에러가 발생했습니다.", errorCode);
         }
     }
 
