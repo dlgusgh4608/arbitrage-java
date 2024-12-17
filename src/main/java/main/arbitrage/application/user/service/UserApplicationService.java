@@ -14,7 +14,7 @@ import main.arbitrage.domain.userEnv.dto.UserEnvDto;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.BinanceGetAccountResponseDto;
+import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.account.BinanceGetAccountResponseDto;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
 import main.arbitrage.infrastructure.exchange.factory.dto.ExchangePrivateRestPair;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.account.UpbitGetAccountResponseDto;

@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.exchange.binance.priv.rest.dto;
+package main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.account;
 
 import lombok.*;
 
