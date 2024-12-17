@@ -27,7 +27,7 @@ class UpbitPrivateRestServiceRealTest {
     @Test
     @DisplayName("주문 테스트")
     @Order(1)
-//    @Disabled("real-test")
+    @Disabled("real-test")
     void orderTest() throws IOException {
         // given
         String market = "KRW-BTC";
