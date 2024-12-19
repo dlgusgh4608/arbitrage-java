@@ -30,6 +30,7 @@ import main.arbitrage.infrastructure.exchange.ExchangePrivateRestService;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.account.UpbitGetAccountResponseDto;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitGetOrderResponseDto;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.State;;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.OrdType;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitPostOrderRequestDto;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
@@ -171,7 +172,7 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
 
         UpbitGetOrderResponseDto dto = objectMapper.readValue(responseBody, UpbitGetOrderResponseDto.class);
 
-        if ((dto.getState().equals(State.wait) || dto.getState().equals(State.watch)) && repeat > 0) {
+        if (dto.getState().equals(State.wait) || dto.getState().equals(State.watch)) {
             Thread.sleep(1000);
             return order(uuid, repeat - 1);
         }

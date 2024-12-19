@@ -26,7 +26,6 @@ class UpbitPrivateRestServiceRealTest {
 
     @Test
     @DisplayName("주문 테스트")
-    @Order(1)
     @Disabled("real-test")
     void orderTest() throws IOException {
         // given
@@ -44,8 +43,7 @@ class UpbitPrivateRestServiceRealTest {
     }
 
     @Test
-    @DisplayName("주문 가져오기 테스트")
-    @Order(2)
+    @DisplayName("구매 및 확인 테스트")
     @Disabled("real-test")
     void orderBuyAndGet() throws IOException, InterruptedException {
         // given
@@ -59,8 +57,25 @@ class UpbitPrivateRestServiceRealTest {
         UpbitGetOrderResponseDto dto = upbitPrivateRestService.order(uuid, 5);
 
         // then
-        System.out.println("getState: " + dto.getState());
-        System.out.println("getExecutedVolume: " + dto.getExecutedVolume());
-        System.out.println("getPaidFee: " + dto.getPaidFee());
+        System.out.println(dto);
+    }
+
+    @Test
+    @DisplayName("판매 및 확인 테스트")
+    @Disabled("real-test")
+    void orderSellAndGet() throws IOException, InterruptedException {
+        // given
+        String market = "KRW-BTC";
+        Side side = Side.ask; // 매도
+        OrdType ordType = OrdType.market;
+        Double price = null;
+        Double volume = 0.00013197d;
+
+        // when
+        String uuid = upbitPrivateRestService.order(market, side, ordType, price, volume);
+        UpbitGetOrderResponseDto dto = upbitPrivateRestService.order(uuid, 5);
+
+        // then
+        System.out.println(dto);
     }
 }
