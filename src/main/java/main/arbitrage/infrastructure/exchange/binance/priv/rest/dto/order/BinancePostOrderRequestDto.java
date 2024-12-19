@@ -12,22 +12,21 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BinancePostOrderRequestDto {
     private String newClientOrderId;
-    private Type type;
+    private BinanceOrderEnum.Type type;
     private String symbol;
-    private Side side;
+    private BinanceOrderEnum.Side side;
     private String newOrderRespType;
     private Double quantity;
     private Double price;
     private String timeInForce;
     private Long timestamp;
-    // private Long goodTillDate;
 
     @Builder
     public BinancePostOrderRequestDto(
         String newClientOrderId,
-        Type type,
+        BinanceOrderEnum.Type type,
         String symbol,
-        Side side,
+        BinanceOrderEnum.Side side,
         Double quantity,
         Double price
     ) {
@@ -37,10 +36,8 @@ public class BinancePostOrderRequestDto {
         this.side = side;
         this.quantity = quantity;
         this.price = price;
-        // GTD로 변경시 자동 취소가 가능하지만 최소 10분동안 Order를 유지해야함 -> 배제이유
-        this.timeInForce = type.equals(Type.LIMIT) ? TimeInForce.GTC.name() : null;
-        // this.goodTillDate = System.currentTimeMillis() + 1000 * 601;
-        this.newOrderRespType = "RESULT";
+        this.timeInForce = type.equals(BinanceOrderEnum.Type.LIMIT) ? BinanceOrderEnum.TimeInForce.GTC.name() : null;
+        this.newOrderRespType = "RESULT"; // RESULT시 FILLED가 나왔을때 Return해줌 Market일때.
         this.timestamp = System.currentTimeMillis();
     }
 }

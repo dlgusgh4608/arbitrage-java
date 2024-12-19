@@ -27,10 +27,11 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.WeakKeyException;
 import main.arbitrage.infrastructure.exchange.ExchangePrivateRestService;
+import main.arbitrage.infrastructure.exchange.binance.priv.rest.exception.BinancePrivateRestException;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.account.UpbitGetAccountResponseDto;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitGetOrderResponseDto;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.State;;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.Side;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.State;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.OrdType;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitPostOrderRequestDto;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
@@ -45,10 +46,17 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
     private final String secretKey;
     private final OkHttpClient okHttpClient;
     private final ObjectMapper objectMapper;
+    private final List<String> symbolNames;
 
     private static final String SERVER_URI = "https://api.upbit.com";
 
-    public UpbitPrivateRestService(String accessKey, String secretKey, OkHttpClient okHttpClient, ObjectMapper objectMapper) {
+    public UpbitPrivateRestService(
+        String accessKey,
+        String secretKey,
+        OkHttpClient okHttpClient,
+        ObjectMapper objectMapper,
+        List<String> symbolNames
+    ) {
         if (accessKey.isEmpty() || secretKey.isEmpty()) {
             throw new WeakKeyException("The specified key byte array is 0 bits");
         }
@@ -56,6 +64,7 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         this.secretKey = secretKey;
         this.okHttpClient = okHttpClient;
         this.objectMapper = objectMapper;
+        this.symbolNames = symbolNames;
     }
 
     public List<UpbitGetAccountResponseDto> getAccount() throws UpbitPrivateRestException, IOException {
@@ -84,7 +93,7 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         return account.stream().filter(upbitAccount -> upbitAccount.getCurrency().equals("KRW")).findFirst();
     }
 
-    public String order(String market, UpbitOrderEnum.Side side, UpbitOrderEnum.OrdType ordType, Double price, Double volume) throws UpbitPrivateRestException, IOException {
+    public String order(String market, Side side, OrdType ordType, Double price, Double volume) throws UpbitPrivateRestException, IOException {
         if (market == null || side == null || ordType == null) {
             throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
         }
@@ -98,20 +107,22 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
             }
             // 매수
             case price -> {
-                if (price == null || side.equals(UpbitOrderEnum.Side.ask)) {
+                if (price == null || side.equals(Side.ask)) {
                     throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
                 }
             }
             // 매도
             case market -> {
-                if (volume == null || side.equals(UpbitOrderEnum.Side.bid)) {
+                if (volume == null || side.equals(Side.bid)) {
                     throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
                 }
             }
         }
 
+        String symbol = convertSymbol(market);
+
         UpbitPostOrderRequestDto requestDto = UpbitPostOrderRequestDto.builder()
-                .market(market)
+                .market(symbol)
                 .side(side)
                 .ordType(ordType)
                 .price(price)
@@ -180,6 +191,15 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         return dto;
     }
 
+    @Override
+    public String convertSymbol(String symbol) {
+        String upperSymbol = symbol.toUpperCase().replace("KRW-", "");
+
+        if(!symbolNames.contains(upperSymbol)) throw new BinancePrivateRestException("(업비트) 지원하지 않는 심볼입니다.", "invalid_symbol");
+        
+        return "KRW-" + upperSymbol;
+    }
+    
     @Override
     public void validateResponse(String responseBody) throws UpbitPrivateRestException, JsonProcessingException {
         JsonNode json = objectMapper.readTree(responseBody);

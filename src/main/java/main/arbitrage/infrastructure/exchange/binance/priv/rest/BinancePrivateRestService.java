@@ -23,12 +23,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.security.WeakKeyException;
 import main.arbitrage.infrastructure.exchange.ExchangePrivateRestService;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.account.BinanceGetAccountResponseDto;
+import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.order.BinanceOrderResponseDto;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.order.BinancePostOrderRequestDto;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.order.Side;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.order.TimeInForce;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.order.Type;
+import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.order.BinanceOrderEnum.Side;
+import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.order.BinanceOrderEnum.Type;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.exception.BinancePrivateRestException;
-import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -39,10 +38,16 @@ public class BinancePrivateRestService implements ExchangePrivateRestService {
     private final String secretKey;
     private final OkHttpClient okHttpClient;
     private final ObjectMapper objectMapper;
+    private final List<String> symbolNames;
     private static final String HASH_ALGORITHM = "HmacSHA256";
 
-    public BinancePrivateRestService(String accessKey, String secretKey, OkHttpClient okHttpClient,
-            ObjectMapper objectMapper) {
+    public BinancePrivateRestService(
+        String accessKey,
+        String secretKey,
+        OkHttpClient okHttpClient,
+        ObjectMapper objectMapper,
+        List<String> symbolNames
+    ) {
         if (accessKey.isEmpty() || secretKey.isEmpty()) {
             throw new WeakKeyException("The specified key byte array is 0 bits");
         }
@@ -50,6 +55,7 @@ public class BinancePrivateRestService implements ExchangePrivateRestService {
         this.secretKey = secretKey;
         this.okHttpClient = okHttpClient;
         this.objectMapper = objectMapper;
+        this.symbolNames = symbolNames;
     }
 
     public List<BinanceGetAccountResponseDto> getAccount() throws IOException, BinancePrivateRestException {
@@ -80,7 +86,7 @@ public class BinancePrivateRestService implements ExchangePrivateRestService {
         return account.stream().filter(binanceAccount -> binanceAccount.getAsset().equals("USDT")).findFirst();
     }
 
-    public void order(String market, Side side, Type type, Double volume, Double price) throws IOException, BinancePrivateRestException {
+    public BinanceOrderResponseDto order(String market, Side side, Type type, Double volume, Double price) throws IOException, BinancePrivateRestException {
         if(market == null || side == null || type == null || volume == null) {
             throw new BinancePrivateRestException("(바이낸스) 잘못 된 주문 API 요청입니다.", "validation_error");
         }
@@ -89,10 +95,12 @@ public class BinancePrivateRestService implements ExchangePrivateRestService {
             throw new BinancePrivateRestException("(바이낸스) 잘못 된 주문 API 요청입니다.", "validation_error");
         }    
 
+        String symbol = convertSymbol(market);
+        
         BinancePostOrderRequestDto requestDto = BinancePostOrderRequestDto.builder()
             .newClientOrderId(UUID.randomUUID().toString())
             .type(type)
-            .symbol(market)
+            .symbol(symbol)
             .side(side)
             .price(price)
             .quantity(volume)
@@ -118,12 +126,20 @@ public class BinancePrivateRestService implements ExchangePrivateRestService {
 
         String responseBody = response.body().string();
 
-        System.out.println(responseBody);
+        if (!response.isSuccessful()) validateResponse(responseBody);
 
-        if (!response.isSuccessful())
-            validateResponse(responseBody);
+        return objectMapper.readValue(responseBody, BinanceOrderResponseDto.class);
     }
 
+    @Override
+    public String convertSymbol(String symbol) {
+        String upperSymbol = symbol.toUpperCase().replace("USDT", "");
+
+        if(!symbolNames.contains(upperSymbol)) throw new BinancePrivateRestException("(바이낸스) 지원하지 않는 심볼입니다.", "BAD_SYMBOL");
+        
+        return upperSymbol + "USDT";
+    }
+    
     @Override
     public void validateResponse(String responseBody) throws BinancePrivateRestException, JsonProcessingException {
         JsonNode json = objectMapper.readTree(responseBody);

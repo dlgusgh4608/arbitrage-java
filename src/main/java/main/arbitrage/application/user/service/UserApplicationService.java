@@ -3,7 +3,6 @@ package main.arbitrage.application.user.service;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import main.arbitrage.application.user.dto.UserProfileDto;
 import main.arbitrage.auth.security.SecurityUtil;
 import main.arbitrage.domain.exchangeRate.dto.ExchangeRateDto;
@@ -13,15 +12,12 @@ import main.arbitrage.domain.user.dto.UserEditNicknameDto;
 import main.arbitrage.domain.userEnv.dto.UserEnvDto;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.account.BinanceGetAccountResponseDto;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
 import main.arbitrage.infrastructure.exchange.factory.dto.ExchangePrivateRestPair;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.account.UpbitGetAccountResponseDto;
 import main.arbitrage.infrastructure.oauthValidator.google.GoogleApiClient;
 import main.arbitrage.infrastructure.oauthValidator.kakao.KakaoApiClient;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
-import okhttp3.OkHttpClient;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -52,13 +48,10 @@ public class UserApplicationService {
 
     private final JwtUtil jwtUtil;
 
-    private final OkHttpClient okHttpClient;
-    private final ObjectMapper objectMapper;
-
     private final GoogleApiClient googleApiClient;
     private final KakaoApiClient kakaoApiClient;
 
-    private ExchangePrivateRestFactory exchangePrivateRestFactory;
+    private final ExchangePrivateRestFactory exchangePrivateRestFactory;
 
     @Transactional
     public String sendEmail(EmailMessageDto emailMessageDto) throws Exception {
@@ -128,16 +121,15 @@ public class UserApplicationService {
         if (optionalUser.isEmpty()) throw new IllegalArgumentException("user is not found");
 
         // upbit accessKey와 secretKey를 지갑 잔액을 조회함으로써 올바른 키가 맞는지 증명
-        UpbitPrivateRestService upbitPrivateRestService =
-                new UpbitPrivateRestService(req.getUpbitAccessKey(), req.getUpbitSecretKey(), okHttpClient, objectMapper);
-
-        upbitPrivateRestService.getAccount();
-
-        // binance accessKey와 secretKey를 지갑 잔액을 조회함으로써 올바른 키가 맞는지 증명
-        BinancePrivateRestService binancePrivateRestService =
-                new BinancePrivateRestService(req.getBinanceAccessKey(), req.getBinanceSecretKey(), okHttpClient, objectMapper);
-
-        binancePrivateRestService.getAccount();
+        ExchangePrivateRestPair upbitExchangePrivateRestPair = exchangePrivateRestFactory.create(
+            req.getUpbitAccessKey(),
+            req.getUpbitSecretKey(),
+            req.getBinanceAccessKey(),
+            req.getBinanceSecretKey()
+        );
+        
+        upbitExchangePrivateRestPair.getUpbit().getAccount();
+        upbitExchangePrivateRestPair.getBinance().getAccount();
 
         Optional<UserEnv> optionalUserEnv = userEnvService.findByUserId(userId);
 

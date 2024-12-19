@@ -5,6 +5,8 @@ import java.util.Map;
 public interface ExchangePrivateRestService {
     void validateResponse(String responseBody) throws Exception;
 
+    String convertSymbol(String symbol);
+    
     String generateToken();
 
     String generateToken(Map<String, Object> params);

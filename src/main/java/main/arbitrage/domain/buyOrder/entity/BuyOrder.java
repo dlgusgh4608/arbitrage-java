@@ -2,8 +2,10 @@ package main.arbitrage.domain.buyOrder.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import main.arbitrage.domain.buyOrder.dto.BuyOrderResDto;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.user.entity.User;
@@ -37,8 +39,8 @@ public class BuyOrder {
     @Column(name = "premium", nullable = false, columnDefinition = "REAL")
     private float premium;
 
-    @Column(name = "upbit_price", nullable = false, columnDefinition = "INTEGER")
-    private int upbitPrice;
+    @Column(name = "upbit_price", nullable = false, columnDefinition = "DOUBLE PRECISION")
+    private double upbitPrice;
 
     @Column(name = "upbit_quantity", nullable = false, columnDefinition = "REAL")
     private float upbitQuantity;
@@ -68,4 +70,33 @@ public class BuyOrder {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Builder
+    public BuyOrder(
+        User user,
+        Symbol symbol,
+        ExchangeRate exchangeRate,
+        float premium,
+        double upbitPrice,
+        float upbitQuantity,
+        float upbitCommission,
+        float binancePrice,
+        float binanceQuantity,
+        float binanceCommission,
+        boolean isMaker,
+        boolean isClose
+    ) {
+        this.user = user;
+        this.symbol = symbol;
+        this.exchangeRate = exchangeRate;
+        this.premium = premium;
+        this.upbitPrice = upbitPrice;
+        this.upbitQuantity = upbitQuantity;
+        this.upbitCommission = upbitCommission;
+        this.binancePrice = binancePrice;
+        this.binanceQuantity = binanceQuantity;
+        this.binanceCommission = binanceCommission;
+        this.isMaker = isMaker;
+        this.isClose = isClose;
+    }
 }

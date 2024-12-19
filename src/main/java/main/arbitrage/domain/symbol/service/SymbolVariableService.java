@@ -55,4 +55,15 @@ public class SymbolVariableService implements CommandLineRunner {
         initializeIfNeeded();
         return symbols.stream().filter(Symbol::isUse).toList();
     }
+
+    public List<String> getSupportedSymbolNames() {
+        return getSupportedSymbols().stream().map(symbol -> symbol.getName().toUpperCase()).toList();
+    }
+
+    public Symbol findSymbolByName(String name) {
+        initializeIfNeeded();
+        return symbols.stream()
+            .filter(symbol -> symbol.getName().toUpperCase().equalsIgnoreCase(name.toUpperCase())).findFirst()
+            .orElse(null);
+    }
 }
