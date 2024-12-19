@@ -95,13 +95,15 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
                     throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
                 }
             }
+            // 매수
             case price -> {
-                if (price == null) {
+                if (price == null || side.equals(UpbitOrderEnum.Side.ask)) {
                     throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
                 }
             }
+            // 매도
             case market -> {
-                if (volume == null) {
+                if (volume == null || side.equals(UpbitOrderEnum.Side.bid)) {
                     throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
                 }
             }
