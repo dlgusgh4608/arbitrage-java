@@ -15,8 +15,8 @@ import lombok.*;
 public class UpbitPostOrderRequestDto {
     private String market;
 
-    private Side side;
-    private OrdType ordType;
+    private UpbitOrderEnum.Side side;
+    private UpbitOrderEnum.OrdType ordType;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "0")
     private Double price;

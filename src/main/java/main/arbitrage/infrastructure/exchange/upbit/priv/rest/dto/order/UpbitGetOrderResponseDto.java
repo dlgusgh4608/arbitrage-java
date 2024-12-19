@@ -16,7 +16,7 @@ public class UpbitGetOrderResponseDto {
     private String side;
     private String ordType;
     private String price;
-    private State state;
+    private UpbitOrderEnum.State state;
     private String market;
     private String createdAt;
     private String volume;

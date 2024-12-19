@@ -28,10 +28,9 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.WeakKeyException;
 import main.arbitrage.infrastructure.exchange.ExchangePrivateRestService;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.account.UpbitGetAccountResponseDto;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.OrdType;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.Side;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.State;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitGetOrderResponseDto;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.OrdType;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitPostOrderRequestDto;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
 import okhttp3.MediaType;
@@ -45,7 +44,6 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
     private final String secretKey;
     private final OkHttpClient okHttpClient;
     private final ObjectMapper objectMapper;
-    private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     private static final String SERVER_URI = "https://api.upbit.com";
 
@@ -85,7 +83,7 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         return account.stream().filter(upbitAccount -> upbitAccount.getCurrency().equals("KRW")).findFirst();
     }
 
-    public String order(String market, Side side, OrdType ordType, Double price, Double volume) throws UpbitPrivateRestException, IOException {
+    public String order(String market, UpbitOrderEnum.Side side, UpbitOrderEnum.OrdType ordType, Double price, Double volume) throws UpbitPrivateRestException, IOException {
         if (market == null || side == null || ordType == null) {
             throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
         }

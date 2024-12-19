@@ -2,8 +2,8 @@ package main.arbitrage.infrastructure.upbit.priv.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.OrdType;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.Side;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.OrdType;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.Side;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitGetOrderResponseDto;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.*;
