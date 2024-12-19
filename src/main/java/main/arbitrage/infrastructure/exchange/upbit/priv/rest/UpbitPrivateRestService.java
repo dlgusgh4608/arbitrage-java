@@ -122,8 +122,8 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         String token = generateToken(map);
 
         RequestBody body = RequestBody.create(
-                MediaType.parse("application/json; charset=utf-8"),
-                objectMapper.writeValueAsString(map)
+            objectMapper.writeValueAsString(map).getBytes(StandardCharsets.UTF_8),
+            MediaType.parse("application/json; charset=utf-8")
         );
 
         Request request = new Request.Builder()
@@ -150,45 +150,33 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         return json.get("uuid").asText();
     }
 
-    public UpbitGetOrderResponseDto order(String uuid, int repeat) {
-        CompletableFuture<UpbitGetOrderResponseDto> future = new CompletableFuture<>();
+    public UpbitGetOrderResponseDto order(String uuid, int repeat) throws UpbitPrivateRestException, InterruptedException, IOException {
+        if(repeat < 2) return null;
+        
+        Map<String, Object> map = Map.of("uuid", uuid);
 
-        executor.schedule(() -> {
-            try {
-                Map<String, Object> map = Map.of("uuid", uuid);
+        String token = generateToken(map);
 
-                String token = generateToken(map);
+        Request request = new Request.Builder()
+                .url(SERVER_URI + "/v1/order" + "?" + generateQueryString(map))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Authorization", "Bearer " + token)
+                .get()
+                .build();
 
-                Request request = new Request.Builder()
-                        .url(SERVER_URI + "/v1/order" + "?" + generateQueryString(map))
-                        .addHeader("Content-Type", "application/json")
-                        .addHeader("Authorization", "Bearer " + token)
-                        .get()
-                        .build();
+        Response response = okHttpClient.newCall(request).execute();
+        String responseBody = response.body().string();
 
-                Response response = okHttpClient.newCall(request).execute();
-                String responseBody = response.body().string();
+        if (!response.isSuccessful()) validateResponse(responseBody);
 
-                if (!response.isSuccessful()) validateResponse(responseBody);
+        UpbitGetOrderResponseDto dto = objectMapper.readValue(responseBody, UpbitGetOrderResponseDto.class);
 
-                UpbitGetOrderResponseDto dto = objectMapper.readValue(responseBody, UpbitGetOrderResponseDto.class);
+        if ((dto.getState().equals(State.wait) || dto.getState().equals(State.watch)) && repeat > 0) {
+            Thread.sleep(1000);
+            return order(uuid, repeat - 1);
+        }
 
-                if ((dto.getState().equals(State.wait) || dto.getState().equals(State.watch)) && repeat > 0) {
-                    future.complete(order(uuid, repeat - 1));
-                } else {
-                    future.complete(dto);
-                }
-            } catch (Exception e) {
-                future.completeExceptionally(e);
-            }
-        }, 2, TimeUnit.SECONDS);
-
-        return future.join();
-    }
-
-    // 서비스 종료 시 실행
-    public void shutdown() {
-        executor.shutdown();
+        return dto;
     }
 
     @Override
