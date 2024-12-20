@@ -1,32 +1,28 @@
 package main.arbitrage.application.collector.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.context.event.EventListener;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.application.collector.dto.ChartDto;
 import main.arbitrage.application.collector.dto.OrderbookPair;
+import main.arbitrage.application.collector.dto.TradePair;
+import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.price.entity.Price;
 import main.arbitrage.domain.price.service.PriceDomainService;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
+import main.arbitrage.infrastructure.event.dto.PremiumDto;
 import main.arbitrage.infrastructure.websocket.server.handler.ChartServerWebSocketHandler;
 import main.arbitrage.infrastructure.websocket.server.handler.PremiumServerWebSocketHandler;
-import main.arbitrage.infrastructure.event.dto.PremiumDto;
-import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
-import main.arbitrage.application.collector.dto.TradePair;
-import main.arbitrage.infrastructure.event.EventEmitter;
-import org.springframework.context.event.EventListener;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
-import main.arbitrage.global.util.json.TypedJsonNode;
-
-import java.util.Date;
-import java.util.concurrent.CompletableFuture;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
@@ -55,7 +51,8 @@ public class CollectorScheduleService {
 
     @Scheduled(fixedRate = 300) // .3초
     protected void calculatePremium() {
-        if (exchangeRate == null) return;
+        if (exchangeRate == null)
+            return;
         processAllSymbols(exchangeRate);
     }
 
@@ -72,43 +69,34 @@ public class CollectorScheduleService {
     }
 
     private void processAllSymbols(ExchangeRate exchangeRate) {
-        List<CompletableFuture<Void>> futures = symbolVariableService.getSupportedSymbols()
-                .stream()
-                .map(symbol -> calculateAndEmitAsync(exchangeRate, symbol))
-                .toList();
+        List<CompletableFuture<Void>> futures = symbolVariableService.getSupportedSymbols().stream()
+                .map(symbol -> calculateAndEmitAsync(exchangeRate, symbol)).toList();
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 
     @Async
-    private CompletableFuture<Void> calculateAndEmitAsync(ExchangeRate exchangeRate, Symbol symbol) {
+    private CompletableFuture<Void> calculateAndEmitAsync(ExchangeRate exchangeRate,
+            Symbol symbol) {
         return CompletableFuture.runAsync(() -> {
             try {
                 String symbolName = symbol.getName();
                 TradePair tradePair = exchangeCollector.collectTrades(symbolName);
                 OrderbookPair orderbookPair = exchangeCollector.collectOrderbooks(symbolName);
 
-                if (!tradeValidator.isValidTradePair(tradePair.getUpbit(), tradePair.getBinance())) {
+                if (!tradeValidator.isValidTradePair(tradePair.getUpbit(),
+                        tradePair.getBinance())) {
                     log.warn("Invalid trade pair for symbol: {}", symbolName);
                     return;
                 }
-                
-                PremiumDto premium = premiumCalculator.calculatePremium(
-                        tradePair.getUpbit(),
-                        tradePair.getBinance(),
-                        exchangeRate.getRate(),
-                        symbolName
-                );
 
-                Price price = Price.builder()
-                        .symbol(symbol)
-                        .exchangeRate(exchangeRate)
-                        .premium(premium.getPremium())
-                        .upbit(premium.getUpbit())
-                        .binance(premium.getBinance())
-                        .upbitTradeAt(premium.getUpbitTradeAt())
-                        .binanceTradeAt(premium.getBinanceTradeAt())
-                        .build();
+                PremiumDto premium = premiumCalculator.calculatePremium(tradePair.getUpbit(),
+                        tradePair.getBinance(), exchangeRate.getRate(), symbolName);
+
+                Price price = Price.builder().symbol(symbol).exchangeRate(exchangeRate)
+                        .premium(premium.getPremium()).upbit(premium.getUpbit())
+                        .binance(premium.getBinance()).upbitTradeAt(premium.getUpbitTradeAt())
+                        .binanceTradeAt(premium.getBinanceTradeAt()).build();
 
                 priceMap.put(symbolName, price);
                 emitPremium(premium);

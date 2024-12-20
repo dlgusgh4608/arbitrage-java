@@ -1,15 +1,13 @@
 package main.arbitrage.domain.oauthUser.repository;
 
-import main.arbitrage.domain.oauthUser.entity.OAuthUser;
-import main.arbitrage.domain.oauthUser.entity.OAuthUserId;
-import main.arbitrage.domain.user.entity.User;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Optional;
+import main.arbitrage.domain.oauthUser.entity.OAuthUser;
+import main.arbitrage.domain.oauthUser.entity.OAuthUserId;
 
 @Repository
 public interface OAuthUserRepository extends JpaRepository<OAuthUser, OAuthUserId> {
@@ -23,10 +21,8 @@ public interface OAuthUserRepository extends JpaRepository<OAuthUser, OAuthUserI
               oauth.providerId = :providerId AND
               oauth.provider = :provider
             """)
-    Optional<OAuthUser> findByProviderAndProviderId(
-            @Param("provider") String provider,
-            @Param("providerId") String providerId
-    );
+    Optional<OAuthUser> findByProviderAndProviderId(@Param("provider") String provider,
+            @Param("providerId") String providerId);
 
     List<OAuthUser> findByUserId(Long userId);
 }

@@ -1,15 +1,13 @@
 package main.arbitrage.domain.user.service;
 
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.domain.user.dto.UserSignupDto;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.user.repository.UserRepository;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -18,11 +16,9 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public User create(UserSignupDto userSignupDto) {
-        User Encodeuser = User.builder()
-                .email(userSignupDto.getEmail())
+        User Encodeuser = User.builder().email(userSignupDto.getEmail())
                 .nickname(UUID.randomUUID().toString())
-                .password(passwordEncoder.encode(userSignupDto.getPassword()))
-                .build();
+                .password(passwordEncoder.encode(userSignupDto.getPassword())).build();
 
         return userRepository.save(Encodeuser);
     }
@@ -36,7 +32,8 @@ public class UserService {
     }
 
     public Optional<User> findByEmail(String email) {
-        if (email == null) throw new IllegalArgumentException("Email is required!");
+        if (email == null)
+            throw new IllegalArgumentException("Email is required!");
 
         return userRepository.findByEmail(email);
     }

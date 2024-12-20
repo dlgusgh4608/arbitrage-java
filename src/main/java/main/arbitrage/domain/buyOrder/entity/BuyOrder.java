@@ -1,18 +1,24 @@
 package main.arbitrage.domain.buyOrder.entity;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import main.arbitrage.domain.buyOrder.dto.BuyOrderResDto;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.user.entity.User;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "buy_order")
@@ -72,20 +78,9 @@ public class BuyOrder {
     private LocalDateTime updatedAt;
 
     @Builder
-    public BuyOrder(
-        User user,
-        Symbol symbol,
-        ExchangeRate exchangeRate,
-        float premium,
-        double upbitPrice,
-        float upbitQuantity,
-        float upbitCommission,
-        float binancePrice,
-        float binanceQuantity,
-        float binanceCommission,
-        boolean isMaker,
-        boolean isClose
-    ) {
+    public BuyOrder(User user, Symbol symbol, ExchangeRate exchangeRate, float premium,
+            double upbitPrice, float upbitQuantity, float upbitCommission, float binancePrice,
+            float binanceQuantity, float binanceCommission, boolean isMaker, boolean isClose) {
         this.user = user;
         this.symbol = symbol;
         this.exchangeRate = exchangeRate;

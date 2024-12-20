@@ -10,18 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
 import javax.crypto.SecretKey;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -30,9 +23,9 @@ import main.arbitrage.infrastructure.exchange.ExchangePrivateRestService;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.exception.BinancePrivateRestException;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.account.UpbitGetAccountResponseDto;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitGetOrderResponseDto;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.OrdType;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.Side;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.State;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.OrdType;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitPostOrderRequestDto;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
 import okhttp3.MediaType;
@@ -50,13 +43,8 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
 
     private static final String SERVER_URI = "https://api.upbit.com";
 
-    public UpbitPrivateRestService(
-        String accessKey,
-        String secretKey,
-        OkHttpClient okHttpClient,
-        ObjectMapper objectMapper,
-        List<String> symbolNames
-    ) {
+    public UpbitPrivateRestService(String accessKey, String secretKey, OkHttpClient okHttpClient,
+            ObjectMapper objectMapper, List<String> symbolNames) {
         if (accessKey.isEmpty() || secretKey.isEmpty()) {
             throw new WeakKeyException("The specified key byte array is 0 bits");
         }
@@ -67,33 +55,33 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         this.symbolNames = symbolNames;
     }
 
-    public List<UpbitGetAccountResponseDto> getAccount() throws UpbitPrivateRestException, IOException {
+    public List<UpbitGetAccountResponseDto> getAccount()
+            throws UpbitPrivateRestException, IOException {
         String token = generateToken();
-        Request request = new Request.Builder()
-                .url(SERVER_URI + "/v1/accounts")
+        Request request = new Request.Builder().url(SERVER_URI + "/v1/accounts")
                 .addHeader("Content-Type", "application/json")
-                .addHeader("Authorization", "Bearer " + token)
-                .get()
-                .build();
+                .addHeader("Authorization", "Bearer " + token).get().build();
 
         Response response = okHttpClient.newCall(request).execute();
 
         String responseBody = response.body().string();
 
-        if (!response.isSuccessful()) validateResponse(responseBody);
+        if (!response.isSuccessful())
+            validateResponse(responseBody);
 
-        return objectMapper.readValue(
-                responseBody,
-                objectMapper.getTypeFactory().constructCollectionType(List.class, UpbitGetAccountResponseDto.class)
-        );
+        return objectMapper.readValue(responseBody, objectMapper.getTypeFactory()
+                .constructCollectionType(List.class, UpbitGetAccountResponseDto.class));
     }
 
-    public Optional<UpbitGetAccountResponseDto> getKRW() throws UpbitPrivateRestException, IOException {
+    public Optional<UpbitGetAccountResponseDto> getKRW()
+            throws UpbitPrivateRestException, IOException {
         List<UpbitGetAccountResponseDto> account = getAccount();
-        return account.stream().filter(upbitAccount -> upbitAccount.getCurrency().equals("KRW")).findFirst();
+        return account.stream().filter(upbitAccount -> upbitAccount.getCurrency().equals("KRW"))
+                .findFirst();
     }
 
-    public String order(String market, Side side, OrdType ordType, Double price, Double volume) throws UpbitPrivateRestException, IOException {
+    public String order(String market, Side side, OrdType ordType, Double price, Double volume)
+            throws UpbitPrivateRestException, IOException {
         if (market == null || side == null || ordType == null) {
             throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
         }
@@ -102,86 +90,82 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         switch (ordType) {
             case limit -> {
                 if (volume == null || price == null) {
-                    throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
+                    throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.",
+                            "validation_error");
                 }
             }
             // 매수
             case price -> {
                 if (price == null || side.equals(Side.ask)) {
-                    throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
+                    throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.",
+                            "validation_error");
                 }
             }
             // 매도
             case market -> {
                 if (volume == null || side.equals(Side.bid)) {
-                    throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
+                    throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.",
+                            "validation_error");
                 }
             }
         }
 
         String symbol = convertSymbol(market);
 
-        UpbitPostOrderRequestDto requestDto = UpbitPostOrderRequestDto.builder()
-                .market(symbol)
-                .side(side)
-                .ordType(ordType)
-                .price(price)
-                .volume(volume)
-                .build();
+        UpbitPostOrderRequestDto requestDto = UpbitPostOrderRequestDto.builder().market(symbol)
+                .side(side).ordType(ordType).price(price).volume(volume).build();
 
         Map<String, Object> map = objectMapper.convertValue(requestDto, Map.class);
 
         String token = generateToken(map);
 
         RequestBody body = RequestBody.create(
-            objectMapper.writeValueAsString(map).getBytes(StandardCharsets.UTF_8),
-            MediaType.parse("application/json; charset=utf-8")
-        );
+                objectMapper.writeValueAsString(map).getBytes(StandardCharsets.UTF_8),
+                MediaType.parse("application/json; charset=utf-8"));
 
-        Request request = new Request.Builder()
-                .url(SERVER_URI + "/v1/orders")
+        Request request = new Request.Builder().url(SERVER_URI + "/v1/orders")
                 .addHeader("Content-Type", "application/json")
-                .addHeader("Authorization", "Bearer " + token)
-                .post(body)
-                .build();
+                .addHeader("Authorization", "Bearer " + token).post(body).build();
 
         Response response = okHttpClient.newCall(request).execute();
 
         String responseBody = response.body().string();
 
         /*
-         * responseBody에 있는 uuid를 통해 order를 조회해야합니다.
-         * response값은 아직 거래가 체결되지 않은 상태로 오기때문입니다.
-         * order get method를 state success가 나올때까지 2초 딜레이 3회 재귀 돌게하여 데이터 get
-         * */
+         * responseBody에 있는 uuid를 통해 order를 조회해야합니다. response값은 아직 거래가 체결되지 않은 상태로 오기때문입니다. order
+         * get method를 state success가 나올때까지 2초 딜레이 3회 재귀 돌게하여 데이터 get
+         */
 
-        if (!response.isSuccessful()) validateResponse(responseBody);
+        if (!response.isSuccessful())
+            validateResponse(responseBody);
 
         JsonNode json = objectMapper.readTree(responseBody);
 
         return json.get("uuid").asText();
     }
 
-    public UpbitGetOrderResponseDto order(String uuid, int repeat) throws UpbitPrivateRestException, InterruptedException, IOException {
-        if(repeat < 2) return null;
-        
+    public UpbitGetOrderResponseDto order(String uuid, int repeat)
+            throws UpbitPrivateRestException, InterruptedException, IOException {
+        if (repeat < 2)
+            return null;
+
         Map<String, Object> map = Map.of("uuid", uuid);
 
         String token = generateToken(map);
 
-        Request request = new Request.Builder()
-                .url(SERVER_URI + "/v1/order" + "?" + generateQueryString(map))
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Authorization", "Bearer " + token)
-                .get()
-                .build();
+        Request request =
+                new Request.Builder().url(SERVER_URI + "/v1/order" + "?" + generateQueryString(map))
+                        .addHeader("Content-Type", "application/json")
+                        .addHeader("Authorization", "Bearer " + token).get().build();
 
         Response response = okHttpClient.newCall(request).execute();
         String responseBody = response.body().string();
 
-        if (!response.isSuccessful()) validateResponse(responseBody);
+        if (!response.isSuccessful())
+            validateResponse(responseBody);
 
-        UpbitGetOrderResponseDto dto = objectMapper.readValue(responseBody, UpbitGetOrderResponseDto.class);
+        UpbitGetOrderResponseDto dto =
+                objectMapper.readValue(responseBody, UpbitGetOrderResponseDto.class);
 
         if (dto.getState().equals(State.wait) || dto.getState().equals(State.watch)) {
             Thread.sleep(1000);
@@ -195,13 +179,15 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
     public String convertSymbol(String symbol) {
         String upperSymbol = symbol.toUpperCase().replace("KRW-", "");
 
-        if(!symbolNames.contains(upperSymbol)) throw new BinancePrivateRestException("(업비트) 지원하지 않는 심볼입니다.", "invalid_symbol");
-        
+        if (!symbolNames.contains(upperSymbol))
+            throw new BinancePrivateRestException("(업비트) 지원하지 않는 심볼입니다.", "invalid_symbol");
+
         return "KRW-" + upperSymbol;
     }
-    
+
     @Override
-    public void validateResponse(String responseBody) throws UpbitPrivateRestException, JsonProcessingException {
+    public void validateResponse(String responseBody)
+            throws UpbitPrivateRestException, JsonProcessingException {
         JsonNode json = objectMapper.readTree(responseBody);
         String errorCode = json.get("error").get("name").asText();
         switch (errorCode) {
@@ -241,15 +227,13 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
     @Override
     public String generateToken() {
         try {
-            String base64EncodedKey = Base64.getEncoder().encodeToString(secretKey.getBytes(StandardCharsets.UTF_8));
+            String base64EncodedKey =
+                    Base64.getEncoder().encodeToString(secretKey.getBytes(StandardCharsets.UTF_8));
             byte[] keyBytes = Decoders.BASE64.decode(base64EncodedKey);
             SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
-            return Jwts.builder()
-                    .claim("access_key", accessKey)
-                    .claim("nonce", UUID.randomUUID().toString())
-                    .signWith(key)
-                    .compact();
+            return Jwts.builder().claim("access_key", accessKey)
+                    .claim("nonce", UUID.randomUUID().toString()).signWith(key).compact();
         } catch (Exception e) {
             throw new UpbitPrivateRestException("(업비트) JWT 헤더 검증에 실패했습니다.", "jwt_verification");
         }
@@ -260,17 +244,14 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         try {
             String queryString = generateQueryString(params);
             String queryHash = generateQueryHash(queryString);
-            String base64EncodedKey = Base64.getEncoder().encodeToString(secretKey.getBytes(StandardCharsets.UTF_8));
+            String base64EncodedKey =
+                    Base64.getEncoder().encodeToString(secretKey.getBytes(StandardCharsets.UTF_8));
             byte[] keyBytes = Decoders.BASE64.decode(base64EncodedKey);
             SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
-            return Jwts.builder()
-                    .claim("access_key", accessKey)
-                    .claim("nonce", UUID.randomUUID().toString())
-                    .claim("query_hash", queryHash)
-                    .claim("query_hash_alg", "SHA512")
-                    .signWith(key)
-                    .compact();
+            return Jwts.builder().claim("access_key", accessKey)
+                    .claim("nonce", UUID.randomUUID().toString()).claim("query_hash", queryHash)
+                    .claim("query_hash_alg", "SHA512").signWith(key).compact();
         } catch (Exception e) {
             throw new UpbitPrivateRestException("(업비트) JWT 헤더 검증에 실패했습니다.", "jwt_verification");
         }
@@ -278,8 +259,7 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
 
     @Override
     public String generateQueryString(Map<String, Object> params) {
-        return params.entrySet().stream()
-                .map(entry -> entry.getKey() + "=" + entry.getValue())
+        return params.entrySet().stream().map(entry -> entry.getKey() + "=" + entry.getValue())
                 .collect(Collectors.joining("&"));
     }
 

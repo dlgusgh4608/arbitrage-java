@@ -1,12 +1,15 @@
 package main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order;
 
+import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.*;
-
-import java.util.List;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -35,25 +38,17 @@ public class UpbitGetOrderResponseDto {
     // private String identifier;
 
     @Builder
-    private UpbitGetOrderResponseDto(
-            String uuid,
-            String side,
-            String ordType,
-            String price,
-            UpbitOrderEnum.State state,
-            String createdAt,
-            String volume,
-            String paidFee,
-            String executedVolume,
-            List<Trade> trades
-            // String market,
-            // String remainingVolume,
-            // String reservedFee,
-            // String remainingFee,
-            // String locked,
-            // Integer tradesCount,
-            // String timeInForce
-            // String identifier
+    private UpbitGetOrderResponseDto(String uuid, String side, String ordType, String price,
+            UpbitOrderEnum.State state, String createdAt, String volume, String paidFee,
+            String executedVolume, List<Trade> trades
+    // String market,
+    // String remainingVolume,
+    // String reservedFee,
+    // String remainingFee,
+    // String locked,
+    // Integer tradesCount,
+    // String timeInForce
+    // String identifier
     ) {
         this.uuid = uuid;
         this.side = side;
@@ -90,15 +85,14 @@ public class UpbitGetOrderResponseDto {
         // private String trend;
 
         @Builder
-        private Trade(
-            String funds
-            // String market,
-            // String uuid,
-            // String price,
-            // String volume,
-            // String side,
-            // String createdAt,
-            // String trend
+        private Trade(String funds
+        // String market,
+        // String uuid,
+        // String price,
+        // String volume,
+        // String side,
+        // String createdAt,
+        // String trend
         ) {
             this.funds = Double.valueOf(funds);
             // this.market = market;

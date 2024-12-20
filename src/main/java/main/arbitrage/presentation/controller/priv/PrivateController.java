@@ -1,16 +1,18 @@
 package main.arbitrage.presentation.controller.priv;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.user.dto.UserProfileDto;
 import main.arbitrage.application.user.service.UserApplicationService;
 import main.arbitrage.domain.userEnv.dto.UserEnvDto;
 import main.arbitrage.presentation.controller.priv.constant.PrivateControllerUrlConstants;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-
-import lombok.RequiredArgsConstructor;
 
 
 @Controller
@@ -29,11 +31,10 @@ public class PrivateController {
     }
 
     @PostMapping(PrivateControllerUrlConstants.USER_ENV_REGISTER)
-    public String envRegisterPost(
-            @Valid @ModelAttribute("formDto") UserEnvDto userEnvDto,
-            BindingResult bindingResult
-    ) {
-        if (bindingResult.hasErrors()) return "pages/envRegister";
+    public String envRegisterPost(@Valid @ModelAttribute("formDto") UserEnvDto userEnvDto,
+            BindingResult bindingResult) {
+        if (bindingResult.hasErrors())
+            return "pages/envRegister";
 
         try {
             userApplicationService.registerUserEnv(userEnvDto);

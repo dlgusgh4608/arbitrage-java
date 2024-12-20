@@ -1,19 +1,24 @@
 package main.arbitrage.infrastructure.upbit.priv.rest;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
-import okhttp3.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
+import okhttp3.OkHttpClient;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 class UpbitPrivateRestServiceTest {
 
@@ -21,6 +26,7 @@ class UpbitPrivateRestServiceTest {
     private final String accessKey = "12345oiUshbzzapfhdEnfgdmftndlTsHFjfp7qf8";
     private final String secretKey = "xrh0y6789106kwKPeUvDwRfdzzfdzzQMKQwGReId";
     private final String shortKey = "hellworld";
+    private final List<String> testSymbol = Arrays.asList("btc", "eth");
 
     @Mock
     private OkHttpClient mockClient;
@@ -37,7 +43,9 @@ class UpbitPrivateRestServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         objectMapper = new ObjectMapper();
-        upbitPrivateRestService = new UpbitPrivateRestService(accessKey, secretKey, mockClient, objectMapper);
+
+        upbitPrivateRestService = new UpbitPrivateRestService(accessKey, secretKey, mockClient,
+                objectMapper, testSymbol);
     }
 
     @Nested
@@ -62,7 +70,8 @@ class UpbitPrivateRestServiceTest {
         @DisplayName("시크릿키가 32byte를 안넘길때 짧은 키일때")
         void jwtVerificationOfShortKeyTest() {
             // given
-            UpbitPrivateRestService shortKeyService = new UpbitPrivateRestService(accessKey, shortKey, mockClient, objectMapper);
+            UpbitPrivateRestService shortKeyService = new UpbitPrivateRestService(accessKey,
+                    shortKey, mockClient, objectMapper, testSymbol);
 
             // when & then
             assertThatThrownBy(shortKeyService::getAccount)

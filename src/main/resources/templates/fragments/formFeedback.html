@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
 </head>
-<body>
-<div
-    th:fragment="feedback(field)"
-    th:class="${#fields.hasErrors(field)} ? 'invalid-feedback' : 'valid-feedback'"
-    th:errors="*{__${field}__}"
->
-</div>
-</body>
-</html>
 
+<body>
+    <div th:fragment="feedback(field)" th:class="${#fields.hasErrors(field)} ? 'invalid-feedback' : 'valid-feedback'"
+        th:errors="*{__${field}__}">
+    </div>
+</body>
+
+</html>

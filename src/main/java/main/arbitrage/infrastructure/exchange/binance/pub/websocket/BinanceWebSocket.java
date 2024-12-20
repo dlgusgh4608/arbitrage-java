@@ -1,26 +1,24 @@
 package main.arbitrage.infrastructure.exchange.binance.pub.websocket;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import main.arbitrage.application.collector.dto.OrderbookDto;
+import main.arbitrage.application.collector.dto.TradeDto;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.websocket.client.BaseWebSocketClient;
-import main.arbitrage.application.collector.dto.TradeDto;
-import main.arbitrage.application.collector.dto.OrderbookDto;
 import main.arbitrage.infrastructure.websocket.client.handler.ExchangeWebSocketHandler;
-import org.springframework.stereotype.Component;
-import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.client.standard.StandardWebSocketClient;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Component
 @Slf4j
@@ -36,7 +34,8 @@ public class BinanceWebSocket extends BaseWebSocketClient {
 
     @PostConstruct
     private void init() {
-        symbols = symbolVariableService.getSupportedSymbols().stream().map(Symbol::getName).toList();
+        symbols =
+                symbolVariableService.getSupportedSymbols().stream().map(Symbol::getName).toList();
     }
 
     @Override
@@ -48,7 +47,8 @@ public class BinanceWebSocket extends BaseWebSocketClient {
             StandardWebSocketClient client = new StandardWebSocketClient();
             String params = createStreamParams();
             WS_URL = WS_URL.concat(params);
-            ExchangeWebSocketHandler handler = new ExchangeWebSocketHandler("Binance", this::handleMessage, objectMapper);
+            ExchangeWebSocketHandler handler =
+                    new ExchangeWebSocketHandler("Binance", this::handleMessage, objectMapper);
             session = client.execute(handler, WS_URL).get();
             isRunning = true;
         } catch (InterruptedException | ExecutionException e) {
@@ -96,11 +96,9 @@ public class BinanceWebSocket extends BaseWebSocketClient {
     protected void handleTrade(JsonNode data) {
         String symbol = data.get("s").asText().toLowerCase().replace("usdt", "");
 
-        TradeDto trade = TradeDto.builder()
-                .symbol(symbol)
-                .price(Double.parseDouble(data.get("p").asText()))
-                .timestamp(data.get("T").asLong())
-                .build();
+        TradeDto trade =
+                TradeDto.builder().symbol(symbol).price(Double.parseDouble(data.get("p").asText()))
+                        .timestamp(data.get("T").asLong()).build();
 
         tradeMap.put(symbol, trade);
     }
@@ -109,11 +107,9 @@ public class BinanceWebSocket extends BaseWebSocketClient {
     protected void handleOrderbook(JsonNode data) {
         String symbol = data.get("s").asText().toLowerCase().replace("usdt", "");
 
-        OrderbookDto orderbook = OrderbookDto.builder()
-                .symbol(symbol)
-                .bids(createOrderbookUnits(data.get("b")))
-                .asks(createOrderbookUnits(data.get("a")))
-                .build();
+        OrderbookDto orderbook =
+                OrderbookDto.builder().symbol(symbol).bids(createOrderbookUnits(data.get("b")))
+                        .asks(createOrderbookUnits(data.get("a"))).build();
 
         orderbookMap.put(symbol, orderbook);
     }
@@ -125,16 +121,16 @@ public class BinanceWebSocket extends BaseWebSocketClient {
             JsonNode unit = units.get(i);
             orderbooksUnits[i] = OrderbookDto.OrderbookUnit.builder()
                     .price(Double.parseDouble(unit.get(0).asText()))
-                    .size(Double.parseDouble(unit.get(1).asText()))
-                    .build();
+                    .size(Double.parseDouble(unit.get(1).asText())).build();
         }
         return orderbooksUnits;
     }
 
     private String createStreamParams() {
-        return Stream.concat(
-                symbols.stream().map(symbol -> symbol.toLowerCase() + "usdt" + "@aggTrade"),
-                symbols.stream().map(symbol -> symbol.toLowerCase() + "usdt" + "@depth10@100ms")
-        ).collect(Collectors.joining("/"));
+        return Stream
+                .concat(symbols.stream().map(symbol -> symbol.toLowerCase() + "usdt" + "@aggTrade"),
+                        symbols.stream()
+                                .map(symbol -> symbol.toLowerCase() + "usdt" + "@depth10@100ms"))
+                .collect(Collectors.joining("/"));
     }
 }

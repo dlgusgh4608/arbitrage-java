@@ -1,14 +1,15 @@
 package main.arbitrage.auth.oauth.service;
 
-import lombok.RequiredArgsConstructor;
-import main.arbitrage.auth.oauth.dto.CustomOAuthRequestDto;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
+import lombok.RequiredArgsConstructor;
+import main.arbitrage.auth.oauth.dto.CustomOAuthRequestDto;
 
 @Service
 @RequiredArgsConstructor
@@ -23,28 +24,19 @@ public class OAuthUserRequestService extends DefaultOAuth2UserService {
         String providerId = extractProviderId(oAuth2User, provider);
         String email = extractEmail(oAuth2User, provider);
 
-        Map<String, Object> attributes = Map.of(
-                "provider", provider,
-                "providerId", providerId,
-                "accessToken", accessToken,
-                "email", email
-        );
+        Map<String, Object> attributes = Map.of("provider", provider, "providerId", providerId,
+                "accessToken", accessToken, "email", email);
 
         return new CustomOAuthRequestDto(
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")),
-                attributes,
-                "providerId",
-                provider,
-                providerId,
-                accessToken,
-                email
-        );
+                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")), attributes,
+                "providerId", provider, providerId, accessToken, email);
     }
 
     private String extractProviderId(OAuth2User oAuth2User, String provider) {
         return switch (provider.toLowerCase()) {
             case "google" -> oAuth2User.getAttribute("sub");
-            case "kakao" -> String.valueOf(Optional.ofNullable(oAuth2User.getAttribute("id")).get());
+            case "kakao" -> String
+                    .valueOf(Optional.ofNullable(oAuth2User.getAttribute("id")).get());
             default -> null;
         };
     }

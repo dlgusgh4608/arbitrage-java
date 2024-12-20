@@ -1,8 +1,8 @@
 package main.arbitrage.domain.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
 import lombok.Builder;
+import lombok.Getter;
 
 @Getter
 public class UserTokenDto {

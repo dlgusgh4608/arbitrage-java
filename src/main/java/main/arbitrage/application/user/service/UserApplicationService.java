@@ -2,36 +2,34 @@ package main.arbitrage.application.user.service;
 
 import java.util.Optional;
 import java.util.UUID;
-
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.user.dto.UserProfileDto;
+import main.arbitrage.auth.jwt.JwtUtil;
 import main.arbitrage.auth.security.SecurityUtil;
 import main.arbitrage.domain.exchangeRate.dto.ExchangeRateDto;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
 import main.arbitrage.domain.oauthUser.service.OAuthUserService;
 import main.arbitrage.domain.user.dto.UserEditNicknameDto;
+import main.arbitrage.domain.user.dto.UserLoginDto;
+import main.arbitrage.domain.user.dto.UserSignupDto;
+import main.arbitrage.domain.user.dto.UserTokenDto;
+import main.arbitrage.domain.user.entity.User;
+import main.arbitrage.domain.user.service.UserService;
 import main.arbitrage.domain.userEnv.dto.UserEnvDto;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
+import main.arbitrage.global.util.aes.AESCrypto;
+import main.arbitrage.infrastructure.email.dto.EmailMessageDto;
+import main.arbitrage.infrastructure.email.service.EmailMessageService;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.account.BinanceGetAccountResponseDto;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
 import main.arbitrage.infrastructure.exchange.factory.dto.ExchangePrivateRestPair;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.account.UpbitGetAccountResponseDto;
 import main.arbitrage.infrastructure.oauthValidator.google.GoogleApiClient;
 import main.arbitrage.infrastructure.oauthValidator.kakao.KakaoApiClient;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
-
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import main.arbitrage.auth.jwt.JwtUtil;
-import main.arbitrage.infrastructure.email.dto.EmailMessageDto;
-import main.arbitrage.infrastructure.email.service.EmailMessageService;
-import main.arbitrage.domain.user.dto.UserLoginDto;
-import main.arbitrage.domain.user.dto.UserSignupDto;
-import main.arbitrage.domain.user.dto.UserTokenDto;
-import main.arbitrage.domain.user.entity.User;
-import main.arbitrage.domain.user.service.UserService;
-import main.arbitrage.global.util.aes.AESCrypto;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
 
 
@@ -80,11 +78,13 @@ public class UserApplicationService {
 
         if (!code.isEmpty() && !encryptedCode.isEmpty()) {
             // OAuth login이 아닐시 code와 encryptedCode가 반드시 존재해야함
-            if (!checkCode(code, encryptedCode)) throw new IllegalArgumentException("Invalid value");
+            if (!checkCode(code, encryptedCode))
+                throw new IllegalArgumentException("Invalid value");
 
             return userTokenResponseBuilder(userService.create(req));
         } else if (!accessToken.isEmpty() && !provider.isEmpty() && !providerId.isEmpty()) {
-            if (!isCorrectOAuthToken(req)) throw new IllegalArgumentException("Invalid value");
+            if (!isCorrectOAuthToken(req))
+                throw new IllegalArgumentException("Invalid value");
 
             User user = userService.create(req);
             oAuthUserService.create(user, req);
@@ -118,16 +118,14 @@ public class UserApplicationService {
 
         Optional<User> optionalUser = userService.findByEmail(SecurityUtil.getEmail());
 
-        if (optionalUser.isEmpty()) throw new IllegalArgumentException("user is not found");
+        if (optionalUser.isEmpty())
+            throw new IllegalArgumentException("user is not found");
 
         // upbit accessKey와 secretKey를 지갑 잔액을 조회함으로써 올바른 키가 맞는지 증명
-        ExchangePrivateRestPair upbitExchangePrivateRestPair = exchangePrivateRestFactory.create(
-            req.getUpbitAccessKey(),
-            req.getUpbitSecretKey(),
-            req.getBinanceAccessKey(),
-            req.getBinanceSecretKey()
-        );
-        
+        ExchangePrivateRestPair upbitExchangePrivateRestPair =
+                exchangePrivateRestFactory.create(req.getUpbitAccessKey(), req.getUpbitSecretKey(),
+                        req.getBinanceAccessKey(), req.getBinanceSecretKey());
+
         upbitExchangePrivateRestPair.getUpbit().getAccount();
         upbitExchangePrivateRestPair.getBinance().getAccount();
 
@@ -157,11 +155,14 @@ public class UserApplicationService {
         } else {
             // env를 통하여 거래소의 service를 생성
             UserEnv userEnv = userEnvOptional.get();
-            ExchangePrivateRestPair upbitExchangePrivateRestPair = exchangePrivateRestFactory.create(userEnv);
+            ExchangePrivateRestPair upbitExchangePrivateRestPair =
+                    exchangePrivateRestFactory.create(userEnv);
 
             // 각각 거래소의 지갑정보를 받아옴
-            Optional<UpbitGetAccountResponseDto> upbitKRW = upbitExchangePrivateRestPair.getUpbit().getKRW();
-            Optional<BinanceGetAccountResponseDto> binanceUSDT = upbitExchangePrivateRestPair.getBinance().getUSDT();
+            Optional<UpbitGetAccountResponseDto> upbitKRW =
+                    upbitExchangePrivateRestPair.getUpbit().getKRW();
+            Optional<BinanceGetAccountResponseDto> binanceUSDT =
+                    upbitExchangePrivateRestPair.getBinance().getUSDT();
 
             // builder에 build하기
             if (upbitKRW.isEmpty()) {
@@ -173,7 +174,8 @@ public class UserApplicationService {
             if (binanceUSDT.isEmpty()) {
                 userProfileDtoBuilder.binanceBalance(null);
             } else {
-                userProfileDtoBuilder.binanceBalance(Double.parseDouble(binanceUSDT.get().getBalance()));
+                userProfileDtoBuilder
+                        .binanceBalance(Double.parseDouble(binanceUSDT.get().getBalance()));
             }
         }
 
@@ -192,26 +194,27 @@ public class UserApplicationService {
 
         Optional<User> userOptional = userService.findByUserId(userId);
 
-        if (userOptional.isEmpty()) throw new IllegalArgumentException("user is not found");
+        if (userOptional.isEmpty())
+            throw new IllegalArgumentException("user is not found");
 
         User user = userOptional.get();
-        if (user.getNickname().equals(nickname)) throw new IllegalArgumentException("Same nickname");
+        if (user.getNickname().equals(nickname))
+            throw new IllegalArgumentException("Same nickname");
 
         user.updateUserNickname(nickname);
 
-        return jwtUtil.createToken(user.getId(), user.getEmail(), user.getNickname(), SecurityUtil.getExpiredAt());
+        return jwtUtil.createToken(user.getId(), user.getEmail(), user.getNickname(),
+                SecurityUtil.getExpiredAt());
     }
 
     private UserTokenDto userTokenResponseBuilder(User user) {
         String accessToken = jwtUtil.createToken(user.getId(), user.getEmail(), user.getNickname());
-        String refreshToken = refreshTokenService.createRefreshToken(user.getEmail(), UUID.randomUUID().toString());
+        String refreshToken = refreshTokenService.createRefreshToken(user.getEmail(),
+                UUID.randomUUID().toString());
         Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(user.getEmail());
 
-        return UserTokenDto.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .refreshTokenTTL(refreshTokenTTL)
-                .build();
+        return UserTokenDto.builder().accessToken(accessToken).refreshToken(refreshToken)
+                .refreshTokenTTL(refreshTokenTTL).build();
     }
 
     private boolean isCorrectOAuthToken(UserSignupDto req) {
@@ -219,12 +222,14 @@ public class UserApplicationService {
 
         switch (provider.toLowerCase()) {
             case "google" -> {
-                if (!googleApiClient.validateUser(req.getAccessToken(), req.getProviderId(), req.getEmail())) {
+                if (!googleApiClient.validateUser(req.getAccessToken(), req.getProviderId(),
+                        req.getEmail())) {
                     return false;
                 }
             }
             case "kakao" -> {
-                if (!kakaoApiClient.validateUser(req.getAccessToken(), req.getProviderId(), req.getEmail())) {
+                if (!kakaoApiClient.validateUser(req.getAccessToken(), req.getProviderId(),
+                        req.getEmail())) {
                     return false;
                 }
             }

@@ -1,9 +1,8 @@
 package main.arbitrage.domain.oauthUser.store;
 
-import main.arbitrage.domain.oauthUser.dto.OAuthUserDto;
-import org.springframework.stereotype.Component;
-
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.stereotype.Component;
+import main.arbitrage.domain.oauthUser.dto.OAuthUserDto;
 
 @Component
 public class OAuthUserStore {

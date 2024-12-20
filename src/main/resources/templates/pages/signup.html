@@ -1,171 +1,173 @@
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/default}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/default}">
+
 <head>
     <title>회원가입</title>
     <th:block layout:fragment="css">
         <link rel="stylesheet" th:href="@{/css/signup.css}">
     </th:block>
 </head>
+
 <body>
-<main layout:fragment="content">
-    <section class="container-xxl pt-5 d-flex flex-column justify-content-center align-items-center">
-        <h2 class="text-center mb-5">회원가입</h2>
-        <th:block th:replace="/fragments/authenticationBtns :: authenticationBtns"></th:block>
-        <article class="wrapper" id="step2" style="display: none;">
-            <form method="post" th:action th:object="${formDto}" id="signupForm">
-                <label for="email" class="fs-6 form-label">이메일</label>
-                <div class="mb-3 d-flex">
-                    <div class="w-75 me-1">
-                        <input type="text" class="form-control" id="email" th:field="*{email}"
-                               placeholder="이메일을 입력해주세요.">
+    <main layout:fragment="content">
+        <section class="container-xxl pt-5 d-flex flex-column justify-content-center align-items-center">
+            <h2 class="text-center mb-5">회원가입</h2>
+            <th:block th:replace="/fragments/authenticationBtns :: authenticationBtns"></th:block>
+            <article class="wrapper" id="step2" style="display: none;">
+                <form method="post" th:action th:object="${formDto}" id="signupForm">
+                    <label for="email" class="fs-6 form-label">이메일</label>
+                    <div class="mb-3 d-flex">
+                        <div class="w-75 me-1">
+                            <input type="text" class="form-control" id="email" th:field="*{email}"
+                                placeholder="이메일을 입력해주세요.">
+                        </div>
+                        <div class="w-25">
+                            <button type="button" class="w-100 btn btn-outline-primary" id="btnEmailCheck">
+                                <span id="btnEmailCheckSpinner" class="spinner-border spinner-border-sm"
+                                    aria-hidden="true" style="display: none;"></span>
+                                이메일 확인
+                            </button>
+                        </div>
                     </div>
-                    <div class="w-25">
-                        <button type="button" class="w-100 btn btn-outline-primary" id="btnEmailCheck">
-                            <span id="btnEmailCheckSpinner" class="spinner-border spinner-border-sm" aria-hidden="true"
-                                  style="display: none;"></span>
-                            이메일 확인
-                        </button>
+                    <div class="valid-warning" th:errors=*{email}></div>
+
+                    <div class="mb-3" id="codeWrap" style="display: none;">
+                        <div class="w-75 me-1">
+                            <input type="text" class="form-control" th:field="*{code}" placeholder="인증코드를 입력해주세요.">
+                        </div>
+                        <div class="w-25">
+                            <button type="button" class="w-100 btn btn-outline-primary" id="codeCheck">인증</button>
+                        </div>
                     </div>
-                </div>
-                <div class="valid-warning" th:errors=*{email}></div>
+                    <div class="valid-warning" th:errors=*{code}></div>
 
-                <div class="mb-3" id="codeWrap" style="display: none;">
-                    <div class="w-75 me-1">
-                        <input type="text" class="form-control" th:field="*{code}" placeholder="인증코드를 입력해주세요.">
+                    <div class="mb-3">
+                        <label for="password" class="form-label fs-6">비밀번호</label>
+                        <input type="password" class="form-control" id="password" th:field="*{password}">
+                        <div class="valid-warning" th:errors=*{password}></div>
                     </div>
-                    <div class="w-25">
-                        <button type="button" class="w-100 btn btn-outline-primary" id="codeCheck">인증</button>
+
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label fs-6">비밀번호 확인</label>
+                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
+                        <div class="valid-warning" id="passwordMatchError" style="display: none;">비밀번호가 일치하지 않습니다.</div>
                     </div>
-                </div>
-                <div class="valid-warning" th:errors=*{code}></div>
 
-                <div class="mb-3">
-                    <label for="password" class="form-label fs-6">비밀번호</label>
-                    <input type="password" class="form-control" id="password" th:field="*{password}">
-                    <div class="valid-warning" th:errors=*{password}></div>
-                </div>
+                    <input type="hidden" th:field="*{encryptedCode}">
+                    <input type="hidden" th:field="*{accessToken}">
+                    <input type="hidden" th:field="*{provider}">
+                    <input type="hidden" th:field="*{providerId}">
 
-                <div class="mb-3">
-                    <label for="confirmPassword" class="form-label fs-6">비밀번호 확인</label>
-                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
-                    <div class="valid-warning" id="passwordMatchError" style="display: none;">비밀번호가 일치하지 않습니다.</div>
-                </div>
+                    <button type="submit" class="btn btn-primary">가입하기</button>
+                    <script th:inline="javascript">
+                        const hasErrors = /*[[${#fields.hasErrors('*')}]]*/ false;
 
-                <input type="hidden" th:field="*{encryptedCode}">
-                <input type="hidden" th:field="*{accessToken}">
-                <input type="hidden" th:field="*{provider}">
-                <input type="hidden" th:field="*{providerId}">
+                        if (hasErrors) emailRegister()
 
-                <button type="submit" class="btn btn-primary">가입하기</button>
-                <script th:inline="javascript">
-                    const hasErrors = /*[[${#fields.hasErrors('*')}]]*/ false;
+                        const hasServerError = /*[[${#fields.hasGlobalErrors()}]]*/ false;
+                        if (hasServerError) alert("알 수 없는 오류입니다. 다시 시도해주세요.")
+                    </script>
+                </form>
+            </article>
+        </section>
+        <script th:inline="javascript">
+            let codeOk = false
 
-                    if(hasErrors) emailRegister()
+            const oauth = [[${ oauth }]]
 
-                    const hasServerError = /*[[${#fields.hasGlobalErrors()}]]*/ false;
-                    if(hasServerError) alert("알 수 없는 오류입니다. 다시 시도해주세요.")
-                </script>
-            </form>
-        </article>
-    </section>
-    <script th:inline="javascript">
-        let codeOk = false
-
-        const oauth = [[${oauth}]]
-
-        if(oauth) {
-            emailRegister()
-            $('#email').val(oauth.email).attr('readonly', true)
-            $('#btnEmailCheck').attr("disabled", true)
-            $('#provider').val(oauth.provider)
-            $('#providerId').val(oauth.providerId)
-            $('#accessToken').val(oauth.accessToken)
-        }
-
-        $('#btnEmailCheck').on('click', async () => {
-            const email = $('#email').val()
-
-            if(String(email).trim() === '') return alert('이메일을 입력해주세요.')
-
-            // back단에서는 open smtp를 사용하여 처리가 불가능. 사용자한테 전가함.
-            if (window.confirm("이 이메일을 사용하시겠습니까?")) {
-                $('#btnEmailCheckSpinner').css('display', 'inline-block')
+            if (oauth) {
+                emailRegister()
+                $('#email').val(oauth.email).attr('readonly', true)
                 $('#btnEmailCheck').attr("disabled", true)
+                $('#provider').val(oauth.provider)
+                $('#providerId').val(oauth.providerId)
+                $('#accessToken').val(oauth.accessToken)
+            }
 
-                const { success, data } = await fetcher('post', '/api/send-email', {email})
+            $('#btnEmailCheck').on('click', async () => {
+                const email = $('#email').val()
 
-                if(success) {
-                    $('#encryptedCode').val(data.code)
-                    $('#codeWrap').css('display', 'flex')
-                }else {
-                    $('#btnEmailCheck').attr("disabled", false)
-                    if(data.status === 400) alert('잘못된 이메일 입니다.')
-                    if(data.status === 409) alert('이미 사용중인 이메일 입니다.')
-                    if(data.status === 500) alert('알 수 없는 에러입니다. 다시 시도해주세요.')
+                if (String(email).trim() === '') return alert('이메일을 입력해주세요.')
+
+                // back단에서는 open smtp를 사용하여 처리가 불가능. 사용자한테 전가함.
+                if (window.confirm("이 이메일을 사용하시겠습니까?")) {
+                    $('#btnEmailCheckSpinner').css('display', 'inline-block')
+                    $('#btnEmailCheck').attr("disabled", true)
+
+                    const { success, data } = await fetcher('post', '/api/send-email', { email })
+
+                    if (success) {
+                        $('#encryptedCode').val(data.code)
+                        $('#codeWrap').css('display', 'flex')
+                    } else {
+                        $('#btnEmailCheck').attr("disabled", false)
+                        if (data.status === 400) alert('잘못된 이메일 입니다.')
+                        if (data.status === 409) alert('이미 사용중인 이메일 입니다.')
+                        if (data.status === 500) alert('알 수 없는 에러입니다. 다시 시도해주세요.')
+                    }
+
+                    $('#btnEmailCheckSpinner').css('display', 'none')
                 }
 
-                $('#btnEmailCheckSpinner').css('display', 'none')
-            }
+            })
 
-        })
+            $('#codeCheck').on('click', async () => {
+                const encryptedCode = $('#encryptedCode').val()
 
-        $('#codeCheck').on('click', async () => {
-            const encryptedCode = $('#encryptedCode').val()
+                if (!encryptedCode) return alert('이메일 인증을 다시 진행해주세요.')
 
-            if(!encryptedCode) return alert('이메일 인증을 다시 진행해주세요.')
+                const codeVal = $('#code').val()
 
-            const codeVal = $('#code').val()
+                if (String(codeVal).trim() === '') return alert('인증코드를 입력해주세요.')
 
-            if(String(codeVal).trim() === '') return alert('인증코드를 입력해주세요.')
+                const payload = {
+                    originCode: codeVal,
+                    encryptedCode: encryptedCode
+                }
 
-            const payload = {
-                originCode: codeVal,
-                encryptedCode: encryptedCode
-            }
+                const { success, data } = await fetcher('post', '/api/check-code', payload)
 
-            const { success, data } = await fetcher('post', '/api/check-code', payload)
+                if (success) {
+                    codeOk = true
+                    alert('인증이 완료되었습니다.')
+                    $('#codeWrap').css('display', 'none')
+                    $('#email').attr("readonly", true)
+                } else {
+                    if (data.status === 400) return alert('인증번호가 올바르지 않습니다.')
+                    if (data.status === 500) alert('알 수 없는 에러입니다. 다시 시도해주세요.')
+                }
+            })
 
-            if(success) {
-                codeOk = true
-                alert('인증이 완료되었습니다.')
-                $('#codeWrap').css('display', 'none')
-                $('#email').attr("readonly", true)
-            }else {
-                if(data.status === 400) return alert('인증번호가 올바르지 않습니다.')
-                if(data.status === 500) alert('알 수 없는 에러입니다. 다시 시도해주세요.')
-            }
-        })
+            $('#signupForm').on('submit', (e) => {
+                const password = $('#password').val()
+                const confirmPassword = $('#confirmPassword').val()
 
-        $('#signupForm').on('submit', (e) => {
-            const password = $('#password').val()
-            const confirmPassword = $('#confirmPassword').val()
+                if (!password.trim() || !confirmPassword.trim()) {
+                    e.preventDefault()
+                    $('#passwordMatchError').show()
+                    return false
+                }
 
-            if(!password.trim() || !confirmPassword.trim()) {
-                e.preventDefault()
-                $('#passwordMatchError').show()
-                return false
-            }
-            
-            if(password !== confirmPassword) {
-                e.preventDefault()
-                $('#passwordMatchError').show()
-                return false
-            }
+                if (password !== confirmPassword) {
+                    e.preventDefault()
+                    $('#passwordMatchError').show()
+                    return false
+                }
 
-            if(!codeOk && !oAuth) {
-                e.preventDefault()
-                alert('이메일 인증을 완료해주세요.')
-                return false
-            }
+                if (!codeOk && !oAuth) {
+                    e.preventDefault()
+                    alert('이메일 인증을 완료해주세요.')
+                    return false
+                }
 
-            $('#password, #confirmPassword').on('input', function() {
-                $('#passwordMatchError').hide();
-            });
-        })
-    </script>
-</main>
+                $('#password, #confirmPassword').on('input', function () {
+                    $('#passwordMatchError').hide();
+                });
+            })
+        </script>
+    </main>
 
 
 </body>
+
 </html>

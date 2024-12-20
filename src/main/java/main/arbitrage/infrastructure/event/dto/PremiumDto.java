@@ -3,8 +3,6 @@ package main.arbitrage.infrastructure.event.dto;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.math.BigDecimal;
-
 @Builder
 @Getter
 public class PremiumDto {

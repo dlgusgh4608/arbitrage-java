@@ -1,25 +1,31 @@
 package main.arbitrage.infrastructure.binance.priv.rest;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.exception.BinancePrivateRestException;
-import okhttp3.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
+import main.arbitrage.infrastructure.exchange.binance.priv.rest.exception.BinancePrivateRestException;
+import okhttp3.OkHttpClient;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 class BinancePrivateRestServiceTest {
 
     private BinancePrivateRestService binancePrivateRestService;
     private final String accessKey = "testAccessKey";
     private final String secretKey = "testSecretKey";
+    private final List<String> testSymbol = Arrays.asList("btc", "eth");
 
     @Mock
     private OkHttpClient mockClient;
@@ -36,7 +42,8 @@ class BinancePrivateRestServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         objectMapper = new ObjectMapper();
-        binancePrivateRestService = new BinancePrivateRestService(accessKey, secretKey, mockClient, objectMapper);
+        binancePrivateRestService = new BinancePrivateRestService(accessKey, secretKey, mockClient,
+                objectMapper, testSymbol);
     }
 
     @Nested
@@ -68,7 +75,8 @@ class BinancePrivateRestServiceTest {
         @Test
         @DisplayName("타임스탬프 에러")
         void timestampErrorTest() throws Exception {
-            mockErrorResponse(-1021, "Timestamp for this request was 1000ms ahead of the server's time.");
+            mockErrorResponse(-1021,
+                    "Timestamp for this request was 1000ms ahead of the server's time.");
 
             assertThatThrownBy(() -> binancePrivateRestService.getAccount())
                     .isInstanceOf(BinancePrivateRestException.class)

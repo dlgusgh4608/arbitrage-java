@@ -1,161 +1,161 @@
-<html
-        xmlns:th="http://www.thymeleaf.org"
-        xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-        layout:decorate="~{layout/default}"
->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/default}">
+
 <head>
     <title>메인페이지</title>
     <th:block layout:fragment="css">
         <link rel="stylesheet" th:href="@{/css/main.css}">
     </th:block>
 </head>
+
 <body>
-<main layout:fragment="content">
-    <section class="banner-image section d-flex">
-        <div class="container-xxl banner-wrap">
-            <article class="w-50 d-flex flex-column justify-content-center">
-                <div class="mb-5">
-                    <h1 class="slogan-text animate-in">
-                        안전하게
-                    </h1>
-                    <h1 class="slogan-text animate-in">
-                        쉽게
-                    </h1>
-                    <h1 class="slogan-text animate-in">
-                        간편하게
-                    </h1>
+    <main layout:fragment="content">
+        <section class="banner-image section d-flex">
+            <div class="container-xxl banner-wrap">
+                <article class="w-50 d-flex flex-column justify-content-center">
+                    <div class="mb-5">
+                        <h1 class="slogan-text animate-in">
+                            안전하게
+                        </h1>
+                        <h1 class="slogan-text animate-in">
+                            쉽게
+                        </h1>
+                        <h1 class="slogan-text animate-in">
+                            간편하게
+                        </h1>
+                    </div>
+                    <div class="to-price-wrap animate-in">
+                        <button class="btn custom-button">
+                            <a style="color:#000;" href="/chart?symbol=btc">무료로 시작하기</a>
+                        </button>
+                    </div>
+                </article>
+                <article class="w-50 d-flex justify-content-center align-items-center text-light">
+                    <div class="symbol-info-wrap animate-in">
+                        <ul class="symbol-list">
+                            <li class="w-100 d-flex fw-bold symbol-item">
+                                <div class="symbol-header">Symbol</div>
+                                <div id="upbit" class="w-25 text-end">Upbit</div>
+                                <div id="binance" class="w-25 text-end">Binance</div>
+                                <div id="premium" class="symbol-premium text-end">Premium</div>
+                            </li>
+                            <li>
+                                <a id="btc" class="w-100 d-flex symbol-item" href="/chart?symbol=btc">
+                                    <div class="symbol-header">
+                                        <img src="/images/btc-symbol.png" alt="btc-symbol" class="symbol-image" />
+                                        <span class="text-start">BTC</span>
+                                    </div>
+                                    <div id="upbit" class="w-25 text-end">₩-,---,---</div>
+                                    <div id="binance" class="w-25 text-end">$-,---,---</div>
+                                    <div id="premium" class="symbol-premium">--.----%</div>
+                                </a>
+                            </li>
+                            <li>
+                                <a id="eth" class="w-100 d-flex symbol-item" href="/chart?symbol=eth">
+                                    <div class="symbol-header">
+                                        <img src="/images/eth-symbol.png" alt="btc-symbol" class="symbol-image" />
+                                        <span class="text-start">ETH</span>
+                                    </div>
+                                    <div id="upbit" class="w-25 text-end">₩-,---,---</div>
+                                    <div id="binance" class="w-25 text-end">$-,---,---</div>
+                                    <div id="premium" class="symbol-premium">--.----%</div>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </article>
+            </div>
+        </section>
+        <section class="section">
+            <article class="container-xxl d-flex info-article">
+                <div class="w-50 p-3 d-flex flex-column align-items-center">
+                    <div class="mb-5 responsive-width">
+                        <h1 class="section-title">거래</h1>
+                        <h2 class="fs-1 fw-bold">리스크는 적게</h2>
+                        <h2 class="fs-1 fw-bold">수익은 크게</h2>
+                        <h2 class="fs-1 fw-bold">자동으로.</h2>
+                    </div>
+                    <img src="/images/upbit.png" alt="trade-image" class="responsive-width" />
                 </div>
-                <div class="to-price-wrap animate-in">
-                    <button class="btn custom-button">
-                        <a style="color:#000;" href="/chart?symbol=btc">무료로 시작하기</a>
-                    </button>
+                <div class="w-50 p-3 d-flex flex-column align-items-center">
+                    <img src="/images/binance.png" alt="trade-image" class="responsive-width" />
+                    <div class="mt-5 responsive-width">
+                        <h2 class="fs-4 fw-bold">잠자는 동안에도 돈이 들어오는 방법을 찾지 못한다면 당신은 죽을 때까지 일을 해야만 할 것이다.</h2>
+                        <h2 class="fs-6 fw-bold">- Warren Buffett -</h2>
+                    </div>
                 </div>
             </article>
-            <article class="w-50 d-flex justify-content-center align-items-center text-light">
-                <div class="symbol-info-wrap animate-in">
-                    <ul class="symbol-list">
-                        <li class="w-100 d-flex fw-bold symbol-item">
-                            <div class="symbol-header">Symbol</div>
-                            <div id="upbit" class="w-25 text-end">Upbit</div>
-                            <div id="binance" class="w-25 text-end">Binance</div>
-                            <div id="premium" class="symbol-premium text-end">Premium</div>
-                        </li>
-                        <li>
-                            <a id="btc" class="w-100 d-flex symbol-item" href="/chart?symbol=btc">
-                                <div class="symbol-header">
-                                    <img src="/images/btc-symbol.png" alt="btc-symbol" class="symbol-image"/>
-                                    <span class="text-start">BTC</span>
-                                </div>
-                                <div id="upbit" class="w-25 text-end">₩-,---,---</div>
-                                <div id="binance" class="w-25 text-end">$-,---,---</div>
-                                <div id="premium" class="symbol-premium">--.----%</div>
-                            </a>
-                        </li>
-                        <li>
-                            <a id="eth" class="w-100 d-flex symbol-item" href="/chart?symbol=eth">
-                                <div class="symbol-header">
-                                    <img src="/images/eth-symbol.png" alt="btc-symbol" class="symbol-image"/>
-                                    <span class="text-start">ETH</span>
-                                </div>
-                                <div id="upbit" class="w-25 text-end">₩-,---,---</div>
-                                <div id="binance" class="w-25 text-end">$-,---,---</div>
-                                <div id="premium" class="symbol-premium">--.----%</div>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </article>
-        </div>
-    </section>
-    <section class="section">
-        <article class="container-xxl d-flex info-article">
-            <div class="w-50 p-3 d-flex flex-column align-items-center">
-                <div class="mb-5 responsive-width">
-                    <h1 class="section-title">거래</h1>
-                    <h2 class="fs-1 fw-bold">리스크는 적게</h2>
-                    <h2 class="fs-1 fw-bold">수익은 크게</h2>
-                    <h2 class="fs-1 fw-bold">자동으로.</h2>
-                </div>
-                <img src="/images/upbit.png" alt="trade-image" class="responsive-width"/>
-            </div>
-            <div class="w-50 p-3 d-flex flex-column align-items-center">
-                <img src="/images/binance.png" alt="trade-image" class="responsive-width"/>
-                <div class="mt-5 responsive-width">
-                    <h2 class="fs-4 fw-bold">잠자는 동안에도 돈이 들어오는 방법을 찾지 못한다면 당신은 죽을 때까지 일을 해야만 할 것이다.</h2>
-                    <h2 class="fs-6 fw-bold">- Warren Buffett -</h2>
-                </div>
-            </div>
-        </article>
-    </section>
-    <script th:inline="javascript">
-        const ws = new WebSocket("ws://localhost:8000/ws/premium")
-        
-        const prev = {
-            'btc': {
-                premium: null,
-                upbit: null,
-                binance: null
-            },
-            'eth': {
-                premium: null,
-                upbit: null,
-                binance: null
-            },
-        }
+        </section>
+        <script th:inline="javascript">
+            const ws = new WebSocket("ws://localhost:8000/ws/premium")
 
-        const colors = {
-            default: '#000',
-            up: '#f03e3e',
-            down: '#1c7ed6',
-        }
+            const prev = {
+                'btc': {
+                    premium: null,
+                    upbit: null,
+                    binance: null
+                },
+                'eth': {
+                    premium: null,
+                    upbit: null,
+                    binance: null
+                },
+            }
 
-        const getColor = (prevValue, currentValue) => {
-                if(prevValue === null) return colors.default
+            const colors = {
+                default: '#000',
+                up: '#f03e3e',
+                down: '#1c7ed6',
+            }
 
-                if(prevValue < currentValue) return colors.up
+            const getColor = (prevValue, currentValue) => {
+                if (prevValue === null) return colors.default
 
-                if(prevValue > currentValue) return colors.down
+                if (prevValue < currentValue) return colors.up
+
+                if (prevValue > currentValue) return colors.down
 
                 return colors.default
             }
 
-        const handleMessage = (message) => {
-            const dataOfJson = JSON.parse(message.data)
+            const handleMessage = (message) => {
+                const dataOfJson = JSON.parse(message.data)
 
-            const { symbol, premium, upbit, binance } = dataOfJson
+                const { symbol, premium, upbit, binance } = dataOfJson
 
-            const premiumEle = $(`#${symbol}`).find('#premium')
-            const upbitEle = $(`#${symbol}`).find('#upbit')
-            const binanceEle = $(`#${symbol}`).find('#binance')
+                const premiumEle = $(`#${symbol}`).find('#premium')
+                const upbitEle = $(`#${symbol}`).find('#upbit')
+                const binanceEle = $(`#${symbol}`).find('#binance')
 
-            premiumEle.text(premium.toLocaleString() + '%')
-            upbitEle.text('₩' + upbit.toLocaleString())
-            binanceEle.text('$' + binance.toLocaleString())
+                premiumEle.text(premium.toLocaleString() + '%')
+                upbitEle.text('₩' + upbit.toLocaleString())
+                binanceEle.text('$' + binance.toLocaleString())
 
-            const prevPremium = prev[symbol].premium
-            const prevupbit = prev[symbol].upbit
-            const prevBinance = prev[symbol].binance
+                const prevPremium = prev[symbol].premium
+                const prevupbit = prev[symbol].upbit
+                const prevBinance = prev[symbol].binance
 
 
 
-            premiumEle.css('color', getColor(prevPremium, premium))
-            upbitEle.css('color', getColor(prevupbit, upbit))
-            binanceEle.css('color', getColor(prevBinance, binance))
+                premiumEle.css('color', getColor(prevPremium, premium))
+                upbitEle.css('color', getColor(prevupbit, upbit))
+                binanceEle.css('color', getColor(prevBinance, binance))
 
-            prev[symbol].premium = premium
-            prev[symbol].upbit = upbit
-            prev[symbol].binance = binance
-        }
+                prev[symbol].premium = premium
+                prev[symbol].upbit = upbit
+                prev[symbol].binance = binance
+            }
 
-        ws.onmessage = handleMessage
+            ws.onmessage = handleMessage
 
-        function adjustBannerHeight() {
-            $('.banner-image').css('height', $(window).height());
-        }
+            function adjustBannerHeight() {
+                $('.banner-image').css('height', $(window).height());
+            }
 
-        adjustBannerHeight();
-        $(window).resize(adjustBannerHeight);
-    </script>
-</main>
+            adjustBannerHeight();
+            $(window).resize(adjustBannerHeight);
+        </script>
+    </main>
 </body>
+
 </html>

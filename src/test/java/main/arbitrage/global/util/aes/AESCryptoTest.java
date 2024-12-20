@@ -1,11 +1,10 @@
 package main.arbitrage.global.util.aes;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class AESCryptoTest {
 

@@ -1,26 +1,23 @@
 package main.arbitrage.infrastructure.exchange.upbit.pub.websocket;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
+import main.arbitrage.application.collector.dto.OrderbookDto;
+import main.arbitrage.application.collector.dto.TradeDto;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.websocket.client.BaseWebSocketClient;
-import main.arbitrage.application.collector.dto.TradeDto;
-import main.arbitrage.application.collector.dto.OrderbookDto;
 import main.arbitrage.infrastructure.websocket.client.handler.ExchangeWebSocketHandler;
-import org.springframework.stereotype.Component;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.client.standard.StandardWebSocketClient;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.concurrent.ExecutionException;
-import java.util.List;
 
 
 @Component
@@ -37,7 +34,8 @@ public class UpbitWebSocket extends BaseWebSocketClient {
 
     @PostConstruct
     private void init() {
-        symbols = symbolVariableService.getSupportedSymbols().stream().map(Symbol::getName).toList();
+        symbols =
+                symbolVariableService.getSupportedSymbols().stream().map(Symbol::getName).toList();
     }
 
     @Override
@@ -48,7 +46,8 @@ public class UpbitWebSocket extends BaseWebSocketClient {
 
         try {
             StandardWebSocketClient client = new StandardWebSocketClient();
-            ExchangeWebSocketHandler handler = new ExchangeWebSocketHandler("Upbit", this::handleMessage, objectMapper);
+            ExchangeWebSocketHandler handler =
+                    new ExchangeWebSocketHandler("Upbit", this::handleMessage, objectMapper);
             session = client.execute(handler, WS_URL).get();
             isRunning = true;
 
@@ -106,11 +105,9 @@ public class UpbitWebSocket extends BaseWebSocketClient {
     protected void handleTrade(JsonNode data) {
         String symbol = data.get("code").asText().replace("KRW-", "").toLowerCase();
 
-        TradeDto trade = TradeDto.builder()
-                .symbol(symbol)
+        TradeDto trade = TradeDto.builder().symbol(symbol)
                 .price(Double.parseDouble(data.get("trade_price").asText()))
-                .timestamp(data.get("trade_timestamp").asLong())
-                .build();
+                .timestamp(data.get("trade_timestamp").asLong()).build();
 
         tradeMap.put(symbol, trade);
     }
@@ -119,11 +116,9 @@ public class UpbitWebSocket extends BaseWebSocketClient {
     protected void handleOrderbook(JsonNode data) {
         String symbol = data.get("code").asText().replace("KRW-", "").toLowerCase();
 
-        OrderbookDto orderbook = OrderbookDto.builder()
-                .symbol(symbol)
+        OrderbookDto orderbook = OrderbookDto.builder().symbol(symbol)
                 .bids(createOrderbookUnits(data.get("orderbook_units"), false))
-                .asks(createOrderbookUnits(data.get("orderbook_units"), true))
-                .build();
+                .asks(createOrderbookUnits(data.get("orderbook_units"), true)).build();
 
         orderbookMap.put(symbol, orderbook);
     }
@@ -137,8 +132,7 @@ public class UpbitWebSocket extends BaseWebSocketClient {
             JsonNode unit = units.get(i);
             orderbooksUnits[i] = OrderbookDto.OrderbookUnit.builder()
                     .price(Double.parseDouble(unit.get(type.concat("_price")).asText()))
-                    .size(Double.parseDouble(unit.get(type.concat("_size")).asText()))
-                    .build();
+                    .size(Double.parseDouble(unit.get(type.concat("_size")).asText())).build();
         }
 
         return orderbooksUnits;
@@ -161,7 +155,8 @@ public class UpbitWebSocket extends BaseWebSocketClient {
     }
 
     private void sendSubscribeMessage(List<String> symbols) throws IOException {
-        List<UpbitSubscribeMessage> messages = UpbitSubscribeMessage.createSubscribeMessage("unique_ticket_123", symbols);
+        List<UpbitSubscribeMessage> messages =
+                UpbitSubscribeMessage.createSubscribeMessage("unique_ticket_123", symbols);
         String message = objectMapper.writeValueAsString(messages);
         session.sendMessage(new TextMessage(message));
     }

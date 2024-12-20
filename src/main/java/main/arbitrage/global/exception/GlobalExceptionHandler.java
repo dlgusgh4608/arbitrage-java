@@ -1,9 +1,6 @@
 package main.arbitrage.global.exception;
 
 import java.sql.SQLException;
-
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.exception.BinancePrivateRestException;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -20,10 +17,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
-
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import main.arbitrage.infrastructure.exchange.binance.priv.rest.exception.BinancePrivateRestException;
+import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
 
 @RestControllerAdvice
 @Slf4j
@@ -50,13 +48,15 @@ public class GlobalExceptionHandler {
 
     // 유효성 검사 관련 예외
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException e) {
         log.error("Validation error: {}", e.getBindingResult().getAllErrors());
         return createErrorResponse(HttpStatus.BAD_REQUEST, "Validation failed");
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErrorResponse> handleConstraintViolationException(ConstraintViolationException e) {
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(
+            ConstraintViolationException e) {
         log.error("Constraint violation: {}", e.getMessage());
         return createErrorResponse(HttpStatus.BAD_REQUEST, "Validation constraints violated");
     }
@@ -69,7 +69,8 @@ public class GlobalExceptionHandler {
 
     // 데이터베이스 관련 예외
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolationException(
+            DataIntegrityViolationException e) {
         log.error("Data integrity violation: {}", e.getMessage());
         return createErrorResponse(HttpStatus.CONFLICT, "Data integrity violation");
     }
@@ -88,13 +89,15 @@ public class GlobalExceptionHandler {
 
     // 요청 관련 예외
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
+            IllegalArgumentException e) {
         log.error("Illegal argument: {}", e.getMessage());
         return createErrorResponse(HttpStatus.BAD_REQUEST, "Invalid argument");
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)
-    public ResponseEntity<ErrorResponse> handleMissingRequestHeaderException(MissingRequestHeaderException e) {
+    public ResponseEntity<ErrorResponse> handleMissingRequestHeaderException(
+            MissingRequestHeaderException e) {
         log.error("Missing header: {}", e.getMessage());
         return createErrorResponse(HttpStatus.BAD_REQUEST, "Missing required header");
     }
@@ -115,9 +118,11 @@ public class GlobalExceptionHandler {
 
     // 파일 업로드 관련 예외
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public ResponseEntity<ErrorResponse> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException e) {
+    public ResponseEntity<ErrorResponse> handleMaxUploadSizeExceededException(
+            MaxUploadSizeExceededException e) {
         log.error("File size exceeded: {}", e.getMessage());
-        return createErrorResponse(HttpStatus.PAYLOAD_TOO_LARGE, "File size exceeded maximum limit");
+        return createErrorResponse(HttpStatus.PAYLOAD_TOO_LARGE,
+                "File size exceeded maximum limit");
     }
 
     // 404 Not Found
@@ -142,13 +147,15 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UpbitPrivateRestException.class)
-    public ResponseEntity<ErrorResponse> handleUpbitPrivateRestException(UpbitPrivateRestException e) {
+    public ResponseEntity<ErrorResponse> handleUpbitPrivateRestException(
+            UpbitPrivateRestException e) {
         log.error("Upbit Private RestAPI error: ({}) {}", e.getErrorCode(), e.getMessage());
         return createErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
     @ExceptionHandler(BinancePrivateRestException.class)
-    public ResponseEntity<ErrorResponse> handleBinancePrivateRestException(BinancePrivateRestException e) {
+    public ResponseEntity<ErrorResponse> handleBinancePrivateRestException(
+            BinancePrivateRestException e) {
         log.error("Binance Private RestAPI error: ({}) {}", e.getErrorCode(), e.getMessage());
         return createErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
     }

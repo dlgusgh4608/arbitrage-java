@@ -1,7 +1,6 @@
 package main.arbitrage.domain.price.dto;
 
 import java.sql.Timestamp;
-
 import lombok.Getter;
 import main.arbitrage.domain.price.entity.Price;
 

@@ -1,16 +1,14 @@
 package main.arbitrage.domain.price.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.domain.price.buffer.PriceBuffer;
 import main.arbitrage.domain.price.entity.Price;
 import main.arbitrage.domain.price.repository.PriceRepository;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -36,14 +34,13 @@ public class PriceDomainService {
         }
     }
 
-    public void addToBuffer(
-            Price price
-    ) {
+    public void addToBuffer(Price price) {
         priceBuffer.add(price);
     }
 
     public List<Price> getInitialPriceOfSymbolName(String symbolName) {
-        List<Price> prices = priceRepository.findBySymbolOfPageable(symbolName, PageRequest.of(0, 3000));
+        List<Price> prices =
+                priceRepository.findBySymbolOfPageable(symbolName, PageRequest.of(0, 3000));
 
         System.out.println(prices.size());
 

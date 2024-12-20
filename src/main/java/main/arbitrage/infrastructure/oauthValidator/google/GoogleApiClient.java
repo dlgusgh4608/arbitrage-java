@@ -1,29 +1,28 @@
 package main.arbitrage.infrastructure.oauthValidator.google;
 
+import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.infrastructure.oauthValidator.OAuthApiClient;
 import main.arbitrage.infrastructure.oauthValidator.dto.OAuthValidatorDto;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.OkHttpClient;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
 public class GoogleApiClient implements OAuthApiClient {
     private final OkHttpClient okHttpClient;
     private final ObjectMapper objectMapper;
-    private static final String GOOGLE_USER_INFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
+    private static final String GOOGLE_USER_INFO_URL =
+            "https://www.googleapis.com/oauth2/v3/userinfo";
 
     @Override
     public OAuthValidatorDto validateTokenAndGetUserInfo(String accessToken) {
         try {
-            Request request = new Request.Builder()
-                    .url(GOOGLE_USER_INFO_URL)
-                    .addHeader("Authorization", "Bearer " + accessToken)
-                    .build();
+            Request request = new Request.Builder().url(GOOGLE_USER_INFO_URL)
+                    .addHeader("Authorization", "Bearer " + accessToken).build();
 
             try (Response response = okHttpClient.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
@@ -31,10 +30,8 @@ public class GoogleApiClient implements OAuthApiClient {
                 }
 
                 JsonNode jsonNode = objectMapper.readTree(response.body().string());
-                return OAuthValidatorDto.builder()
-                        .email(jsonNode.get("email").asText())
-                        .providerId(jsonNode.get("sub").asText())
-                        .build();
+                return OAuthValidatorDto.builder().email(jsonNode.get("email").asText())
+                        .providerId(jsonNode.get("sub").asText()).build();
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Failure Google API request");

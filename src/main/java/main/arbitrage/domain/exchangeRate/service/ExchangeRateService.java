@@ -1,14 +1,13 @@
 package main.arbitrage.domain.exchangeRate.service;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.domain.exchangeRate.dto.ExchangeRateDto;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.exchangeRate.repository.ExchangeRateRepository;
-import org.springframework.stereotype.Service;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +19,8 @@ public class ExchangeRateService {
     public ExchangeRate setExchangeRate(ExchangeRateDto exchangeRateDto) {
         double rate = exchangeRateDto.getRate();
 
-        if (rate == 0) return null;
+        if (rate == 0)
+            return null;
 
         String key = exchangeRateDto.getFromCurrency() + "_" + exchangeRateDto.getToCurrency();
 
@@ -32,7 +32,8 @@ public class ExchangeRateService {
             prevExchangeRateMap.put(key, exchangeRateDto);
         } else {
             double prevDtoRate = prevDto.getRate();
-            if (prevDtoRate == rate) return null;
+            if (prevDtoRate == rate)
+                return null;
 
             log.info("Update exchange rate [{}]: {} -> {}", key, prevDtoRate, rate);
 

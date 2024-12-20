@@ -1,60 +1,71 @@
 .order-row {
-  font-size: 0.75rem;
+    font-size: 0.75rem;
 }
+
 .text-success {
-  color: #26a69a !important;
-  font-weight: bold;
+    color: #26a69a !important;
+    font-weight: bold;
 }
+
 .text-danger {
-  color: #ef5350 !important;
-  font-weight: bold;
+    color: #ef5350 !important;
+    font-weight: bold;
 }
+
 .main-section {
-  flex-direction: row;
+    flex-direction: row;
 }
+
 .order-section {
-  flex-direction: column;
+    flex-direction: column;
 }
 
 .orderbook {
-  height: 60%;
+    height: 60%;
 }
+
 .orderForm {
-  height: 40%;
+    height: 40%;
 }
 
 .custom-btn:hover {
-  background-color: rgba(0, 0, 0, .2);
+    background-color: rgba(0, 0, 0, .2);
 }
 
 
 @media(max-width: 1400px) {
-  .main-section {
-    flex-direction: column;
-  }
-  .chart-section {
-    width: 100%;
-  }
-  .order-section {
-    width: 100%;
-    flex-direction: row;
-  }
-  .orderbook {
-    width: 50%;
-  }
-  .orderForm {
-    width: 50%;
-  }
+    .main-section {
+        flex-direction: column;
+    }
+
+    .chart-section {
+        width: 100%;
+    }
+
+    .order-section {
+        width: 100%;
+        flex-direction: row;
+    }
+
+    .orderbook {
+        width: 50%;
+    }
+
+    .orderForm {
+        width: 50%;
+    }
 }
 
 @media(max-width: 768px) {
-  .order-section {
-    flex-direction: column;
-  }
-  .orderbook {
-    width: 100%;
-  }
-  .orderForm {
-    width: 100%;
-  }
+    .order-section {
+        flex-direction: column;
+    }
+
+    .orderbook {
+        width: 100%;
+    }
+
+    .orderForm {
+        width: 100%;
+    }
 }

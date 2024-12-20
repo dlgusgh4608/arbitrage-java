@@ -8,8 +8,6 @@ public final class PrivateControllerUrlConstants {
     public static final String USER_PROFILE = "user/profile";
 
 
-    public static final List<String> PUBLIC_URLS = List.of(
-            DEFAULT_URL + USER_ENV_REGISTER,
-            DEFAULT_URL + USER_PROFILE
-    );
+    public static final List<String> PUBLIC_URLS =
+            List.of(DEFAULT_URL + USER_ENV_REGISTER, DEFAULT_URL + USER_PROFILE);
 }

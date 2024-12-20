@@ -1,11 +1,10 @@
 package main.arbitrage.infrastructure.redis.service;
 
-import lombok.RequiredArgsConstructor;
+import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Service

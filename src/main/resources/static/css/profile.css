@@ -1,31 +1,31 @@
 .article {
-  display: flex;
-  justify-content: space-between;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
 }
 
 .item {
-  flex: 1;
-  padding: 1.5rem;
-  background-color: #fff;
-  border-radius: 0.8rem;
-  border: 1px solid #EAECEF;
+    flex: 1;
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 0.8rem;
+    border: 1px solid #EAECEF;
 }
 
 .profile-item {
-  display: flex;
-  justify-content: space-between;
-  flex: 3;
-  padding: 1.5rem;
-  background-color: #fff;
-  border-radius: 0.8rem;
-  border: 1px solid #EAECEF;
+    display: flex;
+    justify-content: space-between;
+    flex: 3;
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 0.8rem;
+    border: 1px solid #EAECEF;
 }
 
 .profile-title {
-  display: flex;
-  margin-bottom: 0.5rem;
+    display: flex;
+    margin-bottom: 0.5rem;
 }
 
 .profile-nickname {
@@ -42,68 +42,71 @@
 }
 
 .profile-edit {
- cursor: pointer;
+    cursor: pointer;
 }
 
 .env-item {
-  flex: 1;
-  padding: 1.5rem;
-  background-color: #fff;
-  border-radius: 0.8rem;
-  border: 1px solid #EAECEF;
+    flex: 1;
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 0.8rem;
+    border: 1px solid #EAECEF;
 }
 
 .env-label-wrap {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  margin-bottom: 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 0.8rem;
 }
 
 .env-label-title {
-  color: #6c757d;
-  font-size: 0.9rem;
+    color: #6c757d;
+    font-size: 0.9rem;
 }
 
 .env-label-go-to-register {
-  color: blue;
+    color: blue;
 }
 
 .env-value-wrap {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
 .env-value-title {
-  font-size: 0.9rem;
-  margin-right: .5rem;
+    font-size: 0.9rem;
+    margin-right: .5rem;
 }
 
 .wallet-label {
-  color: #6c757d;
-  font-size: 0.9rem;
-  margin-bottom: 0.8rem;
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
 }
 
 .wallet-value {
-  font-size: 1.2rem;
-  font-weight: bold;
+    font-size: 1.2rem;
+    font-weight: bold;
 }
 
 @media(max-width: 1024px) {
-  .article {
-      flex-direction: column;
-  }
-  .item {
-      width: 100%;
-  }
-  .profile-item {
-      width: 100%;
-  }
-  .env-item {
-      width: 100%;
-  }
+    .article {
+        flex-direction: column;
+    }
+
+    .item {
+        width: 100%;
+    }
+
+    .profile-item {
+        width: 100%;
+    }
+
+    .env-item {
+        width: 100%;
+    }
 }

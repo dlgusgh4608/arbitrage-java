@@ -1,12 +1,12 @@
 package main.arbitrage.config;
 
-import lombok.RequiredArgsConstructor;
-import main.arbitrage.infrastructure.websocket.server.handler.ChartServerWebSocketHandler;
-import main.arbitrage.infrastructure.websocket.server.handler.PremiumServerWebSocketHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import lombok.RequiredArgsConstructor;
+import main.arbitrage.infrastructure.websocket.server.handler.ChartServerWebSocketHandler;
+import main.arbitrage.infrastructure.websocket.server.handler.PremiumServerWebSocketHandler;
 
 @Configuration
 @EnableWebSocket
@@ -19,6 +19,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(premiumServerWebSocketHandler, "ws/premium").setAllowedOrigins("*");
-        registry.addHandler(chartServerWebSocketHandler, "ws/chart/{symbol}").setAllowedOrigins("*");
+        registry.addHandler(chartServerWebSocketHandler, "ws/chart/{symbol}")
+                .setAllowedOrigins("*");
     }
 }

@@ -1,13 +1,12 @@
 package main.arbitrage.domain.symbol.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.respository.SymbolRepository;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -57,13 +56,14 @@ public class SymbolVariableService implements CommandLineRunner {
     }
 
     public List<String> getSupportedSymbolNames() {
-        return getSupportedSymbols().stream().map(symbol -> symbol.getName().toUpperCase()).toList();
+        return getSupportedSymbols().stream().map(symbol -> symbol.getName().toUpperCase())
+                .toList();
     }
 
     public Symbol findSymbolByName(String name) {
         initializeIfNeeded();
-        return symbols.stream()
-            .filter(symbol -> symbol.getName().toUpperCase().equalsIgnoreCase(name.toUpperCase())).findFirst()
-            .orElse(null);
+        return symbols.stream().filter(
+                symbol -> symbol.getName().toUpperCase().equalsIgnoreCase(name.toUpperCase()))
+                .findFirst().orElse(null);
     }
 }

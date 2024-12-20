@@ -1,14 +1,14 @@
 package main.arbitrage.infrastructure.oauthValidator.kakao;
 
+import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.infrastructure.oauthValidator.OAuthApiClient;
 import main.arbitrage.infrastructure.oauthValidator.dto.OAuthValidatorDto;
+import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import okhttp3.OkHttpClient;
-import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -20,10 +20,8 @@ public class KakaoApiClient implements OAuthApiClient {
     @Override
     public OAuthValidatorDto validateTokenAndGetUserInfo(String accessToken) {
         try {
-            Request request = new Request.Builder()
-                    .url(KAKAO_USER_INFO_URL)
-                    .addHeader("Authorization", "Bearer " + accessToken)
-                    .build();
+            Request request = new Request.Builder().url(KAKAO_USER_INFO_URL)
+                    .addHeader("Authorization", "Bearer " + accessToken).build();
 
             try (Response response = okHttpClient.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
@@ -34,8 +32,7 @@ public class KakaoApiClient implements OAuthApiClient {
 
                 return OAuthValidatorDto.builder()
                         .email(jsonNode.get("kakao_account").get("email").asText())
-                        .providerId(jsonNode.get("id").asText())
-                        .build();
+                        .providerId(jsonNode.get("id").asText()).build();
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Failure Kakao API request");

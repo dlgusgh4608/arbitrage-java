@@ -2,7 +2,6 @@ package main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.order;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,7 +15,7 @@ import lombok.ToString;
 @ToString
 public class BinanceOrderResponseDto {
     private String clientOrderId; // 내가 만든 UUID
-    
+
     private String symbol;
     private BinanceOrderEnum.Side side;
     private BinanceOrderEnum.Status status;
@@ -30,17 +29,9 @@ public class BinanceOrderResponseDto {
 
 
     @Builder
-    public BinanceOrderResponseDto(
-        String clientOrderId,
-        String symbol,
-        BinanceOrderEnum.Side side,
-        BinanceOrderEnum.Status status,
-        String price,
-        String origQty,
-        String avgPrice,
-        String executedQty,
-        String cumQuote
-    ) {
+    public BinanceOrderResponseDto(String clientOrderId, String symbol, BinanceOrderEnum.Side side,
+            BinanceOrderEnum.Status status, String price, String origQty, String avgPrice,
+            String executedQty, String cumQuote) {
         this.clientOrderId = clientOrderId;
         this.symbol = symbol;
         this.side = side;

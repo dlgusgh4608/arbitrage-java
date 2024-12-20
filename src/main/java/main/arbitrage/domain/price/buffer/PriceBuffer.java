@@ -1,12 +1,11 @@
 package main.arbitrage.domain.price.buffer;
 
-import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.domain.price.entity.Price;
-import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
+import main.arbitrage.domain.price.entity.Price;
 
 @Slf4j
 @Component
@@ -39,7 +38,7 @@ public class PriceBuffer {
     }
 
     public List<Price> getBufferedDataOfSymbol(String symbol) {
-        return new ArrayList<>(buffer).stream()
-                .filter(price -> price.getSymbol().equals(symbol)).toList();
+        return new ArrayList<>(buffer).stream().filter(price -> price.getSymbol().equals(symbol))
+                .toList();
     }
 }

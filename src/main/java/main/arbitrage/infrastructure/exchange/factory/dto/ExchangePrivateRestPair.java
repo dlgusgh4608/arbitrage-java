@@ -7,7 +7,8 @@ public class ExchangePrivateRestPair {
     private final UpbitPrivateRestService upbit;
     private final BinancePrivateRestService binance;
 
-    public ExchangePrivateRestPair(UpbitPrivateRestService upbit, BinancePrivateRestService binance) {
+    public ExchangePrivateRestPair(UpbitPrivateRestService upbit,
+            BinancePrivateRestService binance) {
         this.upbit = upbit;
         this.binance = binance;
     }

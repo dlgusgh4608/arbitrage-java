@@ -1,17 +1,16 @@
 package main.arbitrage.infrastructure.websocket.server.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.application.collector.dto.ChartDto;
-import main.arbitrage.infrastructure.websocket.server.BaseServerSocketHandler;
-import org.springframework.stereotype.Component;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
+import main.arbitrage.application.collector.dto.ChartDto;
+import main.arbitrage.infrastructure.websocket.server.BaseServerSocketHandler;
 
 @Component
 @Slf4j
@@ -27,7 +26,8 @@ public class ChartServerWebSocketHandler extends BaseServerSocketHandler<ChartDt
 
     @Override
     public void sendMessage(ChartDto data) {
-        if (data == null) return;
+        if (data == null)
+            return;
 
         TextMessage message = new TextMessage(objectMapper.valueToTree(data).toString());
         List<String> sessionsToRemove = new ArrayList<>();
@@ -49,7 +49,8 @@ public class ChartServerWebSocketHandler extends BaseServerSocketHandler<ChartDt
                 try {
                     session.sendMessage(message);
                 } catch (IOException e) {
-                    log.error("Failed to send message to session {}: {}", sessionId, e.getMessage());
+                    log.error("Failed to send message to session {}: {}", sessionId,
+                            e.getMessage());
                     sessionsToRemove.add(sessionId);
                     try {
                         session.close();

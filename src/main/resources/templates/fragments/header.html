@@ -1,45 +1,45 @@
 <!DOCTYPE html>
-<html
-        xmlns:th="http://www.thymeleaf.org"
-        xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
 </head>
-<body>
-<header th:fragment="header" class='navbar navbar-expand-lg bd-navbar sticky-top header-wrap'>
-    <nav class="container-xxl bd-gutter flex-wrap flex-lg-nowrap">
-        <a class="navbar-brand p-0 me-0 me-lg-2" href="/">
-            <img class="h-logo" src="/images/logo.png" alt="logo"/>
-        </a>
-        <ul class="navbar-list">
-            <li class="navbar-item" sec:authorize="isAuthenticated()">
-                <button class="btn custom-button">
-                    <a style="color:#000;" href="/user/profile">마이페이지</a>
-                </button>
-            </li>
-            <li class="navbar-item" sec:authorize="isAuthenticated()">
-                <button class="btn custom-button" id="logoutBtn">
-                    로그아웃
-                </button>
-            </li>
 
-            <li class="navbar-item" sec:authorize="isAnonymous()">
-                <button class="btn custom-button">
-                    <a style="color:#000;" href="/login">로그인</a>
-                </button>
-            </li>
-            <li class="navbar-item" sec:authorize="isAnonymous()">
-                <button class="btn custom-button">
-                    <a style="color:#000;" href="/signup">회원가입</a>
-                </button>
-            </li>
-        </ul>
-    </nav>
-    <script th:inline="javascript">
-        $('#logoutBtn').on('click', async () => {
-            const { success, data } = await fetcher('post', '/api/users/logout', {})
-        })
-    </script>
-</header>
+<body>
+    <header th:fragment="header" class='navbar navbar-expand-lg bd-navbar sticky-top header-wrap'>
+        <nav class="container-xxl bd-gutter flex-wrap flex-lg-nowrap">
+            <a class="navbar-brand p-0 me-0 me-lg-2" href="/">
+                <img class="h-logo" src="/images/logo.png" alt="logo" />
+            </a>
+            <ul class="navbar-list">
+                <li class="navbar-item" sec:authorize="isAuthenticated()">
+                    <button class="btn custom-button">
+                        <a style="color:#000;" href="/user/profile">마이페이지</a>
+                    </button>
+                </li>
+                <li class="navbar-item" sec:authorize="isAuthenticated()">
+                    <button class="btn custom-button" id="logoutBtn">
+                        로그아웃
+                    </button>
+                </li>
+
+                <li class="navbar-item" sec:authorize="isAnonymous()">
+                    <button class="btn custom-button">
+                        <a style="color:#000;" href="/login">로그인</a>
+                    </button>
+                </li>
+                <li class="navbar-item" sec:authorize="isAnonymous()">
+                    <button class="btn custom-button">
+                        <a style="color:#000;" href="/signup">회원가입</a>
+                    </button>
+                </li>
+            </ul>
+        </nav>
+        <script th:inline="javascript">
+            $('#logoutBtn').on('click', async () => {
+                const { success, data } = await fetcher('post', '/api/users/logout', {})
+            })
+        </script>
+    </header>
 </body>
+
 </html>

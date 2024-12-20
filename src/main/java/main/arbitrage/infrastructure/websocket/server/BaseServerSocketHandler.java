@@ -1,25 +1,28 @@
 package main.arbitrage.infrastructure.websocket.server;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.socket.*;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketHandler;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
 public abstract class BaseServerSocketHandler<T> implements WebSocketHandler {
     protected final ObjectMapper objectMapper;
-    protected final ConcurrentHashMap<String, WebSocketSession> sessionMap = new ConcurrentHashMap<>();
+    protected final ConcurrentHashMap<String, WebSocketSession> sessionMap =
+            new ConcurrentHashMap<>();
 
     @Override
-    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) {
-    }
+    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) {}
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
@@ -43,7 +46,8 @@ public abstract class BaseServerSocketHandler<T> implements WebSocketHandler {
     }
 
     public void sendMessage(T dto) {
-        if (dto == null) return;
+        if (dto == null)
+            return;
 
         TextMessage message = new TextMessage(objectMapper.valueToTree(dto).toString());
         List<String> sessionsToRemove = new ArrayList<>();
@@ -61,7 +65,8 @@ public abstract class BaseServerSocketHandler<T> implements WebSocketHandler {
                 try {
                     session.sendMessage(message);
                 } catch (IOException e) {
-                    log.error("Failed to send message to session {}: {}", sessionId, e.getMessage());
+                    log.error("Failed to send message to session {}: {}", sessionId,
+                            e.getMessage());
                     sessionsToRemove.add(sessionId);
                     try {
                         session.close();

@@ -12,10 +12,7 @@ public class ExchangeRateDto {
     private double rate;
 
     public static ExchangeRate toEntity(ExchangeRateDto dto) {
-        return ExchangeRate.builder()
-                .toCurrency(dto.getToCurrency())
-                .fromCurrency(dto.getFromCurrency())
-                .rate(dto.getRate())
-                .build();
+        return ExchangeRate.builder().toCurrency(dto.getToCurrency())
+                .fromCurrency(dto.getFromCurrency()).rate(dto.getRate()).build();
     }
 }

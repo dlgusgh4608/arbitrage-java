@@ -1,15 +1,22 @@
 package main.arbitrage.domain.price.entity;
 
-import jakarta.persistence.*;
+import java.sql.Timestamp;
+import java.util.Date;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.symbol.entity.Symbol;
-
-import java.sql.Timestamp;
-import java.util.Date;
 
 @Entity
 @Table(name = "price")
@@ -39,32 +46,25 @@ public class Price {
     @Column(name = "binance", nullable = false, columnDefinition = "REAL")
     private float binance;
 
-    @Column(name = "upbit_trade_at", nullable = false, columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
+    @Column(name = "upbit_trade_at", nullable = false,
+            columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
     private Timestamp upbitTradeAt;
 
-    @Column(name = "binance_trade_at", nullable = false, columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
+    @Column(name = "binance_trade_at", nullable = false,
+            columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
     private Timestamp binanceTradeAt;
 
-    @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP(0) WITHOUT TIME ZONE")
+    @Column(name = "created_at", nullable = false,
+            columnDefinition = "TIMESTAMP(0) WITHOUT TIME ZONE")
     private Timestamp createdAt;
 
     /*
-     * Timestamp의 괄호안의 숫자
-     * 0 -> 초단위
-     * 3 -> 밀리초
-     * 6 -> 마이크로초
-     * */
+     * Timestamp의 괄호안의 숫자 0 -> 초단위 3 -> 밀리초 6 -> 마이크로초
+     */
 
     @Builder
-    public Price(
-            Symbol symbol,
-            ExchangeRate exchangeRate,
-            double premium,
-            double upbit,
-            double binance,
-            Long upbitTradeAt,
-            Long binanceTradeAt
-    ) {
+    public Price(Symbol symbol, ExchangeRate exchangeRate, double premium, double upbit,
+            double binance, Long upbitTradeAt, Long binanceTradeAt) {
         this.symbol = symbol;
         this.exchangeRate = exchangeRate;
         this.premium = (float) premium;

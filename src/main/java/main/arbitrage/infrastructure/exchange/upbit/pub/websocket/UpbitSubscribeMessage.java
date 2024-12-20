@@ -1,12 +1,11 @@
 package main.arbitrage.infrastructure.exchange.upbit.pub.websocket;
 
+import java.util.ArrayList;
+import java.util.List;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Builder
@@ -17,36 +16,30 @@ public class UpbitSubscribeMessage {
     private String type;
     private String[] codes;
 
-    public static List<UpbitSubscribeMessage> createSubscribeMessage(String uniqueTicket, List<String> symbols) {
+    public static List<UpbitSubscribeMessage> createSubscribeMessage(String uniqueTicket,
+            List<String> symbols) {
         List<UpbitSubscribeMessage> messages = new ArrayList<>();
 
         // ticket 메시지 추가
-        messages.add(UpbitSubscribeMessage.builder()
-                .ticket(uniqueTicket)
-                .build());
+        messages.add(UpbitSubscribeMessage.builder().ticket(uniqueTicket).build());
 
         // trade 타입 메시지 추가
-        messages.add(UpbitSubscribeMessage.builder()
-                .type("trade")
-                .codes(formatSymbols(symbols))
+        messages.add(UpbitSubscribeMessage.builder().type("trade").codes(formatSymbols(symbols))
                 .build());
 
         // orderbook depth는 Binance기준 10개로 맞춤. (detph10이면 충분. Front-end UI용도.)
-        List<String> orderbookSymbols = symbols.stream().map(symbol -> symbol.concat(".10")).toList();
+        List<String> orderbookSymbols =
+                symbols.stream().map(symbol -> symbol.concat(".10")).toList();
 
         // orderbook 타입 메시지 추가
-        messages.add(UpbitSubscribeMessage.builder()
-                .type("orderbook")
-                .codes(formatSymbols(orderbookSymbols))
-                .build());
+        messages.add(UpbitSubscribeMessage.builder().type("orderbook")
+                .codes(formatSymbols(orderbookSymbols)).build());
 
         log.info("subscribe message: {}", messages);
         return messages;
     }
 
     private static String[] formatSymbols(List<String> symbols) {
-        return symbols.stream()
-                .map(symbol -> "KRW-" + symbol.toUpperCase())
-                .toArray(String[]::new);
+        return symbols.stream().map(symbol -> "KRW-" + symbol.toUpperCase()).toArray(String[]::new);
     }
 }

@@ -4,7 +4,7 @@
     background: #fff;
     padding: 2rem;
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .exchange-section {
@@ -83,8 +83,8 @@
     .wrapper {
         padding: 1rem;
     }
-    
+
     .exchange-section {
         padding: 1rem;
     }
-} 
+}
