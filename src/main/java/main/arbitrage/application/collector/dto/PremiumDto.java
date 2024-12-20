@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.event.dto;
+package main.arbitrage.application.collector.dto;
 
 import lombok.Builder;
 import lombok.Getter;

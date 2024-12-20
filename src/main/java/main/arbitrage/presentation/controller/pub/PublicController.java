@@ -1,7 +1,6 @@
 package main.arbitrage.presentation.controller.pub;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,12 +13,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.application.collector.service.CollectorService;
+import main.arbitrage.application.price.dto.PriceDto;
+import main.arbitrage.application.price.service.PriceApplicationService;
 import main.arbitrage.application.user.service.UserApplicationService;
 import main.arbitrage.domain.oauthUser.dto.OAuthUserDto;
 import main.arbitrage.domain.oauthUser.store.OAuthUserStore;
-import main.arbitrage.domain.price.dto.PriceDto;
-import main.arbitrage.domain.price.entity.Price;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.domain.user.dto.UserLoginDto;
 import main.arbitrage.domain.user.dto.UserSignupDto;
@@ -35,7 +33,7 @@ public class PublicController {
     private final UserApplicationService userApplicationService;
     private final SymbolVariableService symbolVariableService;
     private final OAuthUserStore authUserStore;
-    private final CollectorService collectorService;
+    private final PriceApplicationService priceApplicationService;
 
     /**
      * only public
@@ -136,8 +134,8 @@ public class PublicController {
             return "redirect:/";
         }
 
-        List<Price> prices = collectorService.getInitialPriceOfSymbolName(symbol.toLowerCase());
-        List<PriceDto> priceDTOs = prices.stream().map(PriceDto::from).collect(Collectors.toList());
+        List<PriceDto> priceDTOs =
+                priceApplicationService.getInitialPriceOfSymbolName(symbol.toLowerCase());
 
 
         model.addAttribute("supportedSymbols", supportedSymbols);

@@ -1,15 +1,15 @@
-package main.arbitrage.application.collector.service;
+package main.arbitrage.infrastructure.exchange.factory;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.application.collector.dto.OrderbookPair;
-import main.arbitrage.application.collector.dto.TradePair;
 import main.arbitrage.infrastructure.exchange.binance.pub.websocket.BinanceWebSocket;
+import main.arbitrage.infrastructure.exchange.factory.dto.OrderbookPair;
+import main.arbitrage.infrastructure.exchange.factory.dto.TradePair;
 import main.arbitrage.infrastructure.exchange.upbit.pub.websocket.UpbitWebSocket;
 
-@Service
+@Component
 @RequiredArgsConstructor
-public class ExchangeTradeCollector {
+public class ExchangePublicWebsocketFactory {
     private final UpbitWebSocket upbit;
     private final BinanceWebSocket binance;
 

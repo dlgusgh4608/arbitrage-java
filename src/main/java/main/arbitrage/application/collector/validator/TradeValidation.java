@@ -1,10 +1,10 @@
-package main.arbitrage.application.collector.service;
+package main.arbitrage.application.collector.validator;
 
-import org.springframework.stereotype.Service;
-import main.arbitrage.application.collector.dto.TradeDto;
+import org.springframework.stereotype.Component;
+import main.arbitrage.infrastructure.exchange.factory.dto.TradeDto;
 
-@Service
-public class TradeValidationService {
+@Component
+public class TradeValidation {
     private static final long MAX_TIME_DIFFERENCE = 30000;
 
     public boolean isValidTradePair(TradeDto upbit, TradeDto binance) {

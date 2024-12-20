@@ -12,15 +12,19 @@ import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.application.collector.dto.ChartDto;
-import main.arbitrage.application.collector.dto.OrderbookPair;
-import main.arbitrage.application.collector.dto.TradePair;
+import main.arbitrage.application.collector.dto.ChartBySymbolDto;
+import main.arbitrage.application.collector.dto.PremiumDto;
+import main.arbitrage.application.collector.validator.TradeValidation;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.price.entity.Price;
 import main.arbitrage.domain.price.service.PriceDomainService;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
-import main.arbitrage.infrastructure.event.dto.PremiumDto;
+import main.arbitrage.global.util.math.MathUtil;
+import main.arbitrage.infrastructure.exchange.factory.ExchangePublicWebsocketFactory;
+import main.arbitrage.infrastructure.exchange.factory.dto.OrderbookPair;
+import main.arbitrage.infrastructure.exchange.factory.dto.TradeDto;
+import main.arbitrage.infrastructure.exchange.factory.dto.TradePair;
 import main.arbitrage.infrastructure.websocket.server.handler.ChartServerWebSocketHandler;
 import main.arbitrage.infrastructure.websocket.server.handler.PremiumServerWebSocketHandler;
 
@@ -29,9 +33,8 @@ import main.arbitrage.infrastructure.websocket.server.handler.PremiumServerWebSo
 @RequiredArgsConstructor
 public class CollectorScheduleService {
     private final SymbolVariableService symbolVariableService;
-    private final ExchangeTradeCollector exchangeCollector;
-    private final PremiumCalculationService premiumCalculator;
-    private final TradeValidationService tradeValidator;
+    private final ExchangePublicWebsocketFactory exchangePublicWebsocketFactory;
+    private final TradeValidation tradeValidator;
     private final PriceDomainService priceDomainService;
     private final PremiumServerWebSocketHandler premiumServerWebSocketHandler;
     private final ChartServerWebSocketHandler chartServerWebSocketHandler;
@@ -46,7 +49,7 @@ public class CollectorScheduleService {
 
     @PostConstruct
     private void initialize() {
-        exchangeCollector.initialize();
+        exchangePublicWebsocketFactory.initialize();
     }
 
     @Scheduled(fixedRate = 300) // .3초
@@ -69,6 +72,7 @@ public class CollectorScheduleService {
     }
 
     private void processAllSymbols(ExchangeRate exchangeRate) {
+        // supported symbol은 upbit와 binance가 실행될때 동일하게 들어감.
         List<CompletableFuture<Void>> futures = symbolVariableService.getSupportedSymbols().stream()
                 .map(symbol -> calculateAndEmitAsync(exchangeRate, symbol)).toList();
 
@@ -81,34 +85,53 @@ public class CollectorScheduleService {
         return CompletableFuture.runAsync(() -> {
             try {
                 String symbolName = symbol.getName();
-                TradePair tradePair = exchangeCollector.collectTrades(symbolName);
-                OrderbookPair orderbookPair = exchangeCollector.collectOrderbooks(symbolName);
 
-                if (!tradeValidator.isValidTradePair(tradePair.getUpbit(),
-                        tradePair.getBinance())) {
+                TradePair tradePair = exchangePublicWebsocketFactory.collectTrades(symbolName);
+                OrderbookPair orderbookPair =
+                        exchangePublicWebsocketFactory.collectOrderbooks(symbolName);
+
+                TradeDto upbitTrade = tradePair.getUpbit();
+                TradeDto binanceTrade = tradePair.getBinance();
+
+                if (!tradeValidator.isValidTradePair(upbitTrade, binanceTrade)) {
                     log.warn("Invalid trade pair for symbol: {}", symbolName);
                     return;
                 }
 
-                PremiumDto premium = premiumCalculator.calculatePremium(tradePair.getUpbit(),
-                        tradePair.getBinance(), exchangeRate.getRate(), symbolName);
+                double exchangeRateValue = exchangeRate.getRate();
+                double upbitPrc = upbitTrade.getPrice();
+                double binancePrc = binanceTrade.getPrice();
+                long upbitTradeAt = upbitTrade.getTimestamp();
+                long binanceTradeAt = binanceTrade.getTimestamp();
+
+                double premiumValue =
+                        MathUtil.calculatePremium(upbitPrc, binancePrc, exchangeRateValue);
+
+                PremiumDto premium = PremiumDto.builder().symbol(symbolName).premium(premiumValue)
+                        .upbit(upbitPrc).binance(binancePrc).usdToKrw(exchangeRateValue)
+                        .upbitTradeAt(upbitTradeAt).binanceTradeAt(binanceTradeAt).build();
 
                 Price price = Price.builder().symbol(symbol).exchangeRate(exchangeRate)
-                        .premium(premium.getPremium()).upbit(premium.getUpbit())
-                        .binance(premium.getBinance()).upbitTradeAt(premium.getUpbitTradeAt())
-                        .binanceTradeAt(premium.getBinanceTradeAt()).build();
+                        .premium(premium.getPremium()).upbit(upbitPrc).binance(binancePrc)
+                        .upbitTradeAt(upbitTradeAt).binanceTradeAt(binanceTradeAt).build();
 
-                priceMap.put(symbolName, price);
+                priceMap.put(symbolName, price); // domain 안의 buffer에 put -> 1분간격으로 db에 업로드
                 emitPremium(premium);
-                emitOrderbook(symbolName, premium, orderbookPair);
+
+
+                // 차트 데이터 빌드 후 websocket으로 전송 -> 따로 저장 안함.
+                ChartBySymbolDto chartBySymbolDto = ChartBySymbolDto.builder().symbol(symbolName)
+                        .premium(premium).orderbookPair(orderbookPair).build();
+
+                emitChartBySymbol(chartBySymbolDto);
             } catch (Exception e) {
                 log.error("Error processing symbol {}: ", symbol, e);
             }
         });
     }
 
-    private void emitOrderbook(String symbolName, PremiumDto premium, OrderbookPair orderbookPair) {
-        chartServerWebSocketHandler.sendMessage(new ChartDto(symbolName, premium, orderbookPair));
+    private void emitChartBySymbol(ChartBySymbolDto chartBySymbolDto) {
+        chartServerWebSocketHandler.sendMessage(chartBySymbolDto);
     }
 
     private void emitPremium(PremiumDto premium) {

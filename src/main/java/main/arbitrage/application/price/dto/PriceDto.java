@@ -1,4 +1,4 @@
-package main.arbitrage.domain.price.dto;
+package main.arbitrage.application.price.dto;
 
 import java.sql.Timestamp;
 import lombok.Getter;

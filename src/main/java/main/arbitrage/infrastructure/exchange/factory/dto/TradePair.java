@@ -1,4 +1,4 @@
-package main.arbitrage.application.collector.dto;
+package main.arbitrage.infrastructure.exchange.factory.dto;
 
 import lombok.Getter;
 

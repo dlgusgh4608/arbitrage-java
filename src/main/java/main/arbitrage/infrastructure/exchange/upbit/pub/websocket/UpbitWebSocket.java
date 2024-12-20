@@ -12,10 +12,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.application.collector.dto.OrderbookDto;
-import main.arbitrage.application.collector.dto.TradeDto;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
+import main.arbitrage.infrastructure.exchange.factory.dto.OrderbookDto;
+import main.arbitrage.infrastructure.exchange.factory.dto.TradeDto;
 import main.arbitrage.infrastructure.websocket.client.BaseWebSocketClient;
 import main.arbitrage.infrastructure.websocket.client.handler.ExchangeWebSocketHandler;
 
