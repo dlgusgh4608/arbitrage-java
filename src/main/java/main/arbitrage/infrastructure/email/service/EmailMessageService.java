@@ -11,7 +11,7 @@ import org.thymeleaf.spring6.SpringTemplateEngine;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.infrastructure.email.dto.EmailMessageDto;
+import main.arbitrage.infrastructure.email.dto.EmailMessageDTO;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +20,7 @@ public class EmailMessageService {
     private final JavaMailSender javaMailSender;
     private final SpringTemplateEngine templateEngine;
 
-    public String sendMail(EmailMessageDto emailMessageDto, String type) throws Exception {
+    public String sendMail(EmailMessageDTO emailMessageDTO, String type) throws Exception {
         String authNum = generateCode();
 
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
@@ -28,15 +28,15 @@ public class EmailMessageService {
         try {
             MimeMessageHelper mimeMessageHelper =
                     new MimeMessageHelper(mimeMessage, false, "UTF-8");
-            mimeMessageHelper.setTo(emailMessageDto.getTo());
-            mimeMessageHelper.setSubject(emailMessageDto.getSubject());
+            mimeMessageHelper.setTo(emailMessageDTO.getTo());
+            mimeMessageHelper.setSubject(emailMessageDTO.getSubject());
             mimeMessageHelper.setText(setContext(authNum, type), true);
 
             javaMailSender.send(mimeMessage);
         } catch (MailSendException e) {
             // Gmail open smtp server에서는 잘못된 수신자에게 발송시 Error를 반환하지 않는다 한다.
             // Client딴에서 처리하자
-            log.error("Failed to send email. Invalid email address: {}", emailMessageDto.getTo(),
+            log.error("Failed to send email. Invalid email address: {}", emailMessageDTO.getTo(),
                     e);
             throw new IllegalArgumentException("Invalid email address.", e);
         } catch (MessagingException e) {

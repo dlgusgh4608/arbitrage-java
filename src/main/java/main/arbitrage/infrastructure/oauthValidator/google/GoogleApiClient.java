@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.infrastructure.oauthValidator.OAuthApiClient;
-import main.arbitrage.infrastructure.oauthValidator.dto.OAuthValidatorDto;
+import main.arbitrage.infrastructure.oauthValidator.dto.OAuthValidatorDTO;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -19,7 +19,7 @@ public class GoogleApiClient implements OAuthApiClient {
             "https://www.googleapis.com/oauth2/v3/userinfo";
 
     @Override
-    public OAuthValidatorDto validateTokenAndGetUserInfo(String accessToken) {
+    public OAuthValidatorDTO validateTokenAndGetUserInfo(String accessToken) {
         try {
             Request request = new Request.Builder().url(GOOGLE_USER_INFO_URL)
                     .addHeader("Authorization", "Bearer " + accessToken).build();
@@ -30,7 +30,7 @@ public class GoogleApiClient implements OAuthApiClient {
                 }
 
                 JsonNode jsonNode = objectMapper.readTree(response.body().string());
-                return OAuthValidatorDto.builder().email(jsonNode.get("email").asText())
+                return OAuthValidatorDTO.builder().email(jsonNode.get("email").asText())
                         .providerId(jsonNode.get("sub").asText()).build();
             }
         } catch (Exception e) {
@@ -40,7 +40,7 @@ public class GoogleApiClient implements OAuthApiClient {
 
     @Override
     public boolean validateUser(String accessToken, String providerId, String email) {
-        OAuthValidatorDto userInfo = validateTokenAndGetUserInfo(accessToken);
+        OAuthValidatorDTO userInfo = validateTokenAndGetUserInfo(accessToken);
         return userInfo.getProviderId().equals(providerId) && userInfo.getEmail().equals(email);
     }
 }

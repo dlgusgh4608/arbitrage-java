@@ -42,8 +42,6 @@ public class PriceDomainService {
         List<Price> prices =
                 priceRepository.findBySymbolOfPageable(symbolName, PageRequest.of(0, 3000));
 
-        System.out.println(prices.size());
-
         List<Price> restPrices = priceBuffer.getBufferedDataOfSymbol(symbolName);
         List<Price> allPrices = new ArrayList<>();
 

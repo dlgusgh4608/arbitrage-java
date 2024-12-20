@@ -2,8 +2,8 @@ package main.arbitrage.infrastructure.websocket.client;
 
 import java.util.concurrent.ConcurrentHashMap;
 import com.fasterxml.jackson.databind.JsonNode;
-import main.arbitrage.infrastructure.exchange.factory.dto.OrderbookDto;
-import main.arbitrage.infrastructure.exchange.factory.dto.TradeDto;
+import main.arbitrage.infrastructure.exchange.dto.OrderbookDto;
+import main.arbitrage.infrastructure.exchange.dto.TradeDto;
 
 public abstract class BaseWebSocketClient implements WebSocketClient {
     protected final ConcurrentHashMap<String, TradeDto> tradeMap = new ConcurrentHashMap<>();

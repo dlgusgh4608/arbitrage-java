@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums.OrdType;
+import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums.Side;
+import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetOrderResponse;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitGetOrderResponseDto;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.OrdType;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.Side;
 import okhttp3.OkHttpClient;
 
 class UpbitPrivateRestServiceRealTest {
@@ -59,7 +59,7 @@ class UpbitPrivateRestServiceRealTest {
 
         // when
         String uuid = upbitPrivateRestService.order(market, side, ordType, price, null);
-        UpbitGetOrderResponseDto dto = upbitPrivateRestService.order(uuid, 5);
+        UpbitGetOrderResponse dto = upbitPrivateRestService.order(uuid, 5);
 
         // then
         System.out.println(dto);
@@ -78,7 +78,7 @@ class UpbitPrivateRestServiceRealTest {
 
         // when
         String uuid = upbitPrivateRestService.order(market, side, ordType, price, volume);
-        UpbitGetOrderResponseDto dto = upbitPrivateRestService.order(uuid, 5);
+        UpbitGetOrderResponse dto = upbitPrivateRestService.order(uuid, 5);
 
         // then
         System.out.println(dto);

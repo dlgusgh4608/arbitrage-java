@@ -5,9 +5,9 @@ import java.util.UUID;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.domain.user.dto.UserSignupDto;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.user.repository.UserRepository;
+import main.arbitrage.presentation.dto.form.UserSignupForm;
 
 @Service
 @RequiredArgsConstructor
@@ -15,7 +15,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public User create(UserSignupDto userSignupDto) {
+    public User create(UserSignupForm userSignupDto) {
         User Encodeuser = User.builder().email(userSignupDto.getEmail())
                 .nickname(UUID.randomUUID().toString())
                 .password(passwordEncoder.encode(userSignupDto.getPassword())).build();

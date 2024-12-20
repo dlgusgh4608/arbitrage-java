@@ -3,13 +3,13 @@ package main.arbitrage.application.collector.dto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.infrastructure.exchange.factory.dto.OrderbookPair;
+import main.arbitrage.infrastructure.exchange.dto.OrderbookPair;
 
 @Getter
 @RequiredArgsConstructor
 @Builder
-public class ChartBySymbolDto {
+public class ChartBySymbolDTO {
     private final String symbol;
-    private final PremiumDto premium;
+    private final PremiumDTO premium;
     private final OrderbookPair orderbookPair;
 }

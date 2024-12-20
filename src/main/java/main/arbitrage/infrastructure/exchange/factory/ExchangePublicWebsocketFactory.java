@@ -3,8 +3,8 @@ package main.arbitrage.infrastructure.exchange.factory;
 import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.infrastructure.exchange.binance.pub.websocket.BinanceWebSocket;
-import main.arbitrage.infrastructure.exchange.factory.dto.OrderbookPair;
-import main.arbitrage.infrastructure.exchange.factory.dto.TradePair;
+import main.arbitrage.infrastructure.exchange.dto.OrderbookPair;
+import main.arbitrage.infrastructure.exchange.dto.TradePair;
 import main.arbitrage.infrastructure.exchange.upbit.pub.websocket.UpbitWebSocket;
 
 @Component

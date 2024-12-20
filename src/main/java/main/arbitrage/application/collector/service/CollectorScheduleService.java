@@ -12,8 +12,8 @@ import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.application.collector.dto.ChartBySymbolDto;
-import main.arbitrage.application.collector.dto.PremiumDto;
+import main.arbitrage.application.collector.dto.ChartBySymbolDTO;
+import main.arbitrage.application.collector.dto.PremiumDTO;
 import main.arbitrage.application.collector.validator.TradeValidation;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.price.entity.Price;
@@ -21,10 +21,10 @@ import main.arbitrage.domain.price.service.PriceDomainService;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.global.util.math.MathUtil;
+import main.arbitrage.infrastructure.exchange.dto.OrderbookPair;
+import main.arbitrage.infrastructure.exchange.dto.TradeDto;
+import main.arbitrage.infrastructure.exchange.dto.TradePair;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePublicWebsocketFactory;
-import main.arbitrage.infrastructure.exchange.factory.dto.OrderbookPair;
-import main.arbitrage.infrastructure.exchange.factory.dto.TradeDto;
-import main.arbitrage.infrastructure.exchange.factory.dto.TradePair;
 import main.arbitrage.infrastructure.websocket.server.handler.ChartServerWebSocketHandler;
 import main.arbitrage.infrastructure.websocket.server.handler.PremiumServerWebSocketHandler;
 
@@ -107,7 +107,7 @@ public class CollectorScheduleService {
                 double premiumValue =
                         MathUtil.calculatePremium(upbitPrc, binancePrc, exchangeRateValue);
 
-                PremiumDto premium = PremiumDto.builder().symbol(symbolName).premium(premiumValue)
+                PremiumDTO premium = PremiumDTO.builder().symbol(symbolName).premium(premiumValue)
                         .upbit(upbitPrc).binance(binancePrc).usdToKrw(exchangeRateValue)
                         .upbitTradeAt(upbitTradeAt).binanceTradeAt(binanceTradeAt).build();
 
@@ -120,7 +120,7 @@ public class CollectorScheduleService {
 
 
                 // 차트 데이터 빌드 후 websocket으로 전송 -> 따로 저장 안함.
-                ChartBySymbolDto chartBySymbolDto = ChartBySymbolDto.builder().symbol(symbolName)
+                ChartBySymbolDTO chartBySymbolDto = ChartBySymbolDTO.builder().symbol(symbolName)
                         .premium(premium).orderbookPair(orderbookPair).build();
 
                 emitChartBySymbol(chartBySymbolDto);
@@ -130,11 +130,11 @@ public class CollectorScheduleService {
         });
     }
 
-    private void emitChartBySymbol(ChartBySymbolDto chartBySymbolDto) {
+    private void emitChartBySymbol(ChartBySymbolDTO chartBySymbolDto) {
         chartServerWebSocketHandler.sendMessage(chartBySymbolDto);
     }
 
-    private void emitPremium(PremiumDto premium) {
+    private void emitPremium(PremiumDTO premium) {
         premiumServerWebSocketHandler.sendMessage(premium);
     }
 }

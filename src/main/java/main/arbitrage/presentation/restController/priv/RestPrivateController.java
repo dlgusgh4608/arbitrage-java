@@ -9,12 +9,11 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.application.order.OrderApplicationService;
+import main.arbitrage.application.order.service.OrderApplicationService;
 import main.arbitrage.application.user.service.UserApplicationService;
-import main.arbitrage.domain.buyOrder.dto.BuyOrderReqDto;
-import main.arbitrage.domain.buyOrder.dto.BuyOrderResDto;
-import main.arbitrage.domain.user.dto.UserEditNicknameDto;
 import main.arbitrage.global.util.cookie.CookieUtil;
+import main.arbitrage.presentation.dto.request.BuyOrderRequest;
+import main.arbitrage.presentation.dto.request.EditUserNicknameRequest;
 import main.arbitrage.presentation.restController.priv.constant.PrivateRestControllerUrlConstants;
 
 @RestController
@@ -25,7 +24,7 @@ public class RestPrivateController {
     private final OrderApplicationService orderApplicationService;
 
     @PatchMapping(PrivateRestControllerUrlConstants.EDIT_NICKNAME)
-    public ResponseEntity<?> editNicknamePatch(@Valid @RequestBody UserEditNicknameDto req,
+    public ResponseEntity<?> editNicknamePatch(@Valid @RequestBody EditUserNicknameRequest req,
             HttpServletResponse response) {
         String accessToken = userApplicationService.updateNickname(req);
         CookieUtil.addCookie(response, "accessToken", accessToken, -1, true);
@@ -33,8 +32,8 @@ public class RestPrivateController {
     }
 
     @PostMapping(PrivateRestControllerUrlConstants.BUY_ORDER)
-    public ResponseEntity<?> postBuyOrder(@Valid @RequestBody BuyOrderReqDto req) throws Exception {
-        BuyOrderResDto buyOrder = orderApplicationService.createBuyOrder(req);
-        return ResponseEntity.ok(buyOrder);
+    public ResponseEntity<?> postBuyOrder(@Valid @RequestBody BuyOrderRequest req)
+            throws Exception {
+        return ResponseEntity.ok(orderApplicationService.createBuyOrder(req));
     }
 }

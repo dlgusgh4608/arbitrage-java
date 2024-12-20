@@ -15,8 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
-import main.arbitrage.infrastructure.exchange.factory.dto.OrderbookDto;
-import main.arbitrage.infrastructure.exchange.factory.dto.TradeDto;
+import main.arbitrage.infrastructure.exchange.dto.OrderbookDto;
+import main.arbitrage.infrastructure.exchange.dto.TradeDto;
 import main.arbitrage.infrastructure.websocket.client.BaseWebSocketClient;
 import main.arbitrage.infrastructure.websocket.client.handler.ExchangeWebSocketHandler;
 

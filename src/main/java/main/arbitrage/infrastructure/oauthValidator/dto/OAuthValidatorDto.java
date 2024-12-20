@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Builder
 @Setter
-public class OAuthValidatorDto {
+public class OAuthValidatorDTO {
     private String email;
     private String providerId;
 }

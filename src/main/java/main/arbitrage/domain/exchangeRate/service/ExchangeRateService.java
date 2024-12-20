@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.domain.exchangeRate.dto.ExchangeRateDto;
+import main.arbitrage.application.exchangeRate.dto.ExchangeRateDTO;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.exchangeRate.repository.ExchangeRateRepository;
 
@@ -14,9 +14,9 @@ import main.arbitrage.domain.exchangeRate.repository.ExchangeRateRepository;
 @Slf4j
 public class ExchangeRateService {
     private final ExchangeRateRepository exchangeRateRepository;
-    private final Map<String, ExchangeRateDto> prevExchangeRateMap = new ConcurrentHashMap<>();
+    private final Map<String, ExchangeRateDTO> prevExchangeRateMap = new ConcurrentHashMap<>();
 
-    public ExchangeRate setExchangeRate(ExchangeRateDto exchangeRateDto) {
+    public ExchangeRate setExchangeRate(ExchangeRateDTO exchangeRateDto) {
         double rate = exchangeRateDto.getRate();
 
         if (rate == 0)
@@ -24,7 +24,7 @@ public class ExchangeRateService {
 
         String key = exchangeRateDto.getFromCurrency() + "_" + exchangeRateDto.getToCurrency();
 
-        ExchangeRateDto prevDto = prevExchangeRateMap.get(key);
+        ExchangeRateDTO prevDto = prevExchangeRateMap.get(key);
 
         if (prevDto == null) {
             log.info("New exchange rate [{}]: {}", key, rate);
@@ -40,10 +40,10 @@ public class ExchangeRateService {
             prevExchangeRateMap.put(key, exchangeRateDto);
         }
 
-        return exchangeRateRepository.save(ExchangeRateDto.toEntity(exchangeRateDto));
+        return exchangeRateRepository.save(ExchangeRateDTO.toEntity(exchangeRateDto));
     }
 
-    public ExchangeRateDto getExchangeRate(String fromCurrency, String toCurrency) {
+    public ExchangeRateDTO getExchangeRate(String fromCurrency, String toCurrency) {
         String key = fromCurrency.toUpperCase() + "_" + toCurrency.toUpperCase();
         return prevExchangeRateMap.get(key);
     }

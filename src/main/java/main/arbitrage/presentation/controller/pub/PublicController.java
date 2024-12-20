@@ -13,18 +13,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.application.price.dto.PriceDto;
 import main.arbitrage.application.price.service.PriceApplicationService;
 import main.arbitrage.application.user.service.UserApplicationService;
-import main.arbitrage.domain.oauthUser.dto.OAuthUserDto;
+import main.arbitrage.auth.dto.AuthContext;
 import main.arbitrage.domain.oauthUser.store.OAuthUserStore;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
-import main.arbitrage.domain.user.dto.UserLoginDto;
-import main.arbitrage.domain.user.dto.UserSignupDto;
-import main.arbitrage.domain.user.dto.UserTokenDto;
-import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.global.util.cookie.CookieUtil;
 import main.arbitrage.presentation.controller.pub.constant.PublicControllerUrlConstants;
+import main.arbitrage.presentation.dto.form.UserLoginForm;
+import main.arbitrage.presentation.dto.form.UserSignupForm;
+import main.arbitrage.presentation.dto.response.UserTokenResponseCookie;
+import main.arbitrage.presentation.dto.view.OAuthSignupView;
+import main.arbitrage.presentation.dto.view.PriceView;
 
 @Controller
 @RequestMapping(PublicControllerUrlConstants.DEFAULT_URL)
@@ -39,12 +39,11 @@ public class PublicController {
      * only public
      */
     @GetMapping(PublicControllerUrlConstants.LOGIN)
-    public String getLogin(Model model, @AuthenticationPrincipal User userDetails) {
-        if (userDetails != null)
+    public String getLogin(Model model, @AuthenticationPrincipal AuthContext authContext) {
+        if (authContext != null)
             return "redirect:/";
 
-        UserLoginDto userLoginDto = new UserLoginDto();
-        model.addAttribute("formDto", userLoginDto);
+        model.addAttribute("formDto", new UserLoginForm());
 
         return "pages/login";
     }
@@ -53,17 +52,17 @@ public class PublicController {
      * only public
      */
     @PostMapping(PublicControllerUrlConstants.LOGIN)
-    public String postLogin(@Valid @ModelAttribute("formDto") UserLoginDto userLoginDto,
-            BindingResult bindingResult, @AuthenticationPrincipal User user,
+    public String postLogin(@Valid @ModelAttribute("formDto") UserLoginForm userLoginForm,
+            BindingResult bindingResult, @AuthenticationPrincipal AuthContext authContext,
             HttpServletResponse response) {
-        if (user != null)
+        if (authContext != null)
             return "redirect:/";
 
         if (bindingResult.hasErrors())
             return "pages/login";
 
         try {
-            UserTokenDto userTokenDto = userApplicationService.login(userLoginDto);
+            UserTokenResponseCookie userTokenDto = userApplicationService.login(userLoginForm);
             CookieUtil.setCookie(response, userTokenDto);
 
             return "redirect:/";
@@ -77,19 +76,19 @@ public class PublicController {
      * only public
      */
     @GetMapping(PublicControllerUrlConstants.SIGNUP)
-    public String getSignup(Model model, @AuthenticationPrincipal User user,
+    public String getSignup(Model model, @AuthenticationPrincipal AuthContext authContext,
             @RequestParam(name = "uid", required = false) String uid) {
-        if (user != null)
+        if (authContext != null)
             return "redirect:/";
 
         if (uid != null) {
-            OAuthUserDto oauthUserDto = authUserStore.getAndRemove(uid);
-            if (oauthUserDto != null) {
-                model.addAttribute("oauth", oauthUserDto);
+            OAuthSignupView oauthSignupView = authUserStore.getAndRemove(uid);
+            if (oauthSignupView != null) {
+                model.addAttribute("oauth", oauthSignupView);
             }
         }
 
-        model.addAttribute("formDto", new UserSignupDto());
+        model.addAttribute("formDto", new UserSignupForm());
 
         return "pages/signup";
     }
@@ -98,17 +97,17 @@ public class PublicController {
      * only public
      */
     @PostMapping(PublicControllerUrlConstants.SIGNUP)
-    public String postSignup(@Valid @ModelAttribute("formDto") UserSignupDto userSignupDto,
-            BindingResult bindingResult, @AuthenticationPrincipal User user,
+    public String postSignup(@Valid @ModelAttribute("formDto") UserSignupForm userSignupDto,
+            BindingResult bindingResult, @AuthenticationPrincipal AuthContext authContext,
             HttpServletResponse response) {
-        if (user != null)
+        if (authContext != null)
             return "redirect:/";
 
         if (bindingResult.hasErrors())
             return "pages/signup";
 
         try {
-            UserTokenDto userTokenDto = userApplicationService.signup(userSignupDto);
+            UserTokenResponseCookie userTokenDto = userApplicationService.signup(userSignupDto);
             CookieUtil.setCookie(response, userTokenDto);
 
             return "redirect:/";
@@ -134,12 +133,12 @@ public class PublicController {
             return "redirect:/";
         }
 
-        List<PriceDto> priceDTOs =
+        List<PriceView> priceViewList =
                 priceApplicationService.getInitialPriceOfSymbolName(symbol.toLowerCase());
 
 
         model.addAttribute("supportedSymbols", supportedSymbols);
-        model.addAttribute("prices", priceDTOs);
+        model.addAttribute("prices", priceViewList);
 
         return "pages/chart";
     }

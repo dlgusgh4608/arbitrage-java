@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.application.user.dto.UserProfileDto;
 import main.arbitrage.application.user.service.UserApplicationService;
-import main.arbitrage.domain.userEnv.dto.UserEnvDto;
 import main.arbitrage.presentation.controller.priv.constant.PrivateControllerUrlConstants;
+import main.arbitrage.presentation.dto.form.UserEnvForm;
+import main.arbitrage.presentation.dto.view.UserProfileView;
 
 
 @Controller
@@ -23,21 +23,21 @@ public class PrivateController {
 
     @GetMapping(PrivateControllerUrlConstants.USER_ENV_REGISTER)
     public String envRegisterGet(Model model) {
-        UserEnvDto userEnvDto = new UserEnvDto();
+        UserEnvForm userEnvForm = new UserEnvForm();
 
-        model.addAttribute("formDto", userEnvDto);
+        model.addAttribute("formDto", userEnvForm);
 
         return "pages/envRegister";
     }
 
     @PostMapping(PrivateControllerUrlConstants.USER_ENV_REGISTER)
-    public String envRegisterPost(@Valid @ModelAttribute("formDto") UserEnvDto userEnvDto,
+    public String envRegisterPost(@Valid @ModelAttribute("formDto") UserEnvForm userEnvForm,
             BindingResult bindingResult) {
         if (bindingResult.hasErrors())
             return "pages/envRegister";
 
         try {
-            userApplicationService.registerUserEnv(userEnvDto);
+            userApplicationService.registerUserEnv(userEnvForm);
 
             return "redirect:/";
         } catch (Exception e) {
@@ -48,8 +48,8 @@ public class PrivateController {
 
     @GetMapping(PrivateControllerUrlConstants.USER_PROFILE)
     public String profileGet(Model model) throws Exception {
-        UserProfileDto userProfileDto = userApplicationService.getUserProfile();
-        model.addAttribute("profile", userProfileDto);
+        UserProfileView userProfileView = userApplicationService.getUserProfile();
+        model.addAttribute("profile", userProfileView);
 
         return "pages/profile";
     }

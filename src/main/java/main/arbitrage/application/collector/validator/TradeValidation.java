@@ -1,7 +1,7 @@
 package main.arbitrage.application.collector.validator;
 
 import org.springframework.stereotype.Component;
-import main.arbitrage.infrastructure.exchange.factory.dto.TradeDto;
+import main.arbitrage.infrastructure.exchange.dto.TradeDto;
 
 @Component
 public class TradeValidation {

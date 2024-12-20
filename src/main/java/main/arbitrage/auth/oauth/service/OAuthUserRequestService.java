@@ -9,7 +9,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.auth.oauth.dto.CustomOAuthRequestDto;
+import main.arbitrage.auth.oauth.dto.CustomOAuthRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +27,7 @@ public class OAuthUserRequestService extends DefaultOAuth2UserService {
         Map<String, Object> attributes = Map.of("provider", provider, "providerId", providerId,
                 "accessToken", accessToken, "email", email);
 
-        return new CustomOAuthRequestDto(
+        return new CustomOAuthRequest(
                 Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")), attributes,
                 "providerId", provider, providerId, accessToken, email);
     }

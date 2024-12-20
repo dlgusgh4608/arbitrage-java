@@ -6,31 +6,31 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.application.user.dto.UserProfileDto;
+import main.arbitrage.application.exchangeRate.dto.ExchangeRateDTO;
 import main.arbitrage.auth.jwt.JwtUtil;
 import main.arbitrage.auth.security.SecurityUtil;
-import main.arbitrage.domain.exchangeRate.dto.ExchangeRateDto;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
 import main.arbitrage.domain.oauthUser.service.OAuthUserService;
-import main.arbitrage.domain.user.dto.UserEditNicknameDto;
-import main.arbitrage.domain.user.dto.UserLoginDto;
-import main.arbitrage.domain.user.dto.UserSignupDto;
-import main.arbitrage.domain.user.dto.UserTokenDto;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.user.service.UserService;
-import main.arbitrage.domain.userEnv.dto.UserEnvDto;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
 import main.arbitrage.global.util.aes.AESCrypto;
-import main.arbitrage.infrastructure.email.dto.EmailMessageDto;
+import main.arbitrage.infrastructure.email.dto.EmailMessageDTO;
 import main.arbitrage.infrastructure.email.service.EmailMessageService;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.account.BinanceGetAccountResponseDto;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceGetAccountResponse;
+import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
-import main.arbitrage.infrastructure.exchange.factory.dto.ExchangePrivateRestPair;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.account.UpbitGetAccountResponseDto;
+import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetAccountResponse;
 import main.arbitrage.infrastructure.oauthValidator.google.GoogleApiClient;
 import main.arbitrage.infrastructure.oauthValidator.kakao.KakaoApiClient;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
+import main.arbitrage.presentation.dto.form.UserEnvForm;
+import main.arbitrage.presentation.dto.form.UserLoginForm;
+import main.arbitrage.presentation.dto.form.UserSignupForm;
+import main.arbitrage.presentation.dto.request.EditUserNicknameRequest;
+import main.arbitrage.presentation.dto.response.UserTokenResponseCookie;
+import main.arbitrage.presentation.dto.view.UserProfileView;
 
 
 @Service
@@ -52,20 +52,19 @@ public class UserApplicationService {
     private final ExchangePrivateRestFactory exchangePrivateRestFactory;
 
     @Transactional
-    public String sendEmail(EmailMessageDto emailMessageDto) throws Exception {
-        String email = emailMessageDto.getTo();
-
+    public String sendEmail(String email) throws Exception {
         if (userService.existsByEmail(email)) {
             throw new DataIntegrityViolationException("This email is already in use: " + email);
         }
 
-        String code = emailMessageService.sendMail(emailMessageDto, "email");
+        String code = emailMessageService.sendMail(EmailMessageDTO.builder().to(email)
+                .subject("[Arbitrage] 이메일 인증을 위한 인증 코드 발송").build(), "email");
 
         return aesCrypto.encrypt(code.getBytes());
     }
 
     @Transactional
-    public UserTokenDto signup(UserSignupDto req) {
+    public UserTokenResponseCookie signup(UserSignupForm req) {
         if (userService.existsByEmail(req.getEmail())) {
             throw new IllegalArgumentException("This email is already in use");
         }
@@ -96,7 +95,7 @@ public class UserApplicationService {
     }
 
     @Transactional
-    public UserTokenDto login(UserLoginDto req) {
+    public UserTokenResponseCookie login(UserLoginForm req) {
         Optional<User> userOptional = userService.findByEmail(req.getEmail());
 
         if (userOptional.isEmpty()) {
@@ -113,7 +112,7 @@ public class UserApplicationService {
     }
 
     @Transactional
-    public void registerUserEnv(UserEnvDto req) throws Exception {
+    public void registerUserEnv(UserEnvForm req) throws Exception {
         Long userId = SecurityUtil.getUserId();
 
         Optional<User> optionalUser = userService.findByEmail(SecurityUtil.getEmail());
@@ -132,7 +131,7 @@ public class UserApplicationService {
         Optional<UserEnv> optionalUserEnv = userEnvService.findByUserId(userId);
 
         if (optionalUserEnv.isEmpty()) {
-            userEnvService.create(UserEnvDto.toEntity(req, optionalUser.get(), aesCrypto));
+            userEnvService.create(UserEnvForm.toEntity(req, optionalUser.get(), aesCrypto));
         } else {
             UserEnv userEnv = optionalUserEnv.get();
             userEnv.updateEnv(req, aesCrypto);
@@ -140,14 +139,14 @@ public class UserApplicationService {
     }
 
     @Transactional
-    public UserProfileDto getUserProfile() throws Exception {
+    public UserProfileView getUserProfile() throws Exception {
         Long userId = SecurityUtil.getUserId();
 
         // userId에 해당하는 env가 있는지 확인
         Optional<UserEnv> userEnvOptional = userEnvService.findByUserId(userId);
 
         // builder 변수 할당
-        UserProfileDto.UserProfileDtoBuilder userProfileDtoBuilder = UserProfileDto.builder();
+        UserProfileView.UserProfileViewBuilder userProfileDtoBuilder = UserProfileView.builder();
 
         if (userEnvOptional.isEmpty()) {
             // env가 없으면 upbit와 binance의 wallet 정보를 받아올 수 없음.
@@ -159,9 +158,9 @@ public class UserApplicationService {
                     exchangePrivateRestFactory.create(userEnv);
 
             // 각각 거래소의 지갑정보를 받아옴
-            Optional<UpbitGetAccountResponseDto> upbitKRW =
+            Optional<UpbitGetAccountResponse> upbitKRW =
                     upbitExchangePrivateRestPair.getUpbit().getKRW();
-            Optional<BinanceGetAccountResponseDto> binanceUSDT =
+            Optional<BinanceGetAccountResponse> binanceUSDT =
                     upbitExchangePrivateRestPair.getBinance().getUSDT();
 
             // builder에 build하기
@@ -179,7 +178,7 @@ public class UserApplicationService {
             }
         }
 
-        ExchangeRateDto exchangeRateDto = exchangeRateService.getExchangeRate("USD", "KRW");
+        ExchangeRateDTO exchangeRateDto = exchangeRateService.getExchangeRate("USD", "KRW");
 
         userProfileDtoBuilder.nickname(SecurityUtil.getNickname());
         userProfileDtoBuilder.exchangeRate(exchangeRateDto.getRate());
@@ -188,7 +187,7 @@ public class UserApplicationService {
     }
 
     @Transactional
-    public String updateNickname(UserEditNicknameDto req) {
+    public String updateNickname(EditUserNicknameRequest req) {
         Long userId = SecurityUtil.getUserId();
         String nickname = req.getNickname();
 
@@ -207,17 +206,17 @@ public class UserApplicationService {
                 SecurityUtil.getExpiredAt());
     }
 
-    private UserTokenDto userTokenResponseBuilder(User user) {
+    private UserTokenResponseCookie userTokenResponseBuilder(User user) {
         String accessToken = jwtUtil.createToken(user.getId(), user.getEmail(), user.getNickname());
         String refreshToken = refreshTokenService.createRefreshToken(user.getEmail(),
                 UUID.randomUUID().toString());
         Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(user.getEmail());
 
-        return UserTokenDto.builder().accessToken(accessToken).refreshToken(refreshToken)
+        return UserTokenResponseCookie.builder().accessToken(accessToken).refreshToken(refreshToken)
                 .refreshTokenTTL(refreshTokenTTL).build();
     }
 
-    private boolean isCorrectOAuthToken(UserSignupDto req) {
+    private boolean isCorrectOAuthToken(UserSignupForm req) {
         String provider = req.getProvider(); // provider is only kakao, google
 
         switch (provider.toLowerCase()) {

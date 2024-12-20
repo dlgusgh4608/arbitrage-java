@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import main.arbitrage.domain.user.dto.UserTokenDto;
+import main.arbitrage.presentation.dto.response.UserTokenResponseCookie;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CookieUtil {
@@ -35,10 +35,12 @@ public final class CookieUtil {
                 }));
     }
 
-    public static void setCookie(HttpServletResponse response, UserTokenDto userTokenDto) {
-        CookieUtil.addCookie(response, "refreshToken", userTokenDto.getRefreshToken(),
-                userTokenDto.getRefreshTokenTTL().intValue(), true);
-        CookieUtil.addCookie(response, "accessToken", userTokenDto.getAccessToken(), -1, true);
+    public static void setCookie(HttpServletResponse response,
+            UserTokenResponseCookie userTokenResponseCookie) {
+        CookieUtil.addCookie(response, "refreshToken", userTokenResponseCookie.getRefreshToken(),
+                userTokenResponseCookie.getRefreshTokenTTL().intValue(), true);
+        CookieUtil.addCookie(response, "accessToken", userTokenResponseCookie.getAccessToken(), -1,
+                true);
     }
 
     public static void setCookie(HttpServletResponse response, String accessToken,

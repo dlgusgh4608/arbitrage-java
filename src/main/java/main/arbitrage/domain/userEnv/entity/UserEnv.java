@@ -16,8 +16,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import main.arbitrage.domain.user.entity.User;
-import main.arbitrage.domain.userEnv.dto.UserEnvDto;
 import main.arbitrage.global.util.aes.AESCrypto;
+import main.arbitrage.presentation.dto.form.UserEnvForm;
 
 @Entity
 @Table(name = "user_env")
@@ -53,11 +53,11 @@ public class UserEnv {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    public void updateEnv(UserEnvDto userEnvDto, AESCrypto aesCrypto) throws Exception {
-        this.upbitAccessKey = aesCrypto.encrypt(userEnvDto.getUpbitAccessKey().getBytes());
-        this.upbitSecretKey = aesCrypto.encrypt(userEnvDto.getUpbitSecretKey().getBytes());
-        this.binanceAccessKey = aesCrypto.encrypt(userEnvDto.getBinanceAccessKey().getBytes());
-        this.binanceSecretKey = aesCrypto.encrypt(userEnvDto.getBinanceSecretKey().getBytes());
+    public void updateEnv(UserEnvForm userEnvForm, AESCrypto aesCrypto) throws Exception {
+        this.upbitAccessKey = aesCrypto.encrypt(userEnvForm.getUpbitAccessKey().getBytes());
+        this.upbitSecretKey = aesCrypto.encrypt(userEnvForm.getUpbitSecretKey().getBytes());
+        this.binanceAccessKey = aesCrypto.encrypt(userEnvForm.getBinanceAccessKey().getBytes());
+        this.binanceSecretKey = aesCrypto.encrypt(userEnvForm.getBinanceSecretKey().getBytes());
     }
 
 

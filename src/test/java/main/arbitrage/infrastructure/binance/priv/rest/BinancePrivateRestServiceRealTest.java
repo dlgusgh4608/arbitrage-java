@@ -8,10 +8,10 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Side;
+import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Type;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.order.BinanceOrderEnum.Side;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.order.BinanceOrderEnum.Type;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.order.BinanceOrderResponseDto;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.exception.BinancePrivateRestException;
 import okhttp3.OkHttpClient;
 
@@ -46,7 +46,7 @@ class BinancePrivateRestServiceRealTest {
         Double volume = 0.012d;
         Double price = null;
 
-        BinanceOrderResponseDto dto =
+        BinanceOrderResponse dto =
                 binancePrivateRestService.order(market, side, type, volume, price);
         System.out.println(dto);
     }

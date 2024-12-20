@@ -21,12 +21,12 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.WeakKeyException;
 import main.arbitrage.infrastructure.exchange.ExchangePrivateRestService;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.exception.BinancePrivateRestException;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.account.UpbitGetAccountResponseDto;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitGetOrderResponseDto;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.OrdType;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.Side;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitOrderEnum.State;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.dto.order.UpbitPostOrderRequestDto;
+import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums.OrdType;
+import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums.Side;
+import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums.State;
+import main.arbitrage.infrastructure.exchange.upbit.dto.request.UpbitPostOrderRequest;
+import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetAccountResponse;
+import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetOrderResponse;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -55,7 +55,7 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         this.symbolNames = symbolNames;
     }
 
-    public List<UpbitGetAccountResponseDto> getAccount()
+    public List<UpbitGetAccountResponse> getAccount()
             throws UpbitPrivateRestException, IOException {
         String token = generateToken();
         Request request = new Request.Builder().url(SERVER_URI + "/v1/accounts")
@@ -70,12 +70,12 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
             validateResponse(responseBody);
 
         return objectMapper.readValue(responseBody, objectMapper.getTypeFactory()
-                .constructCollectionType(List.class, UpbitGetAccountResponseDto.class));
+                .constructCollectionType(List.class, UpbitGetAccountResponse.class));
     }
 
-    public Optional<UpbitGetAccountResponseDto> getKRW()
+    public Optional<UpbitGetAccountResponse> getKRW()
             throws UpbitPrivateRestException, IOException {
-        List<UpbitGetAccountResponseDto> account = getAccount();
+        List<UpbitGetAccountResponse> account = getAccount();
         return account.stream().filter(upbitAccount -> upbitAccount.getCurrency().equals("KRW"))
                 .findFirst();
     }
@@ -112,8 +112,8 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
 
         String symbol = convertSymbol(market);
 
-        UpbitPostOrderRequestDto requestDto = UpbitPostOrderRequestDto.builder().market(symbol)
-                .side(side).ordType(ordType).price(price).volume(volume).build();
+        UpbitPostOrderRequest requestDto = UpbitPostOrderRequest.builder().market(symbol).side(side)
+                .ordType(ordType).price(price).volume(volume).build();
 
         Map<String, Object> map = objectMapper.convertValue(requestDto, Map.class);
 
@@ -144,7 +144,7 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         return json.get("uuid").asText();
     }
 
-    public UpbitGetOrderResponseDto order(String uuid, int repeat)
+    public UpbitGetOrderResponse order(String uuid, int repeat)
             throws UpbitPrivateRestException, InterruptedException, IOException {
         if (repeat < 2)
             return null;
@@ -164,8 +164,8 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         if (!response.isSuccessful())
             validateResponse(responseBody);
 
-        UpbitGetOrderResponseDto dto =
-                objectMapper.readValue(responseBody, UpbitGetOrderResponseDto.class);
+        UpbitGetOrderResponse dto =
+                objectMapper.readValue(responseBody, UpbitGetOrderResponse.class);
 
         if (dto.getState().equals(State.wait) || dto.getState().equals(State.watch)) {
             Thread.sleep(1000);

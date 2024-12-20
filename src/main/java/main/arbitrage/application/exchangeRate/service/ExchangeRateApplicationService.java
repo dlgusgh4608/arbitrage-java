@@ -4,7 +4,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.domain.exchangeRate.dto.ExchangeRateDto;
+import main.arbitrage.application.exchangeRate.dto.ExchangeRateDTO;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
 import main.arbitrage.infrastructure.crawler.UsdToKrwCrawler;
@@ -22,7 +22,7 @@ public class ExchangeRateApplicationService {
     protected void scheduleOnEmit() {
         double usdToKrw = usdToKrwCrawler.craw();
 
-        ExchangeRateDto exchangeRateDto = ExchangeRateDto.builder().fromCurrency("USD")
+        ExchangeRateDTO exchangeRateDto = ExchangeRateDTO.builder().fromCurrency("USD")
                 .toCurrency("KRW").rate(usdToKrw).build();
 
         ExchangeRate exchangeRate = exchangeRateService.setExchangeRate(exchangeRateDto);

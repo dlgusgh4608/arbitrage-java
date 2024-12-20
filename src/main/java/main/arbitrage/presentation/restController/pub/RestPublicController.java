@@ -8,10 +8,9 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.user.service.UserApplicationService;
-import main.arbitrage.domain.user.dto.UserCheckEmailCodeDto;
-import main.arbitrage.domain.user.dto.UserExistEmailReqDto;
-import main.arbitrage.domain.user.dto.UserExistEmailResDto;
-import main.arbitrage.infrastructure.email.dto.EmailMessageDto;
+import main.arbitrage.presentation.dto.request.CheckCodeRequest;
+import main.arbitrage.presentation.dto.request.SendEmailRequest;
+import main.arbitrage.presentation.dto.response.SendEmailResponse;
 import main.arbitrage.presentation.restController.pub.constant.PublicRestControllerUrlConstants;
 
 @RestController
@@ -21,15 +20,14 @@ public class RestPublicController {
     private final UserApplicationService userApplicationService;
 
     @PostMapping(PublicRestControllerUrlConstants.SEND_EMAIL)
-    public ResponseEntity<?> postSendEmail(@Valid @RequestBody UserExistEmailReqDto request)
+    public ResponseEntity<?> postSendEmail(@Valid @RequestBody SendEmailRequest request)
             throws Exception {
-        String code = userApplicationService.sendEmail(EmailMessageDto.builder()
-                .to(request.getEmail()).subject("[Arbitrage] 이메일 인증을 위한 인증 코드 발송").build());
-        return ResponseEntity.ok(UserExistEmailResDto.builder().code(code).build());
+        String code = userApplicationService.sendEmail(request.getEmail());
+        return ResponseEntity.ok(SendEmailResponse.builder().code(code).build());
     }
 
     @PostMapping(PublicRestControllerUrlConstants.CHECK_CODE)
-    public ResponseEntity<?> postCheckCode(@Valid @RequestBody UserCheckEmailCodeDto request) {
+    public ResponseEntity<?> postCheckCode(@Valid @RequestBody CheckCodeRequest request) {
         boolean ok = userApplicationService.checkCode(request.getOriginCode(),
                 request.getEncryptedCode());
         if (ok) {

@@ -9,12 +9,12 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.application.collector.dto.ChartBySymbolDto;
+import main.arbitrage.application.collector.dto.ChartBySymbolDTO;
 import main.arbitrage.infrastructure.websocket.server.BaseServerSocketHandler;
 
 @Component
 @Slf4j
-public class ChartServerWebSocketHandler extends BaseServerSocketHandler<ChartBySymbolDto> {
+public class ChartServerWebSocketHandler extends BaseServerSocketHandler<ChartBySymbolDTO> {
     public ChartServerWebSocketHandler(ObjectMapper objectMapper) {
         super(objectMapper);
     }
@@ -25,7 +25,7 @@ public class ChartServerWebSocketHandler extends BaseServerSocketHandler<ChartBy
     }
 
     @Override
-    public void sendMessage(ChartBySymbolDto data) {
+    public void sendMessage(ChartBySymbolDTO data) {
         if (data == null)
             return;
 

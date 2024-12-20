@@ -18,11 +18,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.security.WeakKeyException;
 import main.arbitrage.infrastructure.exchange.ExchangePrivateRestService;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.account.BinanceGetAccountResponseDto;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.order.BinanceOrderEnum.Side;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.order.BinanceOrderEnum.Type;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.order.BinanceOrderResponseDto;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.dto.order.BinancePostOrderRequestDto;
+import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Side;
+import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Type;
+import main.arbitrage.infrastructure.exchange.binance.dto.request.BinancePostOrderRequest;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceGetAccountResponse;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.exception.BinancePrivateRestException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -49,7 +49,7 @@ public class BinancePrivateRestService implements ExchangePrivateRestService {
         this.symbolNames = symbolNames;
     }
 
-    public List<BinanceGetAccountResponseDto> getAccount()
+    public List<BinanceGetAccountResponse> getAccount()
             throws IOException, BinancePrivateRestException {
         Map<String, Object> params = new LinkedHashMap<>();
         params.put("timestamp", System.currentTimeMillis());
@@ -68,17 +68,17 @@ public class BinancePrivateRestService implements ExchangePrivateRestService {
             validateResponse(responseBody);
 
         return objectMapper.readValue(responseBody, objectMapper.getTypeFactory()
-                .constructCollectionType(List.class, BinanceGetAccountResponseDto.class));
+                .constructCollectionType(List.class, BinanceGetAccountResponse.class));
     }
 
-    public Optional<BinanceGetAccountResponseDto> getUSDT()
+    public Optional<BinanceGetAccountResponse> getUSDT()
             throws IOException, BinancePrivateRestException {
-        List<BinanceGetAccountResponseDto> account = getAccount();
+        List<BinanceGetAccountResponse> account = getAccount();
         return account.stream().filter(binanceAccount -> binanceAccount.getAsset().equals("USDT"))
                 .findFirst();
     }
 
-    public BinanceOrderResponseDto order(String market, Side side, Type type, Double volume,
+    public BinanceOrderResponse order(String market, Side side, Type type, Double volume,
             Double price) throws IOException, BinancePrivateRestException {
         if (market == null || side == null || type == null || volume == null) {
             throw new BinancePrivateRestException("(바이낸스) 잘못 된 주문 API 요청입니다.", "validation_error");
@@ -90,8 +90,8 @@ public class BinancePrivateRestService implements ExchangePrivateRestService {
 
         String symbol = convertSymbol(market);
 
-        BinancePostOrderRequestDto requestDto =
-                BinancePostOrderRequestDto.builder().newClientOrderId(UUID.randomUUID().toString())
+        BinancePostOrderRequest requestDto =
+                BinancePostOrderRequest.builder().newClientOrderId(UUID.randomUUID().toString())
                         .type(type).symbol(symbol).side(side).price(price).quantity(volume).build();
 
 
@@ -114,7 +114,7 @@ public class BinancePrivateRestService implements ExchangePrivateRestService {
         if (!response.isSuccessful())
             validateResponse(responseBody);
 
-        return objectMapper.readValue(responseBody, BinanceOrderResponseDto.class);
+        return objectMapper.readValue(responseBody, BinanceOrderResponse.class);
     }
 
     @Override

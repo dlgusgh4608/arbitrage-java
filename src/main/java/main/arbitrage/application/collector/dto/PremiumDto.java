@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class PremiumDto {
+public class PremiumDTO {
     private String symbol;
     private double premium;
     private double upbit;
