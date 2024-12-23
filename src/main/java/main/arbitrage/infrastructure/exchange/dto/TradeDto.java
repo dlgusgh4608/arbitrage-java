@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class TradeDto {
-    private String symbol;
-    private double price;
-    private long timestamp;
+    private final String symbol;
+    private final double price;
+    private final long timestamp;
 }

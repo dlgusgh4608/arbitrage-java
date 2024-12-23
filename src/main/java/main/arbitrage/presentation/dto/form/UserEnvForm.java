@@ -1,7 +1,9 @@
 package main.arbitrage.presentation.dto.form;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
@@ -10,6 +12,7 @@ import main.arbitrage.global.util.aes.AESCrypto;
 
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class UserEnvForm {
 
     @NotBlank(message = "업비트 액세스키는 필수 값 입니다.")

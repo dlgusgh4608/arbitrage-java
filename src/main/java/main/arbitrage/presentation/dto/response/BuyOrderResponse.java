@@ -1,24 +1,19 @@
 package main.arbitrage.presentation.dto.response;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BuyOrderResponse {
-    private double premium;
-    private double binanceAvgPrice;
-    private double binanceQty;
-    private double binanceTotalPrice;
-    private double binanceCommission;
-    private double upbitTotalPrice;
-    private double upbitQty;
-    private double upbitAvgPrice;
-    private double upbitCommission;
-    private double usdToKrw;
+    private final double premium;
+    private final double binanceAvgPrice;
+    private final double binanceQty;
+    private final double binanceTotalPrice;
+    private final double binanceCommission;
+    private final double upbitTotalPrice;
+    private final double upbitQty;
+    private final double upbitAvgPrice;
+    private final double upbitCommission;
+    private final double usdToKrw;
 }

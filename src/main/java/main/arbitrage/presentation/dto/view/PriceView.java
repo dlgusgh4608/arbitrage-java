@@ -1,29 +1,26 @@
 package main.arbitrage.presentation.dto.view;
 
 import java.sql.Timestamp;
+import lombok.Builder;
 import lombok.Getter;
 import main.arbitrage.domain.price.entity.Price;
 
 
 @Getter
+@Builder
 public class PriceView {
-    private String symbol;
-    private float premium;
-    private double upbit;
-    private float binance;
-    private Timestamp upbitTradeAt;
-    private Timestamp binanceTradeAt;
-    private Timestamp createdAt;
+    private final String symbol;
+    private final float premium;
+    private final double upbit;
+    private final float binance;
+    private final Timestamp upbitTradeAt;
+    private final Timestamp binanceTradeAt;
+    private final Timestamp createdAt;
 
-    public static PriceView from(Price price) {
-        PriceView dto = new PriceView();
-        dto.symbol = price.getSymbol().getName();
-        dto.premium = price.getPremium();
-        dto.upbit = price.getUpbit();
-        dto.binance = price.getBinance();
-        dto.upbitTradeAt = price.getUpbitTradeAt();
-        dto.binanceTradeAt = price.getBinanceTradeAt();
-        dto.createdAt = price.getCreatedAt();
-        return dto;
+    public static PriceView fromEntity(Price price) {
+        return PriceView.builder().symbol(price.getSymbol().getName()).premium(price.getPremium())
+                .upbit(price.getUpbit()).binance(price.getBinance())
+                .upbitTradeAt(price.getUpbitTradeAt()).binanceTradeAt(price.getBinanceTradeAt())
+                .createdAt(price.getCreatedAt()).build();
     }
 }

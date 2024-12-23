@@ -53,9 +53,9 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
                 oAuthUserRepository.findByProviderAndProviderId(provider, providerId);
 
         if (oAuthUser.isEmpty()) {
-            OAuthSignupView oAuthUserDto =
-                    new OAuthSignupView(provider, providerId, email, accessToken);
-            emptyUserProcess(request, response, oAuthUserDto);
+            emptyUserProcess(request, response, OAuthSignupView.builder().provider(provider)
+                    .providerId(providerId).email(email).accessToken(accessToken).build());
+
             return;
         }
 
@@ -68,7 +68,8 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
             OAuthSignupView oAuthUserDto) throws IOException {
         Optional<User> user = userRepository.findByEmail(oAuthUserDto.getEmail());
 
-        if (user.isEmpty()) { // User와 OAuthUser가 모두 없을 경우
+        if (user.isEmpty()) { // User와 OAuthUser가 모두 없을 경우 비밀번호를 입력하는 form으로 redirect
+                              // email인증은 이미 완료되었다 판단.
             String key = UUID.randomUUID().toString();
             oAuthUserStore.save(key, oAuthUserDto);
             String targetUrl = UriComponentsBuilder.fromUriString("/signup").queryParam("uid", key)
@@ -76,6 +77,7 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
             getRedirectStrategy().sendRedirect(request, response, targetUrl);
             return;
         }
+
         // 가입된 이메일인데 User와 연동되지 않은경우
         OAuthUser oauthUser = OAuthUser.builder().provider(oAuthUserDto.getProvider())
                 .providerId(oAuthUserDto.getProviderId()).user(user.get()).build();

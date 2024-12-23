@@ -33,7 +33,8 @@ public class ExchangePrivateRestFactory {
                                 aesCrypto.decrypt(userEnv.getBinanceSecretKey()), okHttpClient,
                                 objectMapper, symbolNames);
 
-                return new ExchangePrivateRestPair(upbitService, binanceService);
+                return ExchangePrivateRestPair.builder().upbit(upbitService).binance(binanceService)
+                                .build();
         }
 
         public ExchangePrivateRestPair create(String upbitAccessKey, String upbitSecretKey,
@@ -50,6 +51,7 @@ public class ExchangePrivateRestFactory {
                                                 aesCrypto.decrypt(binanceSecretKey), okHttpClient,
                                                 objectMapper, symbolNames);
 
-                return new ExchangePrivateRestPair(upbitService, binanceService);
+                return ExchangePrivateRestPair.builder().upbit(upbitService).binance(binanceService)
+                                .build();
         }
 }

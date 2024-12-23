@@ -1,31 +1,28 @@
 package main.arbitrage.infrastructure.exchange.upbit.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class UpbitPostOrderRequest {
-    private String market;
+    private final String market;
 
-    private UpbitOrderEnums.Side side;
-    private UpbitOrderEnums.OrdType ordType;
+    private final UpbitOrderEnums.Side side;
+    private final UpbitOrderEnums.OrdType ordType;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "0")
-    private Double price;
+    private final Double price;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private Double volume;
+    private final Double volume;
 }

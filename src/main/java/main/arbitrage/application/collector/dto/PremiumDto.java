@@ -6,11 +6,11 @@ import lombok.Getter;
 @Builder
 @Getter
 public class PremiumDTO {
-    private String symbol;
-    private double premium;
-    private double upbit;
-    private double binance;
-    private double usdToKrw;
-    private Long upbitTradeAt;
-    private Long binanceTradeAt;
+    private final String symbol;
+    private final double premium;
+    private final double upbit;
+    private final double binance;
+    private final double usdToKrw;
+    private final Long upbitTradeAt;
+    private final Long binanceTradeAt;
 }

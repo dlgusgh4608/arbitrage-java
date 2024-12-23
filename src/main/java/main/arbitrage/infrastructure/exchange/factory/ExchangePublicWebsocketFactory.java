@@ -19,10 +19,12 @@ public class ExchangePublicWebsocketFactory {
     }
 
     public TradePair collectTrades(String symbol) {
-        return new TradePair(upbit.getTrade(symbol), binance.getTrade(symbol));
+        return TradePair.builder().upbit(upbit.getTrade(symbol)).binance(binance.getTrade(symbol))
+                .build();
     }
 
     public OrderbookPair collectOrderbooks(String symbol) {
-        return new OrderbookPair(upbit.getOrderbook(symbol), binance.getOrderbook(symbol));
+        return OrderbookPair.builder().upbit(upbit.getOrderbook(symbol))
+                .binance(binance.getOrderbook(symbol)).build();
     }
 }

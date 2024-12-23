@@ -1,27 +1,24 @@
 package main.arbitrage.infrastructure.exchange.binance.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Side;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.TimeInForce;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Type;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BinancePostOrderRequest {
-    private String newClientOrderId;
-    private Type type;
-    private String symbol;
-    private Side side;
-    private String newOrderRespType;
-    private Double quantity;
-    private Double price;
-    private String timeInForce;
-    private Long timestamp;
+    private final String newClientOrderId;
+    private final Type type;
+    private final String symbol;
+    private final Side side;
+    private final String newOrderRespType;
+    private final Double quantity;
+    private final Double price;
+    private final String timeInForce;
+    private final Long timestamp;
 
     @Builder
     public BinancePostOrderRequest(String newClientOrderId, Type type, String symbol, Side side,

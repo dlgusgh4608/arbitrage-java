@@ -4,26 +4,16 @@ import java.util.Collection;
 import java.util.List;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 public class AuthContext implements UserDetails {
-    private Long userId;
-    private String email;
-    private String nickname;
-    private Long expiredAt;
-
-    @Builder
-    public AuthContext(Long userId, String email, String nickname, Long expiredAt) {
-        this.userId = userId;
-        this.email = email;
-        this.nickname = nickname;
-        this.expiredAt = expiredAt;
-    }
+    private final Long userId;
+    private final String email;
+    private final String nickname;
+    private final Long expiredAt;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

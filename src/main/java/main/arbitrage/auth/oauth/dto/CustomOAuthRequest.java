@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
@@ -13,6 +14,7 @@ public class CustomOAuthRequest extends DefaultOAuth2User {
     private final String accessToken;
     private final String email;
 
+    @Builder
     public CustomOAuthRequest(Collection<? extends GrantedAuthority> authorities,
             Map<String, Object> attributes, String nameAttributeKey, String provider,
             String providerId, String accessToken, String email) {

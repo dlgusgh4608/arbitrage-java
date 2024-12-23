@@ -15,6 +15,6 @@ public class PriceApplicationService {
     @Transactional
     public List<PriceView> getInitialPriceOfSymbolName(String symbolName) {
         return priceDomainService.getInitialPriceOfSymbolName(symbolName).stream()
-                .map(PriceView::from).toList();
+                .map(PriceView::fromEntity).toList();
     }
 }

@@ -2,13 +2,14 @@ package main.arbitrage.presentation.dto.form;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor()
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class UserLoginForm {
 
     @NotBlank(message = "이메일은 필수 입력값입니다.")

@@ -1,12 +1,10 @@
 package main.arbitrage.presentation.dto.view;
 
+import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 @Getter
-@RequiredArgsConstructor
-@Setter
+@Builder
 public class OAuthSignupView {
     private final String provider;
     private final String providerId;

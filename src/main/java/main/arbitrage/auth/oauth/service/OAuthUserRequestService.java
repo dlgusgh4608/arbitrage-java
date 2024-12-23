@@ -27,9 +27,10 @@ public class OAuthUserRequestService extends DefaultOAuth2UserService {
         Map<String, Object> attributes = Map.of("provider", provider, "providerId", providerId,
                 "accessToken", accessToken, "email", email);
 
-        return new CustomOAuthRequest(
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")), attributes,
-                "providerId", provider, providerId, accessToken, email);
+        return CustomOAuthRequest.builder()
+                .authorities(Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")))
+                .attributes(attributes).providerId(providerId).provider(provider)
+                .nameAttributeKey("providerId").accessToken(accessToken).email(email).build();
     }
 
     private String extractProviderId(OAuth2User oAuth2User, String provider) {

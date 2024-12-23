@@ -6,14 +6,14 @@ import lombok.Getter;
 @Getter
 @Builder
 public class OrderbookDto {
-    private String symbol;
-    private OrderbookUnit[] bids;
-    private OrderbookUnit[] asks;
+    private final String symbol;
+    private final OrderbookUnit[] bids;
+    private final OrderbookUnit[] asks;
 
     @Builder
     @Getter
     public static class OrderbookUnit {
-        private double price;
-        private double size;
+        private final double price;
+        private final double size;
     }
 }

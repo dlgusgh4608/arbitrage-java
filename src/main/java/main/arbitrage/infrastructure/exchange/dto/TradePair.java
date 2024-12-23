@@ -1,14 +1,11 @@
 package main.arbitrage.infrastructure.exchange.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class TradePair {
     private final TradeDto upbit;
     private final TradeDto binance;
-
-    public TradePair(TradeDto upbit, TradeDto binance) {
-        this.upbit = upbit;
-        this.binance = binance;
-    }
 }

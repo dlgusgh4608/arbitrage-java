@@ -7,9 +7,9 @@ import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 @Getter
 @Builder
 public class ExchangeRateDTO {
-    private String toCurrency;
-    private String fromCurrency;
-    private double rate;
+    private final String toCurrency;
+    private final String fromCurrency;
+    private final double rate;
 
     public static ExchangeRate toEntity(ExchangeRateDTO dto) {
         return ExchangeRate.builder().toCurrency(dto.getToCurrency())
