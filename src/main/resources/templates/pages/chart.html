@@ -31,8 +31,7 @@
                             <ul class="dropdown-menu">
                                 <li th:each="symbol : ${supportedSymbols}">
                                     <a class="dropdown-item" th:href="@{/chart(symbol=${symbol})}"
-                                        th:text="${symbol}">symbol
-                                        name</a>
+                                        th:text="${symbol}">symbolName</a>
                                 </li>
                             </ul>
                         </div>
@@ -51,14 +50,14 @@
                         <button id="min15" class="btn custom-btn" style="font-weight: 500;">15m</button>
                     </div>
 
-                    <canvas id="candlestickChart" style="width:100% !important; height: 600px !important;"></canvas>
+                    <canvas id="candlestickChart" class="chart-canvas"></canvas>
                 </article>
             </section>
             <section class="d-flex col-3 gap-2 order-section">
                 <article class="w-100 p-3 shadow bg-white rounded orderbook">
                     <div class="d-flex justify-content-between mb-3">
-                        <div>Upbit</div>
-                        <div>Binance</div>
+                        <div>UPBIT</div>
+                        <div>BINANCE</div>
                     </div>
                     <div class="order-list asks mb-2">
                         <div th:each="num : ${#numbers.sequence(1, 7)}"
@@ -112,11 +111,129 @@
                         </div>
                     </div>
                 </article>
-                <article class="w-100 p-3 shadow bg-white rounded orderForm">
-                    주문 하기 넣기 ㅋ
+                <article class="w-100 p-3 shadow bg-white rounded order-form">
+                    <ul class="nav nav-underline mb-3">
+                        <li class="nav-item order-type-wrap">
+                            <div class="nav-link order-type-item active" id="buy" style="color: #fff">
+                                <span class="type-text">BUY</span>
+                            </div>
+                        </li>
+                        <li class="nav-item order-type-wrap">
+                            <div class="nav-link order-type-item" id="sell" style="color: #fff">
+                                <span class="type-text">SELL</span>
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="d-flex justify-content-between mb-3">
+                        <div>
+                            <span class="fw-semibold order-type-text" id="order-type-text">BUY </span>
+                            <span class="qty-text" id="qty-text">0</span>
+                            <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
+                        </div>
+                        <div>
+                            <span class="fw-semibold order-type-text" id="order-type-text">MAX </span>
+                            <span class="qty-text" id="max-qty">5</span>
+                            <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
+                        </div>
+                    </div>
+                    <div class="qty-wrap mb-4">
+                        <input type="range" class="qty" min=0 max=5 step=0.01 value=0 id="qty">
+                        <div class="value-bubble" id="tooltip">0</div>
+                    </div>
+                    <div class="d-flex justify-content-between wallet-wrap mb-3">
+                        <div>
+                            <div class="wallet-type-text">UPBIT</div>
+
+                            <div class="wallet-text">
+                                <span id="upbit-krw">99,999,999,999</span>
+                                <span>KRW</span>
+                            </div>
+                            <div class="wallet-text">
+                                <span id="upbit-usd">99,999,999,999</span>
+                                <span>USD</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="wallet-type-text" style="text-align: right;">BINANCE</div>
+                            <div class="wallet-text" style="text-align: right;">
+                                <span id="binance-krw">99,999,999,999</span>
+                                <span>KRW</span>
+                            </div>
+                            <div class="wallet-text" style="text-align: right;">
+                                <span id="binance-usd">99,999,999,999</span>
+                                <span>USD</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="order-btn" class="btn order-btn buy-btn">
+                        BUY
+                    </button>
                 </article>
             </section>
         </section>
+        <script th:inline="javascript">
+            $(function () {
+                let isBuy = true
+
+                const range = $('#qty');
+                const tooltip = $('#tooltip');
+                const currentQty = $('#qty-text')
+                const orderTypeText = $('#order-type-text')
+                const maxQty = $('#max-qty')
+                const orderBtn = $('#order-btn')
+
+
+                const clear = () => {
+                    range.val(0)
+                    currentQty.text('0')
+                    tooltip.css('left', `0%`).text('0%')
+                }
+
+                $('#buy').click(function () {
+                    isBuy = true
+
+                    orderBtn.removeClass('sell-btn')
+                    orderBtn.addClass('buy-btn')
+                    orderBtn.text('BUY')
+
+                    $(this).addClass('active')
+                    $('#sell').removeClass('active')
+                    orderTypeText.text('BUY')
+
+                    clear()
+                })
+
+                $('#sell').click(function () {
+                    isBuy = false
+
+                    orderBtn.removeClass('buy-btn')
+                    orderBtn.addClass('sell-btn')
+                    orderBtn.text('SELL')
+
+                    $(this).addClass('active')
+                    $('#buy').removeClass('active')
+                    orderTypeText.text('SELL')
+
+                    clear()
+                })
+
+                range.on('input', function () {
+                    const { max, min } = this
+                    const val = $(this).val()
+                    const percent = ((val - min) / (max - min)) * 100;
+
+                    tooltip.css('left', `${percent}%`).text(`${Math.round(percent)}%`);
+                    currentQty.text(val)
+                });
+
+                range.hover(() => {
+                    tooltip.show()
+                }, () => {
+                    tooltip.hide()
+                })
+            })
+        </script>
+
         <script th:inline="javascript">
             $(function () {
                 const [symbol] = [[${ param.symbol }]]
@@ -197,13 +314,13 @@
                             label: 'OHLC',
                             data: chartDataSets,
                             borderColors: {
-                                up: '#26a69a',
-                                down: '#ef5350',
+                                up: '#2ebd85',
+                                down: '#f6465d',
                                 unchanged: '#999999'
                             },
                             backgroundColors: {
-                                up: '#26a69a',
-                                down: '#ef5350',
+                                up: '#2ebd85',
+                                down: '#f6465d',
                                 unchanged: '#999999'
                             },
                             borderWidth: 1
