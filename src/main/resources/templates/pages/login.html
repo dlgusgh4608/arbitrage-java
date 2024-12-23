@@ -12,7 +12,7 @@
     <main layout:fragment="content">
         <section class="container-xxl pt-5 d-flex flex-column justify-content-center align-items-center">
             <h2 class="text-center mb-5">로그인</h2>
-            <th:block th:replace="/fragments/authenticationBtns :: authenticationBtns"></th:block>
+            <th:block th:replace="~{/fragments/authenticationBtns :: authenticationBtns}"></th:block>
             <article class="wrapper" id="step2" style="display: none;">
                 <form method="post" th:action th:object="${formDto}">
                     <div class="mb-3">

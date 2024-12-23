@@ -50,7 +50,7 @@
                         </a>
                     </div>
                     <span class="profile-edit" id="editNicknameBtn">
-                        <th:block th:replace="/fragments/svg/edit :: black"></th:block>
+                        <th:block th:replace="~{/fragments/svg/edit :: black}"></th:block>
                     </span>
                 </div>
                 <div class="env-item">
@@ -63,7 +63,7 @@
                             <span class="env-value-title">업비트</span>
                             <span>
                                 <th:block
-                                    th:replace="/fragments/svg/circle :: ${profile.upbitBalance != null ? 'green' : 'red'}">
+                                    th:replace="~{/fragments/svg/circle :: ${profile.upbitBalance != null ? 'green' : 'red'}}">
                                 </th:block>
                             </span>
                         </div>
@@ -71,7 +71,7 @@
                             <span class="env-value-title">바이낸스</span>
                             <span>
                                 <th:block
-                                    th:replace="/fragments/svg/circle :: ${profile.binanceBalance != null ? 'green' : 'red'}">
+                                    th:replace="~{/fragments/svg/circle :: ${profile.binanceBalance != null ? 'green' : 'red'}}">
                                 </th:block>
                             </span>
                         </div>

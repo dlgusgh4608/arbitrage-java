@@ -29,9 +29,9 @@
 </head>
 
 <body>
-    <header th:replace="fragments/header :: header"></header>
+    <header th:replace="~{fragments/header :: header}"></header>
     <main class="content-wrap" layout:fragment="content"></main>
-    <footer th:replace="fragments/footer :: footer"></footer>
+    <footer th:replace="~{fragments/footer :: footer}"></footer>
     <th:block layout:fragment="script"></th:block>
 </body>
 <!-- bootstrap js -->
