@@ -21,6 +21,155 @@
 
 <body>
     <main layout:fragment="content">
+        <div class="modal fade" id="margin-mode-modal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header" style="border-bottom: none;">
+                        <h5 class="modal-title" th:text="${#strings.toUpperCase(param.symbol) + ' 마진모드'}">마진 모드</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="d-flex justify-content-center mb-3">
+                            <button class="w-50 modal-btn p-2 border border-dark">Isolate</button>
+                            <button class="w-50 modal-btn p-2">Cross</button>
+                        </div>
+                        <p class="margin-mode-info fw-semibold text-dark">※마진 모드를 전환하면 연동된 Binance의 MarginMode가 변경됩니다.※
+                        </p>
+                        <p class="margin-mode-info">*마진 모드를 전환하면 선택한 계약에만 적용됩니다.</p>
+                        <p class="margin-mode-info">*Cross 모드 : 동일한 마진 자산에 대한 모든 교차 포지션은 동일한 자산 교차 마진 잔액을 공유합니다. 청산 시
+                            자산의 전체 마진 잔액과 자산에 대한 나머지 오픈
+                            포지션이 몰수될 수 있습니다.</p>
+                        <p class="margin-mode-info">*Isolate 모드 : 각 포지션에 할당된 마진 금액을 제한하여 개별 포지션에 대한 위험을 관리합니다. 포지션의 마진
+                            비율이
+                            100%에 도달하면 포지션이 청산됩니다. 이
+                            모드를 사용하여 포지션에 마진을 추가하거나 제거할 수 있습니다.</p>
+                    </div>
+                    <div class="modal-footer" style="border-top: none;">
+                        <button type="button" class="btn btn-primary w-100" id="update-margin-mode">저장</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script th:inline="javascript">
+            $(function () {
+                $('#edit-margin-mode').on('click', () => {
+                    const modal = new bootstrap.Modal($('#margin-mode-modal'));
+                    modal.show();
+                })
+
+                // #update-margin-mode 
+            })
+        </script>
+        <div class="modal fade" id="leverage-modal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <section class="modal-content">
+                    <article class="modal-header" style="border-bottom: none;">
+                        <h5 class="modal-title" th:text="${#strings.toUpperCase(param.symbol) + ' 레버리지 조정'}">레버리지 조정
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </article>
+                    <article class="modal-body">
+                        <div class="leverage-input-container">
+                            <div id="minus" class="leverage-btn minus">-</div>
+                            <div class="leverage-input-wrap">
+                                <input id="leverage-input" class="leverage-input" type="number" max="125" min="1"
+                                    value="1">
+                                <label for="leverage-input" class="leverage-input-sub">x</label>
+                            </div>
+                            <div id="plus" class="leverage-btn plus">+</div>
+                        </div>
+                        <div class="qty-wrap mb-4">
+                            <input type="range" class="qty" min="1" max="125" step="1" value="1" id="leverage-range">
+                            <div class="value-bubble" id="leverage-tooltip">0</div>
+                        </div>
+                        <p class="margin-mode-info">
+                            <span>*현재 레버리지에서의 최대 포지션:</span>
+                            <span>230,000,000</span>
+                            <span>USDT</span>
+                        </p>
+                        <p class="margin-mode-info">*레버리지 변경은 미체결 포지션 및 미체결 주문에도 적용됩니다.</p>
+                        <p class="margin-mode-info text-danger">
+                            ※ [10x]와 같은 더 높은 레버리지를 선택하면 청산 위험이 커집니다. 항상 위험 수준을 관리하세요. ※
+                        </p>
+                    </article>
+                    <article class="modal-footer" style="border-top: none;">
+                        <button type="button" class="btn btn-primary w-100" id="update-leverage">저장</button>
+                    </article>
+                </section>
+            </div>
+        </div>
+        <script th:inline="javascript">
+            $(function () {
+                const MAX = 125
+                const MIN = 1
+
+                const inputContainer = $('.leverage-input-container')
+                const inputWrap = $('.leverage-input-wrap')
+                const input = $('#leverage-input')
+                const range = $('#leverage-range')
+                const tooltip = $('#leverage-tooltip')
+
+                $('#update-leverage-modal').on('click', () => {
+                    const modal = new bootstrap.Modal($('#leverage-modal'));
+                    modal.show();
+                })
+
+                input.focusin(() => {
+                    inputContainer.css('border', '1px solid #FCD535')
+                })
+
+                input.focusout(() => {
+                    inputContainer.css('border', '1px solid rgba(0, 0, 0, .2)')
+                })
+
+                input.keyup(e => {
+                    const value = e.target.value
+
+                    const regex = /\D/g // is not number
+                    const replaceValue = value.replace(regex, '')
+
+                    if (Number(replaceValue) > MAX) {
+                        return input.val(MAX)
+                    }
+
+                    if (Number(replaceValue) < MIN) {
+                        return input.val(MIN)
+                    }
+
+                    input.val(replaceValue)
+                })
+
+                input.change(e => range.val(e.target.value))
+
+                range.on('input', function () {
+                    const { max, min } = this
+                    const val = $(this).val()
+                    const percent = ((val - min) / (max - min)) * 100;
+
+                    tooltip.css('left', `${percent}%`).text(val);
+                    input.val(val)
+                });
+
+                range.hover(() => {
+                    tooltip.show()
+                }, () => {
+                    tooltip.hide()
+                })
+
+                $('#minus').on('click', () => {
+                    const leverage = Number(input.val())
+                    if (leverage > MIN) input.val(leverage - 1)
+                })
+
+                $('#plus').on('click', () => {
+                    const leverage = Number(input.val())
+                    if (leverage < MAX) input.val(leverage + 1)
+                })
+
+
+                // update-leverage
+            })
+        </script>
         <section class="container-xxl d-flex pt-5 gap-2 main-section">
             <section class="d-flex flex-column col-9 gap-2 chart-section">
                 <article class="w-100 shadow bg-white rounded">
@@ -112,6 +261,10 @@
                     </div>
                 </article>
                 <article class="w-100 p-3 shadow bg-white rounded order-form">
+                    <div class="d-flex mb-3">
+                        <button class="modal-btn" id="edit-margin-mode">Isolate</button>
+                        <button class="modal-btn" id="update-leverage-modal">x125</button>
+                    </div>
                     <ul class="nav nav-underline mb-3">
                         <li class="nav-item order-type-wrap">
                             <div class="nav-link order-type-item active" id="buy" style="color: #fff">
