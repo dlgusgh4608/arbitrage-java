@@ -3,42 +3,37 @@
 
 <head>
     <title>로그인</title>
-    <th:block layout:fragment="css">
-        <link rel="stylesheet" th:href="@{/css/signup.css}">
-    </th:block>
+    <link rel="stylesheet" th:href="@{/css/signup.css}">
 </head>
 
-<body>
-    <main layout:fragment="content">
-        <section class="container-xxl pt-5 d-flex flex-column justify-content-center align-items-center">
-            <h2 class="text-center mb-5">로그인</h2>
-            <th:block th:replace="~{/fragments/authenticationBtns :: authenticationBtns}"></th:block>
-            <article class="wrapper" id="step2" style="display: none;">
-                <form method="post" th:action th:object="${formDto}">
-                    <div class="mb-3">
-                        <label for="email" class="fs-6 form-label">이메일</label>
-                        <input type="text" class="form-control" id="email" th:field="*{email}"
-                            placeholder="이메일을 입력해주세요.">
-                        <p class="valid-warning" th:errors=*{email}></p>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label fs-6">비밀번호</label>
-                        <input type="password" class="form-control" id="password" th:field="*{password}">
-                        <p class="valid-warning" th:errors=*{password}></p>
-                    </div>
-                    <button type="submit" class="btn btn-primary">로그인</button>
-                    <script th:inline="javascript">
-                        const hasErrors = /*[[${#fields.hasErrors('*')}]]*/ false;
+<main layout:fragment="content">
+    <section class="container-xxl pt-5 d-flex flex-column justify-content-center align-items-center">
+        <h2 class="text-center mb-5">로그인</h2>
+        <th:block th:replace="~{fragments/authenticationBtns}"></th:block>
+        <article class="wrapper" id="step2" style="display: none;">
+            <form method="post" th:action th:object="${formDto}">
+                <div class="mb-3">
+                    <label for="email" class="fs-6 form-label">이메일</label>
+                    <input type="text" class="form-control" id="email" th:field="*{email}" placeholder="이메일을 입력해주세요.">
+                    <p class="valid-warning" th:errors=*{email}></p>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label fs-6">비밀번호</label>
+                    <input type="password" class="form-control" id="password" th:field="*{password}">
+                    <p class="valid-warning" th:errors=*{password}></p>
+                </div>
+                <button type="submit" class="btn btn-primary">로그인</button>
+                <script th:inline="javascript">
+                    const hasErrors = /*[[${#fields.hasErrors('*')}]]*/ false;
 
-                        if (hasErrors) emailRegister()
+                    if (hasErrors) emailRegister()
 
-                        const hasServerError = /*[[${#fields.hasGlobalErrors()}]]*/ false;
-                        if (hasServerError) alert("아이디 혹은 비밀번호가 잘못되었습니다.")
-                    </script>
-                </form>
-            </article>
-        </section>
-    </main>
-</body>
+                    const hasServerError = /*[[${#fields.hasGlobalErrors()}]]*/ false;
+                    if (hasServerError) alert("아이디 혹은 비밀번호가 잘못되었습니다.")
+                </script>
+            </form>
+        </article>
+    </section>
+</main>
 
 </html>

@@ -1,36 +1,26 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-
-<head>
-</head>
-
-<body>
-    <article class="wrapper" id="step1" th:fragment="authenticationBtns">
-        <div class="d-grid gap-2">
-            <div class="btn btn-outline-dark" id="stepToEmail">
-                <th:block th:replace="~{/fragments/svg/email :: black}"></th:block>
-                <span>이메일</span>
-            </div>
-            <div style="display: flex; width:100%">
-                <a th:href="@{/oauth2/authorization/google}" class="btn btn-outline-dark me-2" style="flex: 1">
-                    <th:block th:replace="~{/fragments/svg/google :: black}"></th:block>
-                    <span>구글</span>
-                </a>
-                <a th:href="@{/oauth2/authorization/kakao}" class="btn btn-outline-dark ms-2" style="flex: 1">
-                    <th:block th:replace="~{/fragments/svg/kakao :: black}"></th:block>
-                    <span>카카오</span>
-                </a>
-            </div>
+<article class="wrapper" id="step1" th:fragment="authenticationBtns">
+    <div class="d-grid gap-2">
+        <div class="btn btn-outline-dark" id="stepToEmail">
+            <th:block th:replace="~{fragments/svg/email :: black}"></th:block>
+            <span>이메일</span>
         </div>
-        <script th:inline="javascript">
-            function emailRegister() {
-                $('#step1').css('display', 'none')
-                $('#step2').css('display', 'block')
-            }
+        <div style="display: flex; width:100%">
+            <a th:href="@{/oauth2/authorization/google}" class="btn btn-outline-dark me-2" style="flex: 1">
+                <th:block th:replace="~{fragments/svg/google :: black}"></th:block>
+                <span>구글</span>
+            </a>
+            <a th:href="@{/oauth2/authorization/kakao}" class="btn btn-outline-dark ms-2" style="flex: 1">
+                <th:block th:replace="~{fragments/svg/kakao :: black}"></th:block>
+                <span>카카오</span>
+            </a>
+        </div>
+    </div>
+</article>
+<script th:inline="javascript">
+    function emailRegister() {
+        $('#step1').css('display', 'none')
+        $('#step2').css('display', 'block')
+    }
 
-            $('#stepToEmail').on('click', () => emailRegister())
-        </script>
-    </article>
-</body>
-
-</html>
+    $('#stepToEmail').on('click', () => emailRegister())
+</script>

@@ -3,9 +3,7 @@
 
 <head>
     <title>차트</title>
-    <th:block layout:fragment="css">
-        <link rel="stylesheet" th:href="@{/css/chart.css}">
-    </th:block>
+    <link rel="stylesheet" th:href="@{/css/chart.css}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
@@ -19,638 +17,634 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-crosshair"></script>
 </head>
 
-<body>
-    <main layout:fragment="content">
-        <div class="modal fade" id="margin-mode-modal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header" style="border-bottom: none;">
-                        <h5 class="modal-title" th:text="${#strings.toUpperCase(param.symbol) + ' 마진모드'}">마진 모드</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+<main layout:fragment="content">
+    <div class="modal fade" id="margin-mode-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="border-bottom: none;">
+                    <h5 class="modal-title" th:text="${#strings.toUpperCase(param.symbol) + ' 마진모드'}">마진 모드</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-center mb-3">
+                        <button class="w-50 modal-btn p-2 border border-dark">Isolate</button>
+                        <button class="w-50 modal-btn p-2">Cross</button>
                     </div>
-                    <div class="modal-body">
-                        <div class="d-flex justify-content-center mb-3">
-                            <button class="w-50 modal-btn p-2 border border-dark">Isolate</button>
-                            <button class="w-50 modal-btn p-2">Cross</button>
-                        </div>
-                        <p class="margin-mode-info fw-semibold text-dark">※마진 모드를 전환하면 연동된 Binance의 MarginMode가 변경됩니다.※
-                        </p>
-                        <p class="margin-mode-info">*마진 모드를 전환하면 선택한 계약에만 적용됩니다.</p>
-                        <p class="margin-mode-info">*Cross 모드 : 동일한 마진 자산에 대한 모든 교차 포지션은 동일한 자산 교차 마진 잔액을 공유합니다. 청산 시
-                            자산의 전체 마진 잔액과 자산에 대한 나머지 오픈
-                            포지션이 몰수될 수 있습니다.</p>
-                        <p class="margin-mode-info">*Isolate 모드 : 각 포지션에 할당된 마진 금액을 제한하여 개별 포지션에 대한 위험을 관리합니다. 포지션의 마진
-                            비율이
-                            100%에 도달하면 포지션이 청산됩니다. 이
-                            모드를 사용하여 포지션에 마진을 추가하거나 제거할 수 있습니다.</p>
-                    </div>
-                    <div class="modal-footer" style="border-top: none;">
-                        <button type="button" class="btn btn-primary w-100" id="update-margin-mode">저장</button>
-                    </div>
+                    <p class="margin-mode-info fw-semibold text-dark">※마진 모드를 전환하면 연동된 Binance의 MarginMode가 변경됩니다.※
+                    </p>
+                    <p class="margin-mode-info">*마진 모드를 전환하면 선택한 계약에만 적용됩니다.</p>
+                    <p class="margin-mode-info">*Cross 모드 : 동일한 마진 자산에 대한 모든 교차 포지션은 동일한 자산 교차 마진 잔액을 공유합니다. 청산 시
+                        자산의 전체 마진 잔액과 자산에 대한 나머지 오픈
+                        포지션이 몰수될 수 있습니다.</p>
+                    <p class="margin-mode-info">*Isolate 모드 : 각 포지션에 할당된 마진 금액을 제한하여 개별 포지션에 대한 위험을 관리합니다. 포지션의 마진
+                        비율이
+                        100%에 도달하면 포지션이 청산됩니다. 이
+                        모드를 사용하여 포지션에 마진을 추가하거나 제거할 수 있습니다.</p>
+                </div>
+                <div class="modal-footer" style="border-top: none;">
+                    <button type="button" class="btn btn-primary w-100" id="update-margin-mode">저장</button>
                 </div>
             </div>
         </div>
-        <script th:inline="javascript">
-            $(function () {
-                $('#edit-margin-mode').on('click', () => {
-                    const modal = new bootstrap.Modal($('#margin-mode-modal'));
-                    modal.show();
-                })
-
-                // #update-margin-mode 
+    </div>
+    <script th:inline="javascript">
+        $(function () {
+            $('#edit-margin-mode').on('click', () => {
+                const modal = new bootstrap.Modal($('#margin-mode-modal'));
+                modal.show();
             })
-        </script>
-        <div class="modal fade" id="leverage-modal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog">
-                <section class="modal-content">
-                    <article class="modal-header" style="border-bottom: none;">
-                        <h5 class="modal-title" th:text="${#strings.toUpperCase(param.symbol) + ' 레버리지 조정'}">레버리지 조정
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </article>
-                    <article class="modal-body">
-                        <div class="leverage-input-container">
-                            <div id="minus" class="leverage-btn minus">-</div>
-                            <div class="leverage-input-wrap">
-                                <input id="leverage-input" class="leverage-input" type="number" max="125" min="1"
-                                    value="1">
-                                <label for="leverage-input" class="leverage-input-sub">x</label>
-                            </div>
-                            <div id="plus" class="leverage-btn plus">+</div>
-                        </div>
-                        <div class="qty-wrap mb-4">
-                            <input type="range" class="qty" min="1" max="125" step="1" value="1" id="leverage-range">
-                            <div class="value-bubble" id="leverage-tooltip">0</div>
-                        </div>
-                        <p class="margin-mode-info">
-                            <span>*현재 레버리지에서의 최대 포지션:</span>
-                            <span>230,000,000</span>
-                            <span>USDT</span>
-                        </p>
-                        <p class="margin-mode-info">*레버리지 변경은 미체결 포지션 및 미체결 주문에도 적용됩니다.</p>
-                        <p class="margin-mode-info text-danger">
-                            ※ [10x]와 같은 더 높은 레버리지를 선택하면 청산 위험이 커집니다. 항상 위험 수준을 관리하세요. ※
-                        </p>
-                    </article>
-                    <article class="modal-footer" style="border-top: none;">
-                        <button type="button" class="btn btn-primary w-100" id="update-leverage">저장</button>
-                    </article>
-                </section>
-            </div>
-        </div>
-        <script th:inline="javascript">
-            $(function () {
-                const MAX = 125
-                const MIN = 1
 
-                const inputContainer = $('.leverage-input-container')
-                const inputWrap = $('.leverage-input-wrap')
-                const input = $('#leverage-input')
-                const range = $('#leverage-range')
-                const tooltip = $('#leverage-tooltip')
-
-                $('#update-leverage-modal').on('click', () => {
-                    const modal = new bootstrap.Modal($('#leverage-modal'));
-                    modal.show();
-                })
-
-                input.focusin(() => {
-                    inputContainer.css('border', '1px solid #FCD535')
-                })
-
-                input.focusout(() => {
-                    inputContainer.css('border', '1px solid rgba(0, 0, 0, .2)')
-                })
-
-                input.keyup(e => {
-                    const value = e.target.value
-
-                    const regex = /\D/g // is not number
-                    const replaceValue = value.replace(regex, '')
-
-                    if (Number(replaceValue) > MAX) {
-                        return input.val(MAX)
-                    }
-
-                    if (Number(replaceValue) < MIN) {
-                        return input.val(MIN)
-                    }
-
-                    input.val(replaceValue)
-                })
-
-                input.change(e => range.val(e.target.value))
-
-                range.on('input', function () {
-                    const { max, min } = this
-                    const val = $(this).val()
-                    const percent = ((val - min) / (max - min)) * 100;
-
-                    tooltip.css('left', `${percent}%`).text(val);
-                    input.val(val)
-                });
-
-                range.hover(() => {
-                    tooltip.show()
-                }, () => {
-                    tooltip.hide()
-                })
-
-                $('#minus').on('click', () => {
-                    const leverage = Number(input.val())
-                    if (leverage > MIN) input.val(leverage - 1)
-                })
-
-                $('#plus').on('click', () => {
-                    const leverage = Number(input.val())
-                    if (leverage < MAX) input.val(leverage + 1)
-                })
-
-
-                // update-leverage
-            })
-        </script>
-        <section class="container-xxl d-flex pt-5 gap-2 main-section">
-            <section class="d-flex flex-column col-9 gap-2 chart-section">
-                <article class="w-100 shadow bg-white rounded">
-                    <div class="d-flex d-flex justify-content-between align-items-center">
-                        <div class="dropdown p-3">
-                            <div class="dropdown-toggle fw-bold fs-5" style="cursor: pointer;" data-bs-toggle="dropdown"
-                                th:text="${#strings.toUpperCase(param.symbol)}"></div>
-                            <ul class="dropdown-menu">
-                                <li th:each="symbol : ${supportedSymbols}">
-                                    <a class="dropdown-item" th:href="@{/chart(symbol=${symbol})}"
-                                        th:text="${symbol}">symbolName</a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="p-3">
-                            <span>환율: </span>
-                            <span id="usdToKrw">-</span>
-                        </div>
-                    </div>
+            // #update-margin-mode 
+        })
+    </script>
+    <div class="modal fade" id="leverage-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <section class="modal-content">
+                <article class="modal-header" style="border-bottom: none;">
+                    <h5 class="modal-title" th:text="${#strings.toUpperCase(param.symbol) + ' 레버리지 조정'}">레버리지 조정
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </article>
-                <article class="w-100 shadow bg-white rounded position-relative">
-                    <div class="d-flex position-absolute top-0 start-0">
-                        <!-- <div class="d-flex align-items-center">Time: </div> -->
-                        <button id="min" class="btn custom-btn" style="font-weight: 600;">1m</button>
-                        <button id="min3" class="btn custom-btn" style="font-weight: 500;">3m</button>
-                        <button id="min5" class="btn custom-btn" style="font-weight: 500;">5m</button>
-                        <button id="min15" class="btn custom-btn" style="font-weight: 500;">15m</button>
-                    </div>
-
-                    <canvas id="candlestickChart" class="chart-canvas"></canvas>
-                </article>
-            </section>
-            <section class="d-flex col-3 gap-2 order-section">
-                <article class="w-100 p-3 shadow bg-white rounded orderbook">
-                    <div class="d-flex justify-content-between mb-3">
-                        <div>UPBIT</div>
-                        <div>BINANCE</div>
-                    </div>
-                    <div class="order-list asks mb-2">
-                        <div th:each="num : ${#numbers.sequence(1, 7)}"
-                            class="order-row d-flex justify-content-between">
-                            <div id="upbit" class="w-50 d-flex justify-content-between pe-2"
-                                style="border: 1px solid transparent">
-                                <div id="price" class="text-danger">
-                                    -,---
-                                </div>
-                                <div id="size">
-                                    -,---
-                                </div>
-                            </div>
-                            <div id="binance" class="w-50 d-flex justify-content-between ps-2"
-                                style="border: 1px solid transparent">
-                                <div id="size">
-                                    -,---
-
-                                </div>
-                                <div id="price" class="text-danger">
-                                    -,---
-                                </div>
-                            </div>
+                <article class="modal-body">
+                    <div class="leverage-input-container">
+                        <div id="minus" class="leverage-btn minus">-</div>
+                        <div class="leverage-input-wrap">
+                            <input id="leverage-input" class="leverage-input" type="number" max="125" min="1" value="1">
+                            <label for="leverage-input" class="leverage-input-sub">x</label>
                         </div>
-                    </div>
-                    <div class="d-flex justify-content-center py-2 border-top border-bottom">
-                        <span class="premium h5 mb-0">-,---%</span>
-                    </div>
-                    <div class="order-list bids mt-2">
-                        <div th:each="num : ${#numbers.sequence(1, 7)}"
-                            class="order-row d-flex justify-content-between">
-                            <div id="upbit" class="w-50 d-flex justify-content-between pe-2"
-                                style="border: 1px solid transparent">
-                                <div id="price" class="text-success">
-                                    -,---
-                                </div>
-                                <div id="size">
-                                    -,---
-                                </div>
-                            </div>
-                            <div id="binance" class="w-50 d-flex justify-content-between ps-2"
-                                style="border: 1px solid transparent">
-                                <div id="size">
-                                    -,---
-
-                                </div>
-                                <div id="price" class="text-success">
-                                    -,---
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </article>
-                <article class="w-100 p-3 shadow bg-white rounded order-form">
-                    <div class="d-flex mb-3">
-                        <button class="modal-btn" id="edit-margin-mode">Isolate</button>
-                        <button class="modal-btn" id="update-leverage-modal">x125</button>
-                    </div>
-                    <ul class="nav nav-underline mb-3">
-                        <li class="nav-item order-type-wrap">
-                            <div class="nav-link order-type-item active" id="buy" style="color: #fff">
-                                <span class="type-text">BUY</span>
-                            </div>
-                        </li>
-                        <li class="nav-item order-type-wrap">
-                            <div class="nav-link order-type-item" id="sell" style="color: #fff">
-                                <span class="type-text">SELL</span>
-                            </div>
-                        </li>
-                    </ul>
-                    <div class="d-flex justify-content-between mb-3">
-                        <div>
-                            <span class="fw-semibold order-type-text" id="order-type-text">BUY </span>
-                            <span class="qty-text" id="qty-text">0</span>
-                            <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
-                        </div>
-                        <div>
-                            <span class="fw-semibold order-type-text" id="order-type-text">MAX </span>
-                            <span class="qty-text" id="max-qty">5</span>
-                            <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
-                        </div>
+                        <div id="plus" class="leverage-btn plus">+</div>
                     </div>
                     <div class="qty-wrap mb-4">
-                        <input type="range" class="qty" min=0 max=5 step=0.01 value=0 id="qty">
-                        <div class="value-bubble" id="tooltip">0</div>
+                        <input type="range" class="qty" min="1" max="125" step="1" value="1" id="leverage-range">
+                        <div class="value-bubble" id="leverage-tooltip">0</div>
                     </div>
-                    <div class="d-flex justify-content-between wallet-wrap mb-3">
-                        <div>
-                            <div class="wallet-type-text">UPBIT</div>
-
-                            <div class="wallet-text">
-                                <span id="upbit-krw">99,999,999,999</span>
-                                <span>KRW</span>
-                            </div>
-                            <div class="wallet-text">
-                                <span id="upbit-usd">99,999,999,999</span>
-                                <span>USD</span>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="wallet-type-text" style="text-align: right;">BINANCE</div>
-                            <div class="wallet-text" style="text-align: right;">
-                                <span id="binance-krw">99,999,999,999</span>
-                                <span>KRW</span>
-                            </div>
-                            <div class="wallet-text" style="text-align: right;">
-                                <span id="binance-usd">99,999,999,999</span>
-                                <span>USD</span>
-                            </div>
-                        </div>
-                    </div>
-                    <button id="order-btn" class="btn order-btn buy-btn">
-                        BUY
-                    </button>
+                    <p class="margin-mode-info">
+                        <span>*현재 레버리지에서의 최대 포지션:</span>
+                        <span>230,000,000</span>
+                        <span>USDT</span>
+                    </p>
+                    <p class="margin-mode-info">*레버리지 변경은 미체결 포지션 및 미체결 주문에도 적용됩니다.</p>
+                    <p class="margin-mode-info text-danger">
+                        ※ [10x]와 같은 더 높은 레버리지를 선택하면 청산 위험이 커집니다. 항상 위험 수준을 관리하세요. ※
+                    </p>
+                </article>
+                <article class="modal-footer" style="border-top: none;">
+                    <button type="button" class="btn btn-primary w-100" id="update-leverage">저장</button>
                 </article>
             </section>
-        </section>
-        <script th:inline="javascript">
-            $(function () {
-                let isBuy = true
+        </div>
+    </div>
+    <script th:inline="javascript">
+        $(function () {
+            const MAX = 125
+            const MIN = 1
 
-                const range = $('#qty');
-                const tooltip = $('#tooltip');
-                const currentQty = $('#qty-text')
-                const orderTypeText = $('#order-type-text')
-                const maxQty = $('#max-qty')
-                const orderBtn = $('#order-btn')
+            const inputContainer = $('.leverage-input-container')
+            const inputWrap = $('.leverage-input-wrap')
+            const input = $('#leverage-input')
+            const range = $('#leverage-range')
+            const tooltip = $('#leverage-tooltip')
 
-
-                const clear = () => {
-                    range.val(0)
-                    currentQty.text('0')
-                    tooltip.css('left', `0%`).text('0%')
-                }
-
-                $('#buy').click(function () {
-                    isBuy = true
-
-                    orderBtn.removeClass('sell-btn')
-                    orderBtn.addClass('buy-btn')
-                    orderBtn.text('BUY')
-
-                    $(this).addClass('active')
-                    $('#sell').removeClass('active')
-                    orderTypeText.text('BUY')
-
-                    clear()
-                })
-
-                $('#sell').click(function () {
-                    isBuy = false
-
-                    orderBtn.removeClass('buy-btn')
-                    orderBtn.addClass('sell-btn')
-                    orderBtn.text('SELL')
-
-                    $(this).addClass('active')
-                    $('#buy').removeClass('active')
-                    orderTypeText.text('SELL')
-
-                    clear()
-                })
-
-                range.on('input', function () {
-                    const { max, min } = this
-                    const val = $(this).val()
-                    const percent = ((val - min) / (max - min)) * 100;
-
-                    tooltip.css('left', `${percent}%`).text(`${Math.round(percent)}%`);
-                    currentQty.text(val)
-                });
-
-                range.hover(() => {
-                    tooltip.show()
-                }, () => {
-                    tooltip.hide()
-                })
+            $('#update-leverage-modal').on('click', () => {
+                const modal = new bootstrap.Modal($('#leverage-modal'));
+                modal.show();
             })
-        </script>
 
-        <script th:inline="javascript">
-            $(function () {
-                const [symbol] = [[${ param.symbol }]]
-                const prices = [[${ prices }]]
-                const chartWs = new WebSocket(`ws://localhost:8000/ws/chart/${symbol}`)
+            input.focusin(() => {
+                inputContainer.css('border', '1px solid #FCD535')
+            })
 
-                let defaultStepSize = 1
+            input.focusout(() => {
+                inputContainer.css('border', '1px solid rgba(0, 0, 0, .2)')
+            })
 
-                const createCandleOfMinutes = (data) => {
-                    const aMinuteMs = 60 * 1000;
-                    const result = []
-                    let currentCandle = null
+            input.keyup(e => {
+                const value = e.target.value
 
-                    data.forEach(d => {
-                        const timestamp = new Date(d.createdAt).getTime()
-                        const roundedTimestamp = Math.floor(timestamp / aMinuteMs) * aMinuteMs
+                const regex = /\D/g // is not number
+                const replaceValue = value.replace(regex, '')
 
-                        if (!currentCandle || currentCandle.x !== roundedTimestamp) {
-                            // 새로운 캔들 시작
-                            if (currentCandle) {
-                                result.push(currentCandle);
-                            }
-
-                            // initial
-                            currentCandle = {
-                                x: roundedTimestamp,
-                                o: d.premium,
-                                h: d.premium,
-                                l: d.premium,
-                                c: d.premium
-                            }
-                        } else {
-                            // 기존 캔들 업데이트
-                            currentCandle.h = Math.max(currentCandle.h, d.premium)
-                            currentCandle.l = Math.min(currentCandle.l, d.premium)
-                            currentCandle.c = d.premium
-                        }
-                    })
-
-                    if (currentCandle) {
-                        result.push(currentCandle)
-                    }
-
-                    return result
+                if (Number(replaceValue) > MAX) {
+                    return input.val(MAX)
                 }
 
-                const chartDataSets = createCandleOfMinutes(prices)
+                if (Number(replaceValue) < MIN) {
+                    return input.val(MIN)
+                }
 
-                const updateCandleOfMinutes = (originArr, data) => {
-                    // chart js 원본배열 참조함.
-                    const aMinuteMs = 60 * 1000;
-                    const timestamp = Date.now()
+                input.val(replaceValue)
+            })
+
+            input.change(e => range.val(e.target.value))
+
+            range.on('input', function () {
+                const { max, min } = this
+                const val = $(this).val()
+                const percent = ((val - min) / (max - min)) * 100;
+
+                tooltip.css('left', `${percent}%`).text(val);
+                input.val(val)
+            });
+
+            range.hover(() => {
+                tooltip.show()
+            }, () => {
+                tooltip.hide()
+            })
+
+            $('#minus').on('click', () => {
+                const leverage = Number(input.val())
+                if (leverage > MIN) input.val(leverage - 1)
+            })
+
+            $('#plus').on('click', () => {
+                const leverage = Number(input.val())
+                if (leverage < MAX) input.val(leverage + 1)
+            })
+
+
+            // update-leverage
+        })
+    </script>
+    <section class="container-xxl d-flex pt-5 gap-2 main-section">
+        <section class="d-flex flex-column col-9 gap-2 chart-section">
+            <article class="w-100 shadow bg-white rounded">
+                <div class="d-flex d-flex justify-content-between align-items-center">
+                    <div class="dropdown p-3">
+                        <div class="dropdown-toggle fw-bold fs-5" style="cursor: pointer;" data-bs-toggle="dropdown"
+                            th:text="${#strings.toUpperCase(param.symbol)}"></div>
+                        <ul class="dropdown-menu">
+                            <li th:each="symbol : ${supportedSymbols}">
+                                <a class="dropdown-item" th:href="@{/chart(symbol=${symbol})}"
+                                    th:text="${symbol}">symbolName</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="p-3">
+                        <span>환율: </span>
+                        <span id="usdToKrw">-</span>
+                    </div>
+                </div>
+            </article>
+            <article class="w-100 shadow bg-white rounded position-relative">
+                <div class="d-flex position-absolute top-0 start-0">
+                    <!-- <div class="d-flex align-items-center">Time: </div> -->
+                    <button id="min" class="btn custom-btn" style="font-weight: 600;">1m</button>
+                    <button id="min3" class="btn custom-btn" style="font-weight: 500;">3m</button>
+                    <button id="min5" class="btn custom-btn" style="font-weight: 500;">5m</button>
+                    <button id="min15" class="btn custom-btn" style="font-weight: 500;">15m</button>
+                </div>
+
+                <canvas id="candlestickChart" class="chart-canvas"></canvas>
+            </article>
+        </section>
+        <section class="d-flex col-3 gap-2 order-section">
+            <article class="w-100 p-3 shadow bg-white rounded orderbook">
+                <div class="d-flex justify-content-between mb-3">
+                    <div>UPBIT</div>
+                    <div>BINANCE</div>
+                </div>
+                <div class="order-list asks mb-2">
+                    <div th:each="num : ${#numbers.sequence(1, 7)}" class="order-row d-flex justify-content-between">
+                        <div id="upbit" class="w-50 d-flex justify-content-between pe-2"
+                            style="border: 1px solid transparent">
+                            <div id="price" class="text-danger">
+                                -,---
+                            </div>
+                            <div id="size">
+                                -,---
+                            </div>
+                        </div>
+                        <div id="binance" class="w-50 d-flex justify-content-between ps-2"
+                            style="border: 1px solid transparent">
+                            <div id="size">
+                                -,---
+
+                            </div>
+                            <div id="price" class="text-danger">
+                                -,---
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center py-2 border-top border-bottom">
+                    <span class="premium h5 mb-0">-,---%</span>
+                </div>
+                <div class="order-list bids mt-2">
+                    <div th:each="num : ${#numbers.sequence(1, 7)}" class="order-row d-flex justify-content-between">
+                        <div id="upbit" class="w-50 d-flex justify-content-between pe-2"
+                            style="border: 1px solid transparent">
+                            <div id="price" class="text-success">
+                                -,---
+                            </div>
+                            <div id="size">
+                                -,---
+                            </div>
+                        </div>
+                        <div id="binance" class="w-50 d-flex justify-content-between ps-2"
+                            style="border: 1px solid transparent">
+                            <div id="size">
+                                -,---
+
+                            </div>
+                            <div id="price" class="text-success">
+                                -,---
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            <article class="w-100 p-3 shadow bg-white rounded order-form">
+                <div class="d-flex mb-3">
+                    <button class="modal-btn" id="edit-margin-mode">Isolate</button>
+                    <button class="modal-btn" id="update-leverage-modal">x125</button>
+                </div>
+                <ul class="nav nav-underline mb-3">
+                    <li class="nav-item order-type-wrap">
+                        <div class="nav-link order-type-item active" id="buy" style="color: #fff">
+                            <span class="type-text">BUY</span>
+                        </div>
+                    </li>
+                    <li class="nav-item order-type-wrap">
+                        <div class="nav-link order-type-item" id="sell" style="color: #fff">
+                            <span class="type-text">SELL</span>
+                        </div>
+                    </li>
+                </ul>
+                <div class="d-flex justify-content-between mb-3">
+                    <div>
+                        <span class="fw-semibold order-type-text" id="order-type-text">BUY </span>
+                        <span class="qty-text" id="qty-text">0</span>
+                        <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
+                    </div>
+                    <div>
+                        <span class="fw-semibold order-type-text" id="order-type-text">MAX </span>
+                        <span class="qty-text" id="max-qty">5</span>
+                        <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
+                    </div>
+                </div>
+                <div class="qty-wrap mb-4">
+                    <input type="range" class="qty" min=0 max=5 step=0.01 value=0 id="qty">
+                    <div class="value-bubble" id="tooltip">0</div>
+                </div>
+                <div class="d-flex justify-content-between wallet-wrap mb-3">
+                    <div>
+                        <div class="wallet-type-text">UPBIT</div>
+
+                        <div class="wallet-text">
+                            <span id="upbit-krw">99,999,999,999</span>
+                            <span>KRW</span>
+                        </div>
+                        <div class="wallet-text">
+                            <span id="upbit-usd">99,999,999,999</span>
+                            <span>USD</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="wallet-type-text" style="text-align: right;">BINANCE</div>
+                        <div class="wallet-text" style="text-align: right;">
+                            <span id="binance-krw">99,999,999,999</span>
+                            <span>KRW</span>
+                        </div>
+                        <div class="wallet-text" style="text-align: right;">
+                            <span id="binance-usd">99,999,999,999</span>
+                            <span>USD</span>
+                        </div>
+                    </div>
+                </div>
+                <button id="order-btn" class="btn order-btn buy-btn">
+                    BUY
+                </button>
+            </article>
+        </section>
+    </section>
+    <script th:inline="javascript">
+        $(function () {
+            let isBuy = true
+
+            const range = $('#qty');
+            const tooltip = $('#tooltip');
+            const currentQty = $('#qty-text')
+            const orderTypeText = $('#order-type-text')
+            const maxQty = $('#max-qty')
+            const orderBtn = $('#order-btn')
+
+
+            const clear = () => {
+                range.val(0)
+                currentQty.text('0')
+                tooltip.css('left', `0%`).text('0%')
+            }
+
+            $('#buy').click(function () {
+                isBuy = true
+
+                orderBtn.removeClass('sell-btn')
+                orderBtn.addClass('buy-btn')
+                orderBtn.text('BUY')
+
+                $(this).addClass('active')
+                $('#sell').removeClass('active')
+                orderTypeText.text('BUY')
+
+                clear()
+            })
+
+            $('#sell').click(function () {
+                isBuy = false
+
+                orderBtn.removeClass('buy-btn')
+                orderBtn.addClass('sell-btn')
+                orderBtn.text('SELL')
+
+                $(this).addClass('active')
+                $('#buy').removeClass('active')
+                orderTypeText.text('SELL')
+
+                clear()
+            })
+
+            range.on('input', function () {
+                const { max, min } = this
+                const val = $(this).val()
+                const percent = ((val - min) / (max - min)) * 100;
+
+                tooltip.css('left', `${percent}%`).text(`${Math.round(percent)}%`);
+                currentQty.text(val)
+            });
+
+            range.hover(() => {
+                tooltip.show()
+            }, () => {
+                tooltip.hide()
+            })
+        })
+    </script>
+
+    <script th:inline="javascript">
+        $(function () {
+            const [symbol] = [[${ param.symbol }]]
+            const prices = [[${ prices }]]
+            const chartWs = new WebSocket(`ws://localhost:8000/ws/chart/${symbol}`)
+
+            let defaultStepSize = 1
+
+            const createCandleOfMinutes = (data) => {
+                const aMinuteMs = 60 * 1000;
+                const result = []
+                let currentCandle = null
+
+                data.forEach(d => {
+                    const timestamp = new Date(d.createdAt).getTime()
                     const roundedTimestamp = Math.floor(timestamp / aMinuteMs) * aMinuteMs
 
-                    if (!originArr.at(-1)?.x) return
+                    if (!currentCandle || currentCandle.x !== roundedTimestamp) {
+                        // 새로운 캔들 시작
+                        if (currentCandle) {
+                            result.push(currentCandle);
+                        }
 
-                    if (originArr.at(-1).x !== roundedTimestamp) {
-                        originArr.push({
+                        // initial
+                        currentCandle = {
                             x: roundedTimestamp,
-                            o: data.premium,
-                            h: data.premium,
-                            l: data.premium,
-                            c: data.premium
-                        })
+                            o: d.premium,
+                            h: d.premium,
+                            l: d.premium,
+                            c: d.premium
+                        }
                     } else {
-                        originArr.at(-1).h = Math.max(originArr.at(-1).h, data.premium)
-                        originArr.at(-1).l = Math.min(originArr.at(-1).l, data.premium)
-                        originArr.at(-1).c = data.premium
+                        // 기존 캔들 업데이트
+                        currentCandle.h = Math.max(currentCandle.h, d.premium)
+                        currentCandle.l = Math.min(currentCandle.l, d.premium)
+                        currentCandle.c = d.premium
                     }
+                })
+
+                if (currentCandle) {
+                    result.push(currentCandle)
                 }
 
-                const ctx = document.getElementById('candlestickChart').getContext('2d')
+                return result
+            }
 
-                const chart = new Chart(ctx, {
-                    type: 'candlestick',
-                    data: {
-                        datasets: [{
-                            label: 'OHLC',
-                            data: chartDataSets,
-                            borderColors: {
-                                up: '#2ebd85',
-                                down: '#f6465d',
-                                unchanged: '#999999'
+            const chartDataSets = createCandleOfMinutes(prices)
+
+            const updateCandleOfMinutes = (originArr, data) => {
+                // chart js 원본배열 참조함.
+                const aMinuteMs = 60 * 1000;
+                const timestamp = Date.now()
+                const roundedTimestamp = Math.floor(timestamp / aMinuteMs) * aMinuteMs
+
+                if (!originArr.at(-1)?.x) return
+
+                if (originArr.at(-1).x !== roundedTimestamp) {
+                    originArr.push({
+                        x: roundedTimestamp,
+                        o: data.premium,
+                        h: data.premium,
+                        l: data.premium,
+                        c: data.premium
+                    })
+                } else {
+                    originArr.at(-1).h = Math.max(originArr.at(-1).h, data.premium)
+                    originArr.at(-1).l = Math.min(originArr.at(-1).l, data.premium)
+                    originArr.at(-1).c = data.premium
+                }
+            }
+
+            const ctx = document.getElementById('candlestickChart').getContext('2d')
+
+            const chart = new Chart(ctx, {
+                type: 'candlestick',
+                data: {
+                    datasets: [{
+                        label: 'OHLC',
+                        data: chartDataSets,
+                        borderColors: {
+                            up: '#2ebd85',
+                            down: '#f6465d',
+                            unchanged: '#999999'
+                        },
+                        backgroundColors: {
+                            up: '#2ebd85',
+                            down: '#f6465d',
+                            unchanged: '#999999'
+                        },
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'minute',
+                                stepSize: 1,
                             },
-                            backgroundColors: {
-                                up: '#2ebd85',
-                                down: '#f6465d',
-                                unchanged: '#999999'
+                            min: new Date(Date.now() - (60 * 1000 * 100)).getTime(),
+                            // max: Date.now(),
+                            ticks: {
+                                source: 'data'
                             },
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: {
-                                type: 'time',
-                                time: {
-                                    unit: 'minute',
-                                    stepSize: 1,
-                                },
-                                min: new Date(Date.now() - (60 * 1000 * 100)).getTime(),
-                                // max: Date.now(),
-                                ticks: {
-                                    source: 'data'
-                                },
-                                offset: true,
-                                grid: {
-                                    offset: true
-                                }
-                            },
-                            y: {
-                                position: 'right',
-                                // y축도 데이터를 모두 포함하도록 설정
-                                beginAtZero: false,
-                                grace: '5%'  // 위아래 5% 여백
+                            offset: true,
+                            grid: {
+                                offset: true
                             }
                         },
-                        interaction: {
-                            intersect: false,
-                            mode: 'index'
+                        y: {
+                            position: 'right',
+                            // y축도 데이터를 모두 포함하도록 설정
+                            beginAtZero: false,
+                            grace: '5%'  // 위아래 5% 여백
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
                         },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            tooltip: {
-                                enabled: true,
-                                mode: 'index',
-                                intersect: false,
-                                callbacks: {
-                                    label: function (context) {
-                                        const point = context.raw;
-                                        return [
-                                            `Open: ${point.o}`,
-                                            `High: ${point.h}`,
-                                            `Low: ${point.l}`,
-                                            `Close: ${point.c}`
-                                        ];
-                                    }
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function (context) {
+                                    const point = context.raw;
+                                    return [
+                                        `Open: ${point.o}`,
+                                        `High: ${point.h}`,
+                                        `Low: ${point.l}`,
+                                        `Close: ${point.c}`
+                                    ];
                                 }
+                            }
+                        },
+                        zoom: {
+                            limits: {
+                                x: {
+                                    min: 'original',
+                                    max: 'original'
+                                }
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,
+                                scaleMode: 'x',
+                                threshold: 10,
                             },
                             zoom: {
-                                limits: {
-                                    x: {
-                                        min: 'original',
-                                        max: 'original'
-                                    }
-                                },
-                                pan: {
+                                wheel: {
                                     enabled: true,
-                                    mode: 'x',
-                                    modifierKey: null,
-                                    scaleMode: 'x',
-                                    threshold: 10,
+                                    speed: 0.1
                                 },
-                                zoom: {
-                                    wheel: {
-                                        enabled: true,
-                                        speed: 0.1
-                                    },
-                                    drag: {
-                                        enabled: false
-                                    },
-                                    pinch: {
-                                        enabled: true
-                                    },
-                                    mode: 'x'
-                                }
-                            },
-                            crosshair: {
-                                line: {
-                                    color: '#666',
-                                    width: 1
+                                drag: {
+                                    enabled: false
                                 },
-                                sync: {
-                                    enabled: false,
-                                },
-                                zoom: {
-                                    enabled: false,
-                                },
-                                snap: {
+                                pinch: {
                                     enabled: true
-                                }
+                                },
+                                mode: 'x'
+                            }
+                        },
+                        crosshair: {
+                            line: {
+                                color: '#666',
+                                width: 1
+                            },
+                            sync: {
+                                enabled: false,
+                            },
+                            zoom: {
+                                enabled: false,
+                            },
+                            snap: {
+                                enabled: true
                             }
                         }
                     }
-                })
-
-                const setOrderbook = (cls = '', { upbit, binance }, premium) => {
-                    $(`.${cls}`).children().each((index, wrapper) => {
-                        const orderPages = $(wrapper)
-
-                        const upbitPage = orderPages.find('#upbit')
-                        const binancePage = orderPages.find('#binance')
-
-                        const upbitSizeEle = $(upbitPage).find('#size')
-                        const upbitPriceEle = $(upbitPage).find('#price')
-                        const binanceSizeEle = $(binancePage).find('#size')
-                        const binancePriceEle = $(binancePage).find('#price')
-
-                        const { size: upbitSizeValue, price: upbitPriceValue } = upbit[index]
-                        const { size: binanceSizeValue, price: binancePriceValue } = binance[index]
-
-                        upbitSizeEle.text(upbitSizeValue.toFixed(3))
-                        upbitPriceEle.text(upbitPriceValue.toLocaleString())
-                        binancePriceEle.text(binancePriceValue.toFixed(3))
-                        binanceSizeEle.text(binanceSizeValue.toLocaleString())
-
-                        const { upbit: upbitPrice, binance: binancePrice } = premium
-
-                        if (upbitPrice === upbitPriceValue) {
-                            $(upbitPage).css('border', '1px solid #000')
-                        } else {
-                            $(upbitPage).css('border', '1px solid transparent')
-                        }
-
-                        if (binancePrice === binancePriceValue) {
-                            $(binancePage).css('border', '1px solid #000')
-                        } else {
-                            $(binancePage).css('border', '1px solid transparent')
-                        }
-                    })
                 }
+            })
 
-                chartWs.onmessage = (message) => {
-                    const { premium, orderbookPair } = JSON.parse(message.data)
+            const setOrderbook = (cls = '', { upbit, binance }, premium) => {
+                $(`.${cls}`).children().each((index, wrapper) => {
+                    const orderPages = $(wrapper)
 
-                    const { upbit, binance } = orderbookPair
+                    const upbitPage = orderPages.find('#upbit')
+                    const binancePage = orderPages.find('#binance')
 
-                    setOrderbook('asks', { upbit: upbit.asks.reverse(), binance: binance.asks.reverse() }, premium)
-                    setOrderbook('bids', { upbit: upbit.bids, binance: binance.bids }, premium)
+                    const upbitSizeEle = $(upbitPage).find('#size')
+                    const upbitPriceEle = $(upbitPage).find('#price')
+                    const binanceSizeEle = $(binancePage).find('#size')
+                    const binancePriceEle = $(binancePage).find('#price')
 
-                    $('.premium').text(`${premium.premium}%`)
-                    $('#usdToKrw').text(premium.usdToKrw)
+                    const { size: upbitSizeValue, price: upbitPriceValue } = upbit[index]
+                    const { size: binanceSizeValue, price: binancePriceValue } = binance[index]
 
-                    updateCandleOfMinutes(chartDataSets, premium)
+                    upbitSizeEle.text(upbitSizeValue.toFixed(3))
+                    upbitPriceEle.text(upbitPriceValue.toLocaleString())
+                    binancePriceEle.text(binancePriceValue.toFixed(3))
+                    binanceSizeEle.text(binanceSizeValue.toLocaleString())
 
-                    chart.update();
-                }
+                    const { upbit: upbitPrice, binance: binancePrice } = premium
 
-                $('.btn').on('click', e => {
-                    const { id } = e.target
-
-                    const btnIds = ['min', 'min3', 'min5', 'min15']
-
-                    const idHash = {
-                        min: 1,
-                        min3: 3,
-                        min5: 5,
-                        min15: 15,
+                    if (upbitPrice === upbitPriceValue) {
+                        $(upbitPage).css('border', '1px solid #000')
+                    } else {
+                        $(upbitPage).css('border', '1px solid transparent')
                     }
 
-                    stepSize = idHash[id]
-
-                    const restBtnIds = btnIds.filter(btnId => btnId !== id)
-
-                    $(`#${id}`).css('font-weight', 600)
-                    restBtnIds.forEach(v => $(`#${v}`).css('font-weight', 500))
+                    if (binancePrice === binancePriceValue) {
+                        $(binancePage).css('border', '1px solid #000')
+                    } else {
+                        $(binancePage).css('border', '1px solid transparent')
+                    }
                 })
+            }
+
+            chartWs.onmessage = (message) => {
+                const { premium, orderbookPair } = JSON.parse(message.data)
+
+                const { upbit, binance } = orderbookPair
+
+                setOrderbook('asks', { upbit: upbit.asks.reverse(), binance: binance.asks.reverse() }, premium)
+                setOrderbook('bids', { upbit: upbit.bids, binance: binance.bids }, premium)
+
+                $('.premium').text(`${premium.premium}%`)
+                $('#usdToKrw').text(premium.usdToKrw)
+
+                updateCandleOfMinutes(chartDataSets, premium)
+
+                chart.update();
+            }
+
+            $('.btn').on('click', e => {
+                const { id } = e.target
+
+                const btnIds = ['min', 'min3', 'min5', 'min15']
+
+                const idHash = {
+                    min: 1,
+                    min3: 3,
+                    min5: 5,
+                    min15: 15,
+                }
+
+                stepSize = idHash[id]
+
+                const restBtnIds = btnIds.filter(btnId => btnId !== id)
+
+                $(`#${id}`).css('font-weight', 600)
+                restBtnIds.forEach(v => $(`#${v}`).css('font-weight', 500))
             })
-        </script>
-    </main>
-</body>
+        })
+    </script>
+</main>
 
 </html>
