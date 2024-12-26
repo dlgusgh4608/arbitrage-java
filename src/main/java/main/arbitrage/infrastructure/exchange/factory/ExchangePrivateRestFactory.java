@@ -41,15 +41,12 @@ public class ExchangePrivateRestFactory {
                         String binanceAccessKey, String binanceSecretKey) throws Exception {
                 List<String> symbolNames = symbolVariableService.getSupportedSymbolNames();
 
-                UpbitPrivateRestService upbitService =
-                                new UpbitPrivateRestService(aesCrypto.decrypt(upbitAccessKey),
-                                                aesCrypto.decrypt(upbitSecretKey), okHttpClient,
-                                                objectMapper, symbolNames);
+                UpbitPrivateRestService upbitService = new UpbitPrivateRestService(upbitAccessKey,
+                                upbitSecretKey, okHttpClient, objectMapper, symbolNames);
 
                 BinancePrivateRestService binanceService =
-                                new BinancePrivateRestService(aesCrypto.decrypt(binanceAccessKey),
-                                                aesCrypto.decrypt(binanceSecretKey), okHttpClient,
-                                                objectMapper, symbolNames);
+                                new BinancePrivateRestService(binanceAccessKey, binanceSecretKey,
+                                                okHttpClient, objectMapper, symbolNames);
 
                 return ExchangePrivateRestPair.builder().upbit(upbitService).binance(binanceService)
                                 .build();
