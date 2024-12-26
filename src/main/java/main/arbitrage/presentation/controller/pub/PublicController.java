@@ -27,6 +27,7 @@ import main.arbitrage.presentation.dto.form.UserSignupForm;
 import main.arbitrage.presentation.dto.response.UserTokenResponseCookie;
 import main.arbitrage.presentation.dto.view.OAuthSignupView;
 import main.arbitrage.presentation.dto.view.PriceView;
+import main.arbitrage.presentation.dto.view.UserWalletInfoView;
 
 @Controller
 @RequestMapping(PublicControllerUrlConstants.DEFAULT_URL)
@@ -128,7 +129,7 @@ public class PublicController {
     @GetMapping(PublicControllerUrlConstants.CHART)
     public String getChart(
             @RequestParam(name = "symbol", required = true, defaultValue = "btc") String symbol,
-            Model model) {
+            @AuthenticationPrincipal AuthContext authContext, Model model) throws Exception {
         String upperCaseSymbol = symbol.toUpperCase();
 
         List<String> supportedSymbols = symbolVariableService.getSupportedSymbolNames();
@@ -145,9 +146,14 @@ public class PublicController {
         BinanceExchangeInfoResponse symbolInfo =
                 collectorScheduleService.getExchangeInfo(upperCaseSymbol);
 
+        UserWalletInfoView userWalletInfo = authContext != null
+                ? userApplicationService.getUserWalletInfo(authContext.getUserId())
+                : null;
+
         model.addAttribute("supportedSymbols", supportedSymbols);
         model.addAttribute("prices", priceViewList);
         model.addAttribute("symbolInfo", symbolInfo);
+        model.addAttribute("userWalletInfo", userWalletInfo);
 
         return "pages/chart";
     }

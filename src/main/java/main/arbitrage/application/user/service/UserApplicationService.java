@@ -31,6 +31,7 @@ import main.arbitrage.presentation.dto.form.UserSignupForm;
 import main.arbitrage.presentation.dto.request.EditUserNicknameRequest;
 import main.arbitrage.presentation.dto.response.UserTokenResponseCookie;
 import main.arbitrage.presentation.dto.view.UserProfileView;
+import main.arbitrage.presentation.dto.view.UserWalletInfoView;
 
 
 @Service
@@ -121,12 +122,12 @@ public class UserApplicationService {
             throw new IllegalArgumentException("user is not found");
 
         // upbit accessKey와 secretKey를 지갑 잔액을 조회함으로써 올바른 키가 맞는지 증명
-        ExchangePrivateRestPair upbitExchangePrivateRestPair =
+        ExchangePrivateRestPair exchangePrivateRestPair =
                 exchangePrivateRestFactory.create(req.getUpbitAccessKey(), req.getUpbitSecretKey(),
                         req.getBinanceAccessKey(), req.getBinanceSecretKey());
 
-        upbitExchangePrivateRestPair.getUpbit().getAccount();
-        upbitExchangePrivateRestPair.getBinance().getAccount();
+        exchangePrivateRestPair.getUpbit().getAccount();
+        exchangePrivateRestPair.getBinance().getAccount();
 
         Optional<UserEnv> optionalUserEnv = userEnvService.findByUserId(userId);
 
@@ -142,48 +143,34 @@ public class UserApplicationService {
     public UserProfileView getUserProfile() throws Exception {
         Long userId = SecurityUtil.getUserId();
 
-        // userId에 해당하는 env가 있는지 확인
-        Optional<UserEnv> userEnvOptional = userEnvService.findByUserId(userId);
-
-        // builder 변수 할당
-        UserProfileView.UserProfileViewBuilder userProfileDtoBuilder = UserProfileView.builder();
-
-        if (userEnvOptional.isEmpty()) {
-            // env가 없으면 upbit와 binance의 wallet 정보를 받아올 수 없음.
-            userProfileDtoBuilder.binanceBalance(null).upbitBalance(null);
-        } else {
-            // env를 통하여 거래소의 service를 생성
-            UserEnv userEnv = userEnvOptional.get();
-            ExchangePrivateRestPair upbitExchangePrivateRestPair =
-                    exchangePrivateRestFactory.create(userEnv);
-
-            // 각각 거래소의 지갑정보를 받아옴
-            Optional<UpbitGetAccountResponse> upbitKRW =
-                    upbitExchangePrivateRestPair.getUpbit().getKRW();
-            Optional<BinanceGetAccountResponse> binanceUSDT =
-                    upbitExchangePrivateRestPair.getBinance().getUSDT();
-
-            // builder에 build하기
-            if (upbitKRW.isEmpty()) {
-                userProfileDtoBuilder.upbitBalance(null);
-            } else {
-                userProfileDtoBuilder.upbitBalance(Double.parseDouble(upbitKRW.get().getBalance()));
-            }
-
-            if (binanceUSDT.isEmpty()) {
-                userProfileDtoBuilder.binanceBalance(null);
-            } else {
-                userProfileDtoBuilder
-                        .binanceBalance(Double.parseDouble(binanceUSDT.get().getBalance()));
-            }
-        }
+        UserWalletInfoView userWallet = getUserWalletInfo(userId);
 
         ExchangeRateDTO exchangeRateDto = exchangeRateService.getExchangeRate("USD", "KRW");
 
-        userProfileDtoBuilder.nickname(SecurityUtil.getNickname());
-        userProfileDtoBuilder.exchangeRate(exchangeRateDto.getRate());
+        return UserProfileView.builder().upbitBalance(userWallet.getKrw())
+                .binanceBalance(userWallet.getUsdt()).nickname(SecurityUtil.getNickname())
+                .exchangeRate(exchangeRateDto.getRate()).build();
+    }
 
-        return userProfileDtoBuilder.build();
+    @Transactional
+    public UserWalletInfoView getUserWalletInfo(Long userId) throws Exception {
+        Optional<UserEnv> userEnvOptional = userEnvService.findByUserId(userId);
+
+        if (userEnvOptional.isEmpty()) {
+            return UserWalletInfoView.builder().krw(null).usdt(null).build();
+        }
+
+        ExchangePrivateRestPair upbitExchangePrivateRestPair =
+                exchangePrivateRestFactory.create(userEnvOptional.get());
+
+        // 각각 거래소의 지갑정보를 받아옴
+        Optional<UpbitGetAccountResponse> upbitKRW =
+                upbitExchangePrivateRestPair.getUpbit().getKRW();
+        Optional<BinanceGetAccountResponse> binanceUSDT =
+                upbitExchangePrivateRestPair.getBinance().getUSDT();
+
+        return UserWalletInfoView.builder().krw(Double.valueOf(upbitKRW.get().getBalance()))
+                .usdt(Double.valueOf(binanceUSDT.get().getBalance())).build();
     }
 
     @Transactional

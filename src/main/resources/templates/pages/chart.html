@@ -297,22 +297,22 @@
                         <div class="text-gray7">UPBIT</div>
 
                         <div class="wallet-text">
-                            <span id="upbit-krw">99,999,999,999</span>
+                            <span id="upbit-krw">-</span>
                             <span>KRW</span>
                         </div>
                         <div class="wallet-text">
-                            <span id="upbit-usd">99,999,999,999</span>
+                            <span id="upbit-usd">-</span>
                             <span>USD</span>
                         </div>
                     </div>
                     <div>
                         <div class="text-gray7" style="text-align: right;">BINANCE</div>
                         <div class="wallet-text" style="text-align: right;">
-                            <span id="binance-krw">99,999,999,999</span>
+                            <span id="binance-krw">-</span>
                             <span>KRW</span>
                         </div>
                         <div class="wallet-text" style="text-align: right;">
-                            <span id="binance-usd">99,999,999,999</span>
+                            <span id="binance-usd">-</span>
                             <span>USD</span>
                         </div>
                     </div>
@@ -390,6 +390,19 @@
         $(function () {
             const [symbol] = [[${ param.symbol }]]
             const prices = [[${ prices }]]
+            const userWalletInfo = [[${ userWalletInfo }]]
+
+            const krw = userWalletInfo?.krw
+            const usdt = userWalletInfo?.usdt
+
+            const upbitKrwEle = $('#upbit-krw')
+            const upbitUsdEle = $('#upbit-usd')
+            const binanceKrwEle = $('#binance-krw')
+            const binanceUsdEle = $('#binance-usd')
+
+            if (krw) upbitKrwEle.text(Math.floor(krw).toLocaleString())
+            if (usdt) binanceUsdEle.text(usdt.toLocaleString())
+
             const chartWs = new WebSocket(`ws://localhost:8000/ws/chart/${symbol}`)
 
             let defaultStepSize = 1
@@ -621,9 +634,13 @@
                 setOrderbook('bids', { upbit: upbit.bids, binance: binance.bids }, premium)
 
                 $('.premium').text(`${premium.premium}%`)
-                $('#usdToKrw').text(premium.usdToKrw)
+                const usdToKrw = premium.usdToKrw
+                $('#usdToKrw').text(usdToKrw)
 
                 updateCandleOfMinutes(chartDataSets, premium)
+
+                if (krw) upbitUsdEle.text((krw / usdToKrw).toLocaleString())
+                if (usdt) binanceKrwEle.text(Math.floor(usdt * usdToKrw).toLocaleString())
 
                 chart.update();
             }
