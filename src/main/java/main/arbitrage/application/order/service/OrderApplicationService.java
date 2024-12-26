@@ -15,6 +15,7 @@ import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceSymbolInfoResponse;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
 import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
@@ -23,6 +24,7 @@ import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetOrderRe
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
 import main.arbitrage.presentation.dto.request.BuyOrderRequest;
 import main.arbitrage.presentation.dto.response.BuyOrderResponse;
+import main.arbitrage.presentation.dto.view.UserTradeInfo;
 
 @Service
 @RequiredArgsConstructor
@@ -80,5 +82,28 @@ public class OrderApplicationService {
 
         return buyOrderService.createMarketBuyOrder(user, symbol, fixedExchangeRate,
                 binanceOrderRes, upbitOrderRes);
+    }
+
+    @Transactional
+    public UserTradeInfo getSymbolInfo(String symbolName, Long userId) throws Exception {
+        Optional<UserEnv> userEnvOptional = userEnvService.findByUserId(userId);
+
+        if (userEnvOptional.isEmpty()) {
+            return null;
+        }
+
+        UserEnv userEnv = userEnvOptional.get();
+
+        ExchangePrivateRestPair upbitExchangePrivateRestPair =
+                exchangePrivateRestFactory.create(userEnv);
+        BinancePrivateRestService binanceService = upbitExchangePrivateRestPair.getBinance();
+        UpbitPrivateRestService upbitService = upbitExchangePrivateRestPair.getUpbit();
+
+        String usdt = binanceService.getUSDT().get().getBalance();
+        String krw = upbitService.getKRW().get().getBalance();
+        BinanceSymbolInfoResponse symbolInfo = binanceService.symbolInfo(symbolName);
+
+        return UserTradeInfo.builder().krw(Double.valueOf(krw)).usdt(Double.valueOf(usdt))
+                .marginType(symbolInfo.getMarginType()).leverage(symbolInfo.getLeverage()).build();
     }
 }

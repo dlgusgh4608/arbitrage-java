@@ -12,6 +12,7 @@ import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Typ
 import main.arbitrage.infrastructure.exchange.binance.dto.request.BinancePostOrderRequest;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceGetAccountResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceSymbolInfoResponse;
 import main.arbitrage.infrastructure.exchange.binance.exception.BinanceRestException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -89,4 +90,30 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
         return objectMapper.readValue(responseBody, BinanceOrderResponse.class);
     }
 
+    public BinanceSymbolInfoResponse symbolInfo(String symbolName)
+            throws IOException, BinanceRestException {
+        String symbol = convertSymbol(symbolName);
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("timestamp", System.currentTimeMillis());
+        params.put("symbol", symbol);
+        String queryString = generateToken(params);
+
+        Request request =
+                new Request.Builder().url(DEFAULT_URL + "/v1/symbolConfig" + "?" + queryString)
+                        .addHeader("Content-Type", "application/json")
+                        .addHeader("X-MBX-APIKEY", accessKey).get().build();
+
+        Response response = okHttpClient.newCall(request).execute();
+
+        String responseBody = response.body().string();
+
+        if (!response.isSuccessful())
+            validateResponse(responseBody);
+
+        List<BinanceSymbolInfoResponse> responseList =
+                objectMapper.readValue(responseBody, objectMapper.getTypeFactory()
+                        .constructCollectionType(List.class, BinanceSymbolInfoResponse.class));
+
+        return responseList.get(0);
+    }
 }

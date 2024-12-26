@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.collector.service.CollectorScheduleService;
+import main.arbitrage.application.order.service.OrderApplicationService;
 import main.arbitrage.application.price.service.PriceApplicationService;
 import main.arbitrage.application.user.service.UserApplicationService;
 import main.arbitrage.auth.dto.AuthContext;
@@ -27,7 +28,7 @@ import main.arbitrage.presentation.dto.form.UserSignupForm;
 import main.arbitrage.presentation.dto.response.UserTokenResponseCookie;
 import main.arbitrage.presentation.dto.view.OAuthSignupView;
 import main.arbitrage.presentation.dto.view.PriceView;
-import main.arbitrage.presentation.dto.view.UserWalletInfoView;
+import main.arbitrage.presentation.dto.view.UserTradeInfo;
 
 @Controller
 @RequestMapping(PublicControllerUrlConstants.DEFAULT_URL)
@@ -38,6 +39,7 @@ public class PublicController {
     private final OAuthUserStore authUserStore;
     private final PriceApplicationService priceApplicationService;
     private final CollectorScheduleService collectorScheduleService;
+    private final OrderApplicationService orderApplicationService;
 
     /**
      * only public
@@ -146,14 +148,14 @@ public class PublicController {
         BinanceExchangeInfoResponse symbolInfo =
                 collectorScheduleService.getExchangeInfo(upperCaseSymbol);
 
-        UserWalletInfoView userWalletInfo = authContext != null
-                ? userApplicationService.getUserWalletInfo(authContext.getUserId())
+        UserTradeInfo userTradeInfo = authContext != null
+                ? orderApplicationService.getSymbolInfo(symbol, authContext.getUserId())
                 : null;
 
         model.addAttribute("supportedSymbols", supportedSymbols);
         model.addAttribute("prices", priceViewList);
         model.addAttribute("symbolInfo", symbolInfo);
-        model.addAttribute("userWalletInfo", userWalletInfo);
+        model.addAttribute("userTradeInfo", userTradeInfo);
 
         return "pages/chart";
     }

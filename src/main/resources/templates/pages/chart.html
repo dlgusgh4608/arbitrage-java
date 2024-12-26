@@ -28,8 +28,8 @@
                 </div>
                 <div class="modal-body">
                     <div class="d-flex justify-content-center mb-3">
-                        <button class="w-50 modal-btn p-2 select">Isolate</button>
-                        <button class="w-50 modal-btn p-2">Cross</button>
+                        <button id="isolated" class="w-50 modal-btn p-2">ISOLATED</button>
+                        <button id="crossed" class="w-50 modal-btn p-2">CROSSED</button>
                     </div>
                     <p class="margin-mode-info fw-semibold text-up-color">※마진 모드를 전환하면 연동된 Binance의 MarginMode가 변경됩니다.※
                     </p>
@@ -260,8 +260,10 @@
             </article>
             <article class="w-100 p-3 shadow rounded order-form ele-bg-color">
                 <div class="d-flex mb-3">
-                    <button class="modal-btn" id="edit-margin-mode">Isolate</button>
-                    <button class="modal-btn" id="update-leverage-modal">x125</button>
+                    <button class="modal-btn" id="edit-margin-mode"
+                        th:text="${userTradeInfo.marginType}">CROSSED</button>
+                    <button class="modal-btn" id="update-leverage-modal"
+                        th:text="${'x' + userTradeInfo.leverage}">x125</button>
                 </div>
                 <ul class="nav nav-underline mb-3">
                     <li class="nav-item order-type-wrap">
@@ -323,6 +325,7 @@
             </article>
         </section>
     </section>
+    <!-- order -->
     <script th:inline="javascript">
         $(function () {
             let isBuy = true
@@ -386,26 +389,39 @@
         })
     </script>
 
+    <!-- 통합 (추후 분리 예정) -->
     <script th:inline="javascript">
         $(function () {
             const [symbol] = [[${ param.symbol }]]
             const prices = [[${ prices }]]
-            const userWalletInfo = [[${ userWalletInfo }]]
+            const userTradeInfo = [[${ userTradeInfo }]]
 
-            const krw = userWalletInfo?.krw
-            const usdt = userWalletInfo?.usdt
+            const krw = userTradeInfo?.krw
+            const usdt = userTradeInfo?.usdt
+
+            const marginType = userTradeInfo?.marginType
+            const leverage = userTradeInfo?.leverage
 
             const upbitKrwEle = $('#upbit-krw')
             const upbitUsdEle = $('#upbit-usd')
             const binanceKrwEle = $('#binance-krw')
             const binanceUsdEle = $('#binance-usd')
 
+            // const isolatedEle = $('#isolated')
+            // const crossedEle = $('#crossed')
+
+            // const leverageInputEle = $('#leverage-range')
+
             if (krw) upbitKrwEle.text(Math.floor(krw).toLocaleString())
             if (usdt) binanceUsdEle.text(usdt.toLocaleString())
 
-            const chartWs = new WebSocket(`ws://localhost:8000/ws/chart/${symbol}`)
+            // if (marginType === 'ISOLATED') isolatedEle.addClass('select')
+            // else crossedEle.addClass('select')
 
-            let defaultStepSize = 1
+            // if (leverage) leverageInputEle.val(leverage)
+
+
+            const chartWs = new WebSocket(`ws://localhost:8000/ws/chart/${symbol}`)
 
             const createCandleOfMinutes = (data) => {
                 const aMinuteMs = 60 * 1000;

@@ -13,4 +13,7 @@ public class BinanceEnums {
     public enum Side {
         BUY, SELL
     }
+    public enum MarginType {
+        ISOLATED, CROSSED
+    }
 }
