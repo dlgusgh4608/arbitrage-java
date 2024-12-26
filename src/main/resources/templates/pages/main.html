@@ -11,24 +11,26 @@
         <div class="container-xxl banner-wrap">
             <article class="w-50 d-flex flex-column justify-content-center">
                 <div class="mb-5">
-                    <h1 class="slogan-text animate-in">
+                    <h1 class="slogan-text animate-in txt-white">
                         안전하게
                     </h1>
-                    <h1 class="slogan-text animate-in">
+                    <h1 class="slogan-text animate-in txt-white">
                         쉽게
                     </h1>
-                    <h1 class="slogan-text animate-in">
+                    <h1 class="slogan-text animate-in txt-white">
                         간편하게
                     </h1>
                 </div>
                 <div class="to-price-wrap animate-in">
-                    <button class="btn custom-button">
-                        <a style="color:#000;" th:href="@{/chart?symbol=btc}">무료로 시작하기</a>
-                    </button>
+                    <a class="text-black" th:href="@{/chart?symbol=btc}">
+                        <button class="btn-point">
+                            무료로 시작하기
+                        </button>
+                    </a>
                 </div>
             </article>
             <article class="w-50 d-flex justify-content-center align-items-center text-light">
-                <div class="symbol-info-wrap animate-in">
+                <div class="symbol-info-wrap animate-in ele-bg-color">
                     <ul class="symbol-list">
                         <li class="w-100 d-flex fw-bold symbol-item">
                             <div class="symbol-header">Symbol</div>
@@ -67,7 +69,7 @@
         <article class="container-xxl d-flex info-article">
             <div class="w-50 p-3 d-flex flex-column align-items-center">
                 <div class="mb-5 responsive-width">
-                    <h1 class="section-title">거래</h1>
+                    <h1 class="section-title text-point-color">거래</h1>
                     <h2 class="fs-1 fw-bold">리스크는 적게</h2>
                     <h2 class="fs-1 fw-bold">수익은 크게</h2>
                     <h2 class="fs-1 fw-bold">자동으로.</h2>
@@ -100,9 +102,9 @@
         }
 
         const colors = {
-            default: '#000',
-            up: '#2ebd85',
-            down: '#f6465d',
+            default: 'var(--text-color)',
+            up: 'var(--up-color)',
+            down: 'var(--down-color)',
         }
 
         const getColor = (prevValue, currentValue) => {

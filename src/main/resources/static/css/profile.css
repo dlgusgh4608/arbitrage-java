@@ -8,9 +8,7 @@
 .item {
     flex: 1;
     padding: 1.5rem;
-    background-color: #fff;
     border-radius: 0.8rem;
-    border: 1px solid #EAECEF;
 }
 
 .profile-item {
@@ -18,9 +16,7 @@
     justify-content: space-between;
     flex: 3;
     padding: 1.5rem;
-    background-color: #fff;
     border-radius: 0.8rem;
-    border: 1px solid #EAECEF;
 }
 
 .profile-title {
@@ -48,9 +44,7 @@
 .env-item {
     flex: 1;
     padding: 1.5rem;
-    background-color: #fff;
     border-radius: 0.8rem;
-    border: 1px solid #EAECEF;
 }
 
 .env-label-wrap {
@@ -62,12 +56,7 @@
 }
 
 .env-label-title {
-    color: #6c757d;
     font-size: 0.9rem;
-}
-
-.env-label-go-to-register {
-    color: blue;
 }
 
 .env-value-wrap {
@@ -83,7 +72,6 @@
 }
 
 .wallet-label {
-    color: #6c757d;
     font-size: 0.9rem;
     margin-bottom: 0.8rem;
 }

@@ -2,10 +2,6 @@
     height: 48px;
 }
 
-.header-wrap {
-    background-color: #fff;
-}
-
 .navbar-list {
     display: flex;
     align-items: center;
@@ -17,4 +13,8 @@
 .navbar-list>li.navbar-item {
     list-style: none;
     padding: 0 8px;
+}
+
+.theme-icon {
+    cursor: pointer;
 }

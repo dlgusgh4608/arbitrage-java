@@ -1,15 +1,17 @@
 <article class="wrapper" id="step1" th:fragment="authenticationBtns">
     <div class="d-grid gap-2">
-        <div class="btn btn-outline-dark" id="stepToEmail">
+        <div class="custom-btn ele-bg-color border-gray3" id="stepToEmail">
             <th:block th:replace="~{fragments/svg/email :: black}"></th:block>
             <span>이메일</span>
         </div>
         <div style="display: flex; width:100%">
-            <a th:href="@{/oauth2/authorization/google}" class="btn btn-outline-dark me-2" style="flex: 1">
+            <a th:href="@{/oauth2/authorization/google}" class="custom-btn border-gray3 ele-bg-color me-2"
+                style="flex: 1">
                 <th:block th:replace="~{fragments/svg/google :: black}"></th:block>
                 <span>구글</span>
             </a>
-            <a th:href="@{/oauth2/authorization/kakao}" class="btn btn-outline-dark ms-2" style="flex: 1">
+            <a th:href="@{/oauth2/authorization/kakao}" class="custom-btn border-gray3 ele-bg-color ms-2"
+                style="flex: 1">
                 <th:block th:replace="~{fragments/svg/kakao :: black}"></th:block>
                 <span>카카오</span>
             </a>

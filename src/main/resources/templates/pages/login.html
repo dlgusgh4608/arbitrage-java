@@ -14,15 +14,15 @@
             <form method="post" th:action th:object="${formDto}">
                 <div class="mb-3">
                     <label for="email" class="fs-6 form-label">이메일</label>
-                    <input type="text" class="form-control" id="email" th:field="*{email}" placeholder="이메일을 입력해주세요.">
+                    <input type="text" class="input" id="email" th:field="*{email}" placeholder="이메일을 입력해주세요.">
                     <p class="valid-warning" th:errors=*{email}></p>
                 </div>
-                <div class="mb-3">
+                <div class="mb-4">
                     <label for="password" class="form-label fs-6">비밀번호</label>
-                    <input type="password" class="form-control" id="password" th:field="*{password}">
+                    <input type="password" class="input" id="password" th:field="*{password}">
                     <p class="valid-warning" th:errors=*{password}></p>
                 </div>
-                <button type="submit" class="btn btn-primary">로그인</button>
+                <button type="submit" class="btn-point w-100">로그인</button>
                 <script th:inline="javascript">
                     const hasErrors = /*[[${#fields.hasErrors('*')}]]*/ false;
 

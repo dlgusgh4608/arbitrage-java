@@ -15,11 +15,10 @@
                 <label for="email" class="fs-6 form-label">이메일</label>
                 <div class="mb-3 d-flex">
                     <div class="w-75 me-1">
-                        <input type="text" class="form-control" id="email" th:field="*{email}"
-                            placeholder="이메일을 입력해주세요.">
+                        <input type="text" class="input" id="email" th:field="*{email}" placeholder="이메일을 입력해주세요.">
                     </div>
                     <div class="w-25">
-                        <button type="button" class="w-100 btn btn-outline-primary" id="btnEmailCheck">
+                        <button type="button" class="w-100 btn-point" id="btnEmailCheck">
                             <span id="btnEmailCheckSpinner" class="spinner-border spinner-border-sm" aria-hidden="true"
                                 style="display: none;"></span>
                             이메일 확인
@@ -30,23 +29,23 @@
 
                 <div class="mb-3" id="codeWrap" style="display: none;">
                     <div class="w-75 me-1">
-                        <input type="text" class="form-control" th:field="*{code}" placeholder="인증코드를 입력해주세요.">
+                        <input type="text" class="input" th:field="*{code}" placeholder="인증코드를 입력해주세요.">
                     </div>
                     <div class="w-25">
-                        <button type="button" class="w-100 btn btn-outline-primary" id="codeCheck">인증</button>
+                        <button type="button" class="w-100 btn-point" id="codeCheck">인증</button>
                     </div>
                 </div>
                 <div class="valid-warning" th:errors=*{code}></div>
 
                 <div class="mb-3">
                     <label for="password" class="form-label fs-6">비밀번호</label>
-                    <input type="password" class="form-control" id="password" th:field="*{password}">
+                    <input type="password" class="input" id="password" th:field="*{password}">
                     <div class="valid-warning" th:errors=*{password}></div>
                 </div>
 
-                <div class="mb-3">
+                <div class="mb-4">
                     <label for="confirmPassword" class="form-label fs-6">비밀번호 확인</label>
-                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
+                    <input type="password" class="input" id="confirmPassword" name="confirmPassword">
                     <div class="valid-warning" id="passwordMatchError" style="display: none;">비밀번호가 일치하지 않습니다.</div>
                 </div>
 
@@ -55,7 +54,7 @@
                 <input type="hidden" th:field="*{provider}">
                 <input type="hidden" th:field="*{providerId}">
 
-                <button type="submit" class="btn btn-primary">가입하기</button>
+                <button type="submit" class="btn-point w-100">가입하기</button>
                 <script th:inline="javascript">
                     const hasErrors = /*[[${#fields.hasErrors('*')}]]*/ false;
 

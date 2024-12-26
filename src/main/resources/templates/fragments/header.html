@@ -1,29 +1,38 @@
-<header th:fragment="header" class='navbar navbar-expand-lg bd-navbar sticky-top header-wrap'>
+<header th:fragment="header" class='navbar navbar-expand-lg bd-navbar sticky-top ele-bg-color'>
     <nav class="container-xxl bd-gutter flex-wrap flex-lg-nowrap">
         <a class="navbar-brand p-0 me-0 me-lg-2" href="/">
-            <img class="h-logo" th:src="@{/images/logo.png}" alt="logo" />
+            <img id="header-logo" class="h-logo" th:src="@{/images/logo-black.png}" alt="logo" />
         </a>
         <ul class="navbar-list">
             <li class="navbar-item" sec:authorize="isAuthenticated()">
-                <button class="btn custom-button">
-                    <a style="color:#000;" th:href="@{/user/profile}">마이페이지</a>
-                </button>
+                <a class="text-black" th:href="@{/user/profile}">
+                    <button class="btn-point">
+                        마이페이지
+                    </button>
+                </a>
             </li>
             <li class="navbar-item" sec:authorize="isAuthenticated()">
-                <button class="btn custom-button" id="logoutBtn">
+                <button class="custom-btn text-black bg-point-color text-black border-none" id="logoutBtn">
                     로그아웃
                 </button>
             </li>
 
             <li class="navbar-item" sec:authorize="isAnonymous()">
-                <button class="btn custom-button">
-                    <a style="color:#000;" th:href="@{/login}">로그인</a>
-                </button>
+                <a class="text-black" th:href="@{/login}">
+                    <button class="btn-point">
+                        로그인
+                    </button>
+                </a>
             </li>
             <li class="navbar-item" sec:authorize="isAnonymous()">
-                <button class="btn custom-button">
-                    <a style="color:#000;" th:href="@{/signup}">회원가입</a>
-                </button>
+                <a class="text-black" th:href="@{/signup}">
+                    <button class="btn-point">
+                        회원가입
+                    </button>
+                </a>
+            </li>
+            <li class="navbar-item theme-icon" onclick="toggleDarkMode()">
+                <i id="themeIcon"></i>
             </li>
         </ul>
     </nav>

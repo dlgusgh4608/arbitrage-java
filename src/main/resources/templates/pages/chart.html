@@ -28,22 +28,24 @@
                 </div>
                 <div class="modal-body">
                     <div class="d-flex justify-content-center mb-3">
-                        <button class="w-50 modal-btn p-2 border border-dark">Isolate</button>
+                        <button class="w-50 modal-btn p-2 select">Isolate</button>
                         <button class="w-50 modal-btn p-2">Cross</button>
                     </div>
-                    <p class="margin-mode-info fw-semibold text-dark">※마진 모드를 전환하면 연동된 Binance의 MarginMode가 변경됩니다.※
+                    <p class="margin-mode-info fw-semibold text-up-color">※마진 모드를 전환하면 연동된 Binance의 MarginMode가 변경됩니다.※
                     </p>
-                    <p class="margin-mode-info">*마진 모드를 전환하면 선택한 계약에만 적용됩니다.</p>
-                    <p class="margin-mode-info">*Cross 모드 : 동일한 마진 자산에 대한 모든 교차 포지션은 동일한 자산 교차 마진 잔액을 공유합니다. 청산 시
+                    <p class="margin-mode-info text-gray6">*마진 모드를 전환하면 선택한 계약에만 적용됩니다.</p>
+                    <p class="margin-mode-info text-gray6">*Cross 모드 : 동일한 마진 자산에 대한 모든 교차 포지션은 동일한 자산 교차 마진 잔액을 공유합니다.
+                        청산 시
                         자산의 전체 마진 잔액과 자산에 대한 나머지 오픈
                         포지션이 몰수될 수 있습니다.</p>
-                    <p class="margin-mode-info">*Isolate 모드 : 각 포지션에 할당된 마진 금액을 제한하여 개별 포지션에 대한 위험을 관리합니다. 포지션의 마진
+                    <p class="margin-mode-info text-gray6">*Isolate 모드 : 각 포지션에 할당된 마진 금액을 제한하여 개별 포지션에 대한 위험을 관리합니다.
+                        포지션의 마진
                         비율이
                         100%에 도달하면 포지션이 청산됩니다. 이
                         모드를 사용하여 포지션에 마진을 추가하거나 제거할 수 있습니다.</p>
                 </div>
                 <div class="modal-footer" style="border-top: none;">
-                    <button type="button" class="btn btn-primary w-100" id="update-margin-mode">저장</button>
+                    <button type="button" class="btn-point w-100" id="update-margin-mode">저장</button>
                 </div>
             </div>
         </div>
@@ -62,12 +64,13 @@
         <div class="modal-dialog">
             <section class="modal-content">
                 <article class="modal-header" style="border-bottom: none;">
-                    <h5 class="modal-title" th:text="${#strings.toUpperCase(param.symbol) + ' 레버리지 조정'}">레버리지 조정
+                    <h5 class="modal-title" th:text="${#strings.toUpperCase(param.symbol) + ' 레버리지 조정'}">
+                        레버리지 조정
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </article>
                 <article class="modal-body">
-                    <div class="leverage-input-container">
+                    <div class="leverage-input-container border-gray3">
                         <div id="minus" class="leverage-btn minus">-</div>
                         <div class="leverage-input-wrap">
                             <input id="leverage-input" class="leverage-input" type="number" max="125" min="1" value="1">
@@ -80,17 +83,17 @@
                         <div class="value-bubble" id="leverage-tooltip">0</div>
                     </div>
                     <p class="margin-mode-info">
-                        <span>*현재 레버리지에서의 최대 포지션:</span>
-                        <span>230,000,000</span>
-                        <span>USDT</span>
+                        <span class="text-gray6">*현재 레버리지에서의 최대 포지션:</span>
+                        <span class="text-gray6">230,000,000</span>
+                        <span class="text-gray6">USDT</span>
                     </p>
-                    <p class="margin-mode-info">*레버리지 변경은 미체결 포지션 및 미체결 주문에도 적용됩니다.</p>
-                    <p class="margin-mode-info text-danger">
+                    <p class="margin-mode-info text-gray6">*레버리지 변경은 미체결 포지션 및 미체결 주문에도 적용됩니다.</p>
+                    <p class="margin-mode-info text-down-color fw-semibold">
                         ※ [10x]와 같은 더 높은 레버리지를 선택하면 청산 위험이 커집니다. 항상 위험 수준을 관리하세요. ※
                     </p>
                 </article>
                 <article class="modal-footer" style="border-top: none;">
-                    <button type="button" class="btn btn-primary w-100" id="update-leverage">저장</button>
+                    <button type="button" class="btn-point w-100" id="update-leverage">저장</button>
                 </article>
             </section>
         </div>
@@ -112,11 +115,11 @@
             })
 
             input.focusin(() => {
-                inputContainer.css('border', '1px solid #FCD535')
+                inputContainer.css('border', '1px solid var(--point-color)')
             })
 
             input.focusout(() => {
-                inputContainer.css('border', '1px solid rgba(0, 0, 0, .2)')
+                inputContainer.css('border', '1px solid var(--gray9)').css('opacity', '.7')
             })
 
             input.keyup(e => {
@@ -169,7 +172,7 @@
     </script>
     <section class="container-xxl d-flex pt-5 gap-2 main-section">
         <section class="d-flex flex-column col-9 gap-2 chart-section">
-            <article class="w-100 shadow bg-white rounded">
+            <article class="w-100 shadow rounded ele-bg-color">
                 <div class="d-flex d-flex justify-content-between align-items-center">
                     <div class="dropdown p-3">
                         <div class="dropdown-toggle fw-bold fs-5" style="cursor: pointer;" data-bs-toggle="dropdown"
@@ -187,20 +190,20 @@
                     </div>
                 </div>
             </article>
-            <article class="w-100 shadow bg-white rounded position-relative">
+            <article class="w-100 shadow rounded position-relative ele-bg-color">
                 <div class="d-flex position-absolute top-0 start-0">
                     <!-- <div class="d-flex align-items-center">Time: </div> -->
-                    <button id="min" class="btn custom-btn" style="font-weight: 600;">1m</button>
-                    <button id="min3" class="btn custom-btn" style="font-weight: 500;">3m</button>
-                    <button id="min5" class="btn custom-btn" style="font-weight: 500;">5m</button>
-                    <button id="min15" class="btn custom-btn" style="font-weight: 500;">15m</button>
+                    <button id="min" class="custom-btn border-0 bg-transparent" style="font-weight: 600;">1m</button>
+                    <button id="min3" class="custom-btn border-0 bg-transparent" style="font-weight: 500;">3m</button>
+                    <button id="min5" class="custom-btn border-0 bg-transparent" style="font-weight: 500;">5m</button>
+                    <button id="min15" class="custom-btn border-0 bg-transparent" style="font-weight: 500;">15m</button>
                 </div>
 
                 <canvas id="candlestickChart" class="chart-canvas"></canvas>
             </article>
         </section>
         <section class="d-flex col-3 gap-2 order-section">
-            <article class="w-100 p-3 shadow bg-white rounded orderbook">
+            <article class="w-100 p-3 shadow rounded orderbook ele-bg-color">
                 <div class="d-flex justify-content-between mb-3">
                     <div>UPBIT</div>
                     <div>BINANCE</div>
@@ -209,7 +212,7 @@
                     <div th:each="num : ${#numbers.sequence(1, 7)}" class="order-row d-flex justify-content-between">
                         <div id="upbit" class="w-50 d-flex justify-content-between pe-2"
                             style="border: 1px solid transparent">
-                            <div id="price" class="text-danger">
+                            <div id="price" class="text-down-color fw-semibold">
                                 -,---
                             </div>
                             <div id="size">
@@ -222,7 +225,7 @@
                                 -,---
 
                             </div>
-                            <div id="price" class="text-danger">
+                            <div id="price" class="text-down-color fw-semibold">
                                 -,---
                             </div>
                         </div>
@@ -235,7 +238,7 @@
                     <div th:each="num : ${#numbers.sequence(1, 7)}" class="order-row d-flex justify-content-between">
                         <div id="upbit" class="w-50 d-flex justify-content-between pe-2"
                             style="border: 1px solid transparent">
-                            <div id="price" class="text-success">
+                            <div id="price" class="text-up-color fw-semibold">
                                 -,---
                             </div>
                             <div id="size">
@@ -248,38 +251,38 @@
                                 -,---
 
                             </div>
-                            <div id="price" class="text-success">
+                            <div id="price" class="text-up-color fw-semibold">
                                 -,---
                             </div>
                         </div>
                     </div>
                 </div>
             </article>
-            <article class="w-100 p-3 shadow bg-white rounded order-form">
+            <article class="w-100 p-3 shadow rounded order-form ele-bg-color">
                 <div class="d-flex mb-3">
                     <button class="modal-btn" id="edit-margin-mode">Isolate</button>
                     <button class="modal-btn" id="update-leverage-modal">x125</button>
                 </div>
                 <ul class="nav nav-underline mb-3">
                     <li class="nav-item order-type-wrap">
-                        <div class="nav-link order-type-item active" id="buy" style="color: #fff">
-                            <span class="type-text">BUY</span>
+                        <div class="nav-link order-type-item active" id="buy" style="color: var(--white);">
+                            <span class="text-color">BUY</span>
                         </div>
                     </li>
                     <li class="nav-item order-type-wrap">
-                        <div class="nav-link order-type-item" id="sell" style="color: #fff">
-                            <span class="type-text">SELL</span>
+                        <div class="nav-link order-type-item" id="sell" style="color: var(--white);">
+                            <span class="text-color">SELL</span>
                         </div>
                     </li>
                 </ul>
                 <div class="d-flex justify-content-between mb-3">
                     <div>
-                        <span class="fw-semibold order-type-text" id="order-type-text">BUY </span>
+                        <span class="fw-semibold text-gray7" id="order-type-text">BUY </span>
                         <span class="qty-text" id="qty-text">0</span>
                         <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
                     </div>
                     <div>
-                        <span class="fw-semibold order-type-text" id="order-type-text">MAX </span>
+                        <span class="fw-semibold text-gray7" id="order-type-text">MAX </span>
                         <span class="qty-text" id="max-qty">5</span>
                         <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
                     </div>
@@ -290,7 +293,7 @@
                 </div>
                 <div class="d-flex justify-content-between wallet-wrap mb-3">
                     <div>
-                        <div class="wallet-type-text">UPBIT</div>
+                        <div class="text-gray7">UPBIT</div>
 
                         <div class="wallet-text">
                             <span id="upbit-krw">99,999,999,999</span>
@@ -302,7 +305,7 @@
                         </div>
                     </div>
                     <div>
-                        <div class="wallet-type-text" style="text-align: right;">BINANCE</div>
+                        <div class="text-gray7" style="text-align: right;">BINANCE</div>
                         <div class="wallet-text" style="text-align: right;">
                             <span id="binance-krw">99,999,999,999</span>
                             <span>KRW</span>
@@ -595,13 +598,13 @@
                     const { upbit: upbitPrice, binance: binancePrice } = premium
 
                     if (upbitPrice === upbitPriceValue) {
-                        $(upbitPage).css('border', '1px solid #000')
+                        $(upbitPage).css('border', '1px solid var(--gray9)')
                     } else {
                         $(upbitPage).css('border', '1px solid transparent')
                     }
 
                     if (binancePrice === binancePriceValue) {
-                        $(binancePage).css('border', '1px solid #000')
+                        $(binancePage).css('border', '1px solid var(--gray9)')
                     } else {
                         $(binancePage).css('border', '1px solid transparent')
                     }
