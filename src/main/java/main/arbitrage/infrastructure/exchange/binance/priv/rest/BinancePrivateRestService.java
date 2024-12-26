@@ -37,6 +37,8 @@ public class BinancePrivateRestService implements ExchangePrivateRestService {
     private final List<String> symbolNames;
     private static final String HASH_ALGORITHM = "HmacSHA256";
 
+    private final String DEFAULT_URL = "https://fapi.binance.com/fapi";
+
     public BinancePrivateRestService(String accessKey, String secretKey, OkHttpClient okHttpClient,
             ObjectMapper objectMapper, List<String> symbolNames) {
         if (accessKey.isEmpty() || secretKey.isEmpty()) {
@@ -55,8 +57,7 @@ public class BinancePrivateRestService implements ExchangePrivateRestService {
         params.put("timestamp", System.currentTimeMillis());
         String queryString = generateToken(params);
 
-        Request request = new Request.Builder()
-                .url("https://fapi.binance.com/fapi/v3/balance" + "?" + queryString)
+        Request request = new Request.Builder().url(DEFAULT_URL + "/v3/balance" + "?" + queryString)
                 .addHeader("Content-Type", "application/json").addHeader("X-MBX-APIKEY", accessKey)
                 .get().build();
 
@@ -101,7 +102,7 @@ public class BinancePrivateRestService implements ExchangePrivateRestService {
 
         RequestBody body = RequestBody.create(new byte[0], null);
 
-        String url = "https://fapi.binance.com/fapi/v1/order" + "?" + queryString;
+        String url = DEFAULT_URL + "/v1/order" + "?" + queryString;
 
         Request request =
                 new Request.Builder().url(url).addHeader("Content-Type", "application/json")
