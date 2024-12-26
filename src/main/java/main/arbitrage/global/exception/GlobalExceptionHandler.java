@@ -20,8 +20,8 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.exception.BinancePrivateRestException;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
+import main.arbitrage.infrastructure.exchange.binance.exception.BinanceRestException;
+import main.arbitrage.infrastructure.exchange.upbit.exception.UpbitRestException;
 
 @RestControllerAdvice
 @Slf4j
@@ -146,16 +146,14 @@ public class GlobalExceptionHandler {
         return createErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
     }
 
-    @ExceptionHandler(UpbitPrivateRestException.class)
-    public ResponseEntity<ErrorResponse> handleUpbitPrivateRestException(
-            UpbitPrivateRestException e) {
+    @ExceptionHandler(UpbitRestException.class)
+    public ResponseEntity<ErrorResponse> handleUpbitPrivateRestException(UpbitRestException e) {
         log.error("Upbit Private RestAPI error: ({}) {}", e.getErrorCode(), e.getMessage());
         return createErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
     }
 
-    @ExceptionHandler(BinancePrivateRestException.class)
-    public ResponseEntity<ErrorResponse> handleBinancePrivateRestException(
-            BinancePrivateRestException e) {
+    @ExceptionHandler(BinanceRestException.class)
+    public ResponseEntity<ErrorResponse> handleBinancePrivateRestException(BinanceRestException e) {
         log.error("Binance Private RestAPI error: ({}) {}", e.getErrorCode(), e.getMessage());
         return createErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
     }

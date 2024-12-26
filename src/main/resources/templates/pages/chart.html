@@ -278,17 +278,18 @@
                 <div class="d-flex justify-content-between mb-3">
                     <div>
                         <span class="fw-semibold text-gray7" id="order-type-text">BUY </span>
-                        <span class="qty-text" id="qty-text">0</span>
+                        <span class="qty-text" id="qty-text" th:text="${symbolInfo.minQty}">0</span>
                         <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
                     </div>
                     <div>
                         <span class="fw-semibold text-gray7" id="order-type-text">MAX </span>
-                        <span class="qty-text" id="max-qty">5</span>
+                        <span class="qty-text" id="max-qty" th:text="${symbolInfo.maxQty}">5</span>
                         <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
                     </div>
                 </div>
                 <div class="qty-wrap mb-4">
-                    <input type="range" class="qty" min=0 max=5 step=0.01 value=0 id="qty">
+                    <input type="range" class="qty" th:min="${symbolInfo.minQty}" th:max="${symbolInfo.maxQty}"
+                        th:step="${symbolInfo.stepSize}" value=0 id="qty">
                     <div class="value-bubble" id="tooltip">0</div>
                 </div>
                 <div class="d-flex justify-content-between wallet-wrap mb-3">

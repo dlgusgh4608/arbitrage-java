@@ -11,15 +11,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Side;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Type;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
+import main.arbitrage.infrastructure.exchange.binance.exception.BinanceRestException;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.exception.BinancePrivateRestException;
 import okhttp3.OkHttpClient;
 
 class BinancePrivateRestServiceRealTest {
     private BinancePrivateRestService binancePrivateRestService;
     private final OkHttpClient okHttpClient = new OkHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final List<String> testSymbol = Arrays.asList("btc", "eth");
+    private final List<String> testSymbol = Arrays.asList("BTC", "ETH");
 
     @BeforeEach
     void setUp() {
@@ -32,7 +32,7 @@ class BinancePrivateRestServiceRealTest {
     @Test
     @DisplayName("지갑 연결 테스트")
     @Disabled("real-test")
-    void getAccountTest() throws BinancePrivateRestException, IOException {
+    void getAccountTest() throws BinanceRestException, IOException {
         binancePrivateRestService.getAccount();
     }
 

@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.exchange.dto.OrderbookDto;
 import main.arbitrage.infrastructure.exchange.dto.TradeDto;
@@ -34,8 +33,7 @@ public class UpbitWebSocket extends BaseWebSocketClient {
 
     @PostConstruct
     private void init() {
-        symbols =
-                symbolVariableService.getSupportedSymbols().stream().map(Symbol::getName).toList();
+        symbols = symbolVariableService.getSupportedSymbolNames();
     }
 
     @Override
@@ -103,7 +101,7 @@ public class UpbitWebSocket extends BaseWebSocketClient {
 
     @Override
     protected void handleTrade(JsonNode data) {
-        String symbol = data.get("code").asText().replace("KRW-", "").toLowerCase();
+        String symbol = data.get("code").asText().replace("KRW-", "").toUpperCase();
 
         TradeDto trade = TradeDto.builder().symbol(symbol)
                 .price(Double.parseDouble(data.get("trade_price").asText()))
@@ -114,7 +112,7 @@ public class UpbitWebSocket extends BaseWebSocketClient {
 
     @Override
     protected void handleOrderbook(JsonNode data) {
-        String symbol = data.get("code").asText().replace("KRW-", "").toLowerCase();
+        String symbol = data.get("code").asText().replace("KRW-", "").toUpperCase();
 
         OrderbookDto orderbook = OrderbookDto.builder().symbol(symbol)
                 .bids(createOrderbookUnits(data.get("orderbook_units"), false))

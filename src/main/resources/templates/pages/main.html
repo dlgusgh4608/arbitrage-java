@@ -89,12 +89,12 @@
         const ws = new WebSocket("ws://localhost:8000/ws/premium")
 
         const prev = {
-            'btc': {
+            'BTC': {
                 premium: null,
                 upbit: null,
                 binance: null
             },
-            'eth': {
+            'ETH': {
                 premium: null,
                 upbit: null,
                 binance: null
@@ -122,9 +122,9 @@
 
             const { symbol, premium, upbit, binance } = dataOfJson
 
-            const premiumEle = $(`#${symbol}`).find('#premium')
-            const upbitEle = $(`#${symbol}`).find('#upbit')
-            const binanceEle = $(`#${symbol}`).find('#binance')
+            const premiumEle = $(`#${symbol.toLowerCase()}`).find('#premium')
+            const upbitEle = $(`#${symbol.toLowerCase()}`).find('#upbit')
+            const binanceEle = $(`#${symbol.toLowerCase()}`).find('#binance')
 
             premiumEle.text(premium.toLocaleString() + '%')
             upbitEle.text('₩' + upbit.toLocaleString())

@@ -11,7 +11,7 @@ import main.arbitrage.domain.symbol.respository.SymbolRepository;
 @Service
 @RequiredArgsConstructor
 public class SymbolVariableService implements CommandLineRunner {
-    private final List<String> DEFAULT_SYMBOLS = List.of("btc", "eth");
+    private final List<String> DEFAULT_SYMBOLS = List.of("BTC", "ETH");
 
     private final SymbolRepository symbolRepository;
     private static final List<Symbol> symbols = new ArrayList<>();

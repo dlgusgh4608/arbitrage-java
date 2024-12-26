@@ -14,8 +14,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import main.arbitrage.infrastructure.exchange.upbit.exception.UpbitRestException;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -26,7 +26,7 @@ class UpbitPrivateRestServiceTest {
     private final String accessKey = "12345oiUshbzzapfhdEnfgdmftndlTsHFjfp7qf8";
     private final String secretKey = "xrh0y6789106kwKPeUvDwRfdzzfdzzQMKQwGReId";
     private final String shortKey = "hellworld";
-    private final List<String> testSymbol = Arrays.asList("btc", "eth");
+    private final List<String> testSymbol = Arrays.asList("BTC", "ETH");
 
     @Mock
     private OkHttpClient mockClient;
@@ -61,7 +61,7 @@ class UpbitPrivateRestServiceTest {
 
             // when & then
             assertThatThrownBy(() -> upbitPrivateRestService.getAccount())
-                    .isInstanceOf(UpbitPrivateRestException.class)
+                    .isInstanceOf(UpbitRestException.class)
                     .hasMessage("(업비트) JWT 헤더의 페이로드가 올바르지 않습니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "invalid_query_payload");
         }
@@ -74,8 +74,7 @@ class UpbitPrivateRestServiceTest {
                     shortKey, mockClient, objectMapper, testSymbol);
 
             // when & then
-            assertThatThrownBy(shortKeyService::getAccount)
-                    .isInstanceOf(UpbitPrivateRestException.class)
+            assertThatThrownBy(shortKeyService::getAccount).isInstanceOf(UpbitRestException.class)
                     .hasMessage("(업비트) JWT 헤더 검증에 실패했습니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "jwt_verification");
         }
@@ -89,8 +88,7 @@ class UpbitPrivateRestServiceTest {
 
             // when & then
             assertThatThrownBy(() -> upbitPrivateRestService.getAccount())
-                    .isInstanceOf(UpbitPrivateRestException.class)
-                    .hasMessage("(업비트) JWT 헤더 검증에 실패했습니다.")
+                    .isInstanceOf(UpbitRestException.class).hasMessage("(업비트) JWT 헤더 검증에 실패했습니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "jwt_verification");
         }
 
@@ -103,8 +101,7 @@ class UpbitPrivateRestServiceTest {
 
             // when & then
             assertThatThrownBy(() -> upbitPrivateRestService.getAccount())
-                    .isInstanceOf(UpbitPrivateRestException.class)
-                    .hasMessage("(업비트) API 키가 만료되었습니다.")
+                    .isInstanceOf(UpbitRestException.class).hasMessage("(업비트) API 키가 만료되었습니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "expired_access_key");
         }
 
@@ -117,8 +114,7 @@ class UpbitPrivateRestServiceTest {
 
             // when & then
             assertThatThrownBy(() -> upbitPrivateRestService.getAccount())
-                    .isInstanceOf(UpbitPrivateRestException.class)
-                    .hasMessage("(업비트) 허용되지 않은 IP 주소입니다.")
+                    .isInstanceOf(UpbitRestException.class).hasMessage("(업비트) 허용되지 않은 IP 주소입니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "no_authorization_i_p");
         }
 

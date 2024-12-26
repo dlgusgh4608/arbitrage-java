@@ -19,7 +19,7 @@ class UpbitPrivateRestServiceRealTest {
     private UpbitPrivateRestService upbitPrivateRestService;
     private final OkHttpClient okHttpClient = new OkHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final List<String> testSymbol = Arrays.asList("btc", "eth");
+    private final List<String> testSymbol = Arrays.asList("BTC", "ETH");
 
     @BeforeEach
     void setUp() {

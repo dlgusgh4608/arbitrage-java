@@ -14,8 +14,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import main.arbitrage.infrastructure.exchange.binance.exception.BinanceRestException;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.exception.BinancePrivateRestException;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -25,7 +25,7 @@ class BinancePrivateRestServiceTest {
     private BinancePrivateRestService binancePrivateRestService;
     private final String accessKey = "testAccessKey";
     private final String secretKey = "testSecretKey";
-    private final List<String> testSymbol = Arrays.asList("btc", "eth");
+    private final List<String> testSymbol = Arrays.asList("BTC", "ETH");
 
     @Mock
     private OkHttpClient mockClient;
@@ -56,7 +56,7 @@ class BinancePrivateRestServiceTest {
             mockErrorResponse(-2014, "API-key format invalid.");
 
             assertThatThrownBy(() -> binancePrivateRestService.getAccount())
-                    .isInstanceOf(BinancePrivateRestException.class)
+                    .isInstanceOf(BinanceRestException.class)
                     .hasMessage("(바이낸스) 유효하지 않은 API 키 입니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "BAD_API_KEY_FMT");
         }
@@ -67,7 +67,7 @@ class BinancePrivateRestServiceTest {
             mockErrorResponse(-1022, "Signature for this request is not valid.");
 
             assertThatThrownBy(() -> binancePrivateRestService.getAccount())
-                    .isInstanceOf(BinancePrivateRestException.class)
+                    .isInstanceOf(BinanceRestException.class)
                     .hasMessage("(바이낸스) 이 요청에 대한 서명이 유효하지 않습니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "INVALID_SIGNATURE");
         }
@@ -79,7 +79,7 @@ class BinancePrivateRestServiceTest {
                     "Timestamp for this request was 1000ms ahead of the server's time.");
 
             assertThatThrownBy(() -> binancePrivateRestService.getAccount())
-                    .isInstanceOf(BinancePrivateRestException.class)
+                    .isInstanceOf(BinanceRestException.class)
                     .hasMessage("(바이낸스) 타임스탬프가 recvWindow를 벗어났습니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "INVALID_TIMESTAMP");
         }
@@ -90,7 +90,7 @@ class BinancePrivateRestServiceTest {
             mockErrorResponse(-2015, "Invalid API-key, IP, or permissions for action.");
 
             assertThatThrownBy(() -> binancePrivateRestService.getAccount())
-                    .isInstanceOf(BinancePrivateRestException.class)
+                    .isInstanceOf(BinanceRestException.class)
                     .hasMessage("(바이낸스) API 키, IP 또는 권한이 유효하지 않습니다.")
                     .hasFieldOrPropertyWithValue("errorCode", "INVALID_API_KEY_IP_PERMISSION");
         }

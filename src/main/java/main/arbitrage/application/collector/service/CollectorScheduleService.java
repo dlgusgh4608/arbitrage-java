@@ -1,7 +1,9 @@
 package main.arbitrage.application.collector.service;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.context.event.EventListener;
@@ -21,6 +23,8 @@ import main.arbitrage.domain.price.service.PriceDomainService;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.global.util.math.MathUtil;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceExchangeInfoResponse;
+import main.arbitrage.infrastructure.exchange.binance.pub.rest.BinancePublicRestService;
 import main.arbitrage.infrastructure.exchange.dto.OrderbookPair;
 import main.arbitrage.infrastructure.exchange.dto.TradeDto;
 import main.arbitrage.infrastructure.exchange.dto.TradePair;
@@ -38,7 +42,9 @@ public class CollectorScheduleService {
     private final PriceDomainService priceDomainService;
     private final PremiumServerWebSocketHandler premiumServerWebSocketHandler;
     private final ChartServerWebSocketHandler chartServerWebSocketHandler;
-    private final ConcurrentHashMap<String, Price> priceMap = new ConcurrentHashMap<>();
+    private final BinancePublicRestService binancePublicRestService;
+    private final Map<String, Price> priceMap = new ConcurrentHashMap<>();
+    private Map<String, BinanceExchangeInfoResponse> binanceExchangeInfoMap = new HashMap<>();
 
     private ExchangeRate exchangeRate;
 
@@ -50,6 +56,7 @@ public class CollectorScheduleService {
     @PostConstruct
     private void initialize() {
         exchangePublicWebsocketFactory.initialize();
+        binanceExchangeInfoMap = binancePublicRestService.getExchangeInfo();
     }
 
     @Scheduled(fixedRate = 300) // .3초
@@ -69,6 +76,11 @@ public class CollectorScheduleService {
     @Transactional
     protected void saveBufferScheduler() {
         priceDomainService.saveToPG();
+    }
+
+    @Scheduled(cron = "0 0 0 * * *") // 하루
+    protected void updateExchangeInfo() {
+        binanceExchangeInfoMap = binancePublicRestService.getExchangeInfo();
     }
 
     private void processAllSymbols(ExchangeRate exchangeRate) {
@@ -136,5 +148,9 @@ public class CollectorScheduleService {
 
     private void emitPremium(PremiumDTO premium) {
         premiumServerWebSocketHandler.sendMessage(premium);
+    }
+
+    public BinanceExchangeInfoResponse getExchangeInfo(String symbol) {
+        return binanceExchangeInfoMap.get(symbol);
     }
 }

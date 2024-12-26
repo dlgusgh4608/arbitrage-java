@@ -1,67 +1,71 @@
 package main.arbitrage.infrastructure.exchange.binance.pub.rest;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceExchangeInfoResponse;
+import main.arbitrage.infrastructure.exchange.binance.exception.BinanceRestException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 @Service
-@RequiredArgsConstructor
-public class BinancePublicRestService {
-    private final ObjectMapper objectMapper;
-    private final OkHttpClient okHttpClient;
-    private final SymbolVariableService symbolVariableService;
-    private final String DEFAULT_URL = "https://fapi.binance.com/fapi";
+public class BinancePublicRestService extends BaseBinancePublicRestService {
 
-    public Map<String, BinanceExchangeInfoResponse> getExchangeInfo() throws IOException {
-        String url = DEFAULT_URL + "/v1/exchangeInfo";
+    public BinancePublicRestService(OkHttpClient okHttpClient, ObjectMapper objectMapper,
+            SymbolVariableService symbolVariableService) {
+        super(okHttpClient, objectMapper, symbolVariableService);
+    }
 
-        Request request = new Request.Builder().url(url)
-                .addHeader("Content-Type", "application/json").get().build();
+    public Map<String, BinanceExchangeInfoResponse> getExchangeInfo() {
+        try {
+            String url = DEFAULT_URL + "/v1/exchangeInfo";
 
-        Response response = okHttpClient.newCall(request).execute();
+            Request request = new Request.Builder().url(url)
+                    .addHeader("Content-Type", "application/json").get().build();
 
-        String responseBody = response.body().string();
+            Response response = okHttpClient.newCall(request).execute();
 
-        if (!response.isSuccessful()) {
-            return null;
-        }
+            String responseBody = response.body().string();
 
-        JsonNode json = objectMapper.readTree(responseBody);
+            if (!response.isSuccessful()) {
+                validateResponse(responseBody);
+            }
 
-        JsonNode symbols = json.get("symbols");
+            JsonNode json = objectMapper.readTree(responseBody);
 
-        List<String> supportedSymbolNames = symbolVariableService.getSupportedSymbolNames();
+            JsonNode symbols = json.get("symbols");
 
-        Map<String, BinanceExchangeInfoResponse> exchangeHashMap = new HashMap<>();
+            List<String> supportedSymbolNames = symbolVariableService.getSupportedSymbolNames();
 
-        String CURRENT_FILTER_TYPE = "MARKET_LOT_SIZE";
+            Map<String, BinanceExchangeInfoResponse> exchangeHashMap = new HashMap<>();
 
-        for (JsonNode symbol : symbols) {
-            String symbolName = symbol.get("baseAsset").asText();
-            String quoteAsset = symbol.get("quoteAsset").asText();
+            String CURRENT_FILTER_TYPE = "MARKET_LOT_SIZE";
 
-            if (supportedSymbolNames.contains(symbolName) && "USDT".equals(quoteAsset)) {
-                JsonNode filters = symbol.get("filters");
+            for (JsonNode symbol : symbols) {
+                String symbolName = symbol.get("baseAsset").asText();
+                String quoteAsset = symbol.get("quoteAsset").asText();
 
-                for (JsonNode filter : filters) {
-                    if (CURRENT_FILTER_TYPE.equals(filter.get("filterType").asText())) {
-                        exchangeHashMap.put(symbolName, objectMapper.treeToValue(filter,
-                                BinanceExchangeInfoResponse.class));
+                if (supportedSymbolNames.contains(symbolName) && "USDT".equals(quoteAsset)) {
+                    JsonNode filters = symbol.get("filters");
+
+                    for (JsonNode filter : filters) {
+                        if (CURRENT_FILTER_TYPE.equals(filter.get("filterType").asText())) {
+                            exchangeHashMap.put(symbolName, objectMapper.treeToValue(filter,
+                                    BinanceExchangeInfoResponse.class));
+                        }
                     }
                 }
             }
+
+            return exchangeHashMap;
+        } catch (Exception e) {
+            throw new BinanceRestException("(바이낸스) 알 수 없는 에러가 발생했습니다.", "UNKNOWN_ERROR");
         }
 
-        return exchangeHashMap;
     }
 }

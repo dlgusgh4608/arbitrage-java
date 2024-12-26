@@ -13,12 +13,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import main.arbitrage.application.collector.service.CollectorScheduleService;
 import main.arbitrage.application.price.service.PriceApplicationService;
 import main.arbitrage.application.user.service.UserApplicationService;
 import main.arbitrage.auth.dto.AuthContext;
 import main.arbitrage.domain.oauthUser.store.OAuthUserStore;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.global.util.cookie.CookieUtil;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceExchangeInfoResponse;
 import main.arbitrage.presentation.controller.pub.constant.PublicControllerUrlConstants;
 import main.arbitrage.presentation.dto.form.UserLoginForm;
 import main.arbitrage.presentation.dto.form.UserSignupForm;
@@ -34,6 +36,7 @@ public class PublicController {
     private final SymbolVariableService symbolVariableService;
     private final OAuthUserStore authUserStore;
     private final PriceApplicationService priceApplicationService;
+    private final CollectorScheduleService collectorScheduleService;
 
     /**
      * only public
@@ -126,19 +129,25 @@ public class PublicController {
     public String getChart(
             @RequestParam(name = "symbol", required = true, defaultValue = "btc") String symbol,
             Model model) {
-        List<String> supportedSymbols = symbolVariableService.getSupportedSymbols().stream()
-                .map(s -> s.getName().toUpperCase()).toList();
+        String upperCaseSymbol = symbol.toUpperCase();
 
-        if (!supportedSymbols.contains(symbol.toUpperCase())) {
+        List<String> supportedSymbols = symbolVariableService.getSupportedSymbolNames();
+
+        if (!supportedSymbols.contains(upperCaseSymbol)) {
             return "redirect:/";
         }
 
+        // symbol에 해당하는 chart데이터
         List<PriceView> priceViewList =
-                priceApplicationService.getInitialPriceOfSymbolName(symbol.toLowerCase());
+                priceApplicationService.getInitialPriceOfSymbolName(upperCaseSymbol);
 
+        // symbol에 해당하는 시장가 주문시 step size, 최대 주문 개수, 최소 주문 개수 구해오기.
+        BinanceExchangeInfoResponse symbolInfo =
+                collectorScheduleService.getExchangeInfo(upperCaseSymbol);
 
         model.addAttribute("supportedSymbols", supportedSymbols);
         model.addAttribute("prices", priceViewList);
+        model.addAttribute("symbolInfo", symbolInfo);
 
         return "pages/chart";
     }

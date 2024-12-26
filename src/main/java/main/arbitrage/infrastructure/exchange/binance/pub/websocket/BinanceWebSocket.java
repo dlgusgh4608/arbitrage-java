@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.exchange.dto.OrderbookDto;
 import main.arbitrage.infrastructure.exchange.dto.TradeDto;
@@ -34,8 +33,7 @@ public class BinanceWebSocket extends BaseWebSocketClient {
 
     @PostConstruct
     private void init() {
-        symbols =
-                symbolVariableService.getSupportedSymbols().stream().map(Symbol::getName).toList();
+        symbols = symbolVariableService.getSupportedSymbolNames();
     }
 
     @Override
@@ -94,7 +92,7 @@ public class BinanceWebSocket extends BaseWebSocketClient {
 
     @Override
     protected void handleTrade(JsonNode data) {
-        String symbol = data.get("s").asText().toLowerCase().replace("usdt", "");
+        String symbol = data.get("s").asText().toUpperCase().replace("USDT", "");
 
         TradeDto trade =
                 TradeDto.builder().symbol(symbol).price(Double.parseDouble(data.get("p").asText()))
@@ -105,7 +103,7 @@ public class BinanceWebSocket extends BaseWebSocketClient {
 
     @Override
     protected void handleOrderbook(JsonNode data) {
-        String symbol = data.get("s").asText().toLowerCase().replace("usdt", "");
+        String symbol = data.get("s").asText().toUpperCase().replace("USDT", "");
 
         OrderbookDto orderbook =
                 OrderbookDto.builder().symbol(symbol).bids(createOrderbookUnits(data.get("b")))

@@ -2,7 +2,7 @@ package main.arbitrage.infrastructure.exchange;
 
 import java.util.Map;
 
-public interface ExchangePrivateRestService {
+public interface ExchangeRestService {
     void validateResponse(String responseBody) throws Exception;
 
     String convertSymbol(String symbol);

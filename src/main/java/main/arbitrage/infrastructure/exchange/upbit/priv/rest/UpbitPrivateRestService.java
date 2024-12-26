@@ -1,62 +1,32 @@
 package main.arbitrage.infrastructure.exchange.upbit.priv.rest;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import javax.crypto.SecretKey;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.WeakKeyException;
-import main.arbitrage.infrastructure.exchange.ExchangePrivateRestService;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.exception.BinancePrivateRestException;
 import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums.OrdType;
 import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums.Side;
 import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums.State;
 import main.arbitrage.infrastructure.exchange.upbit.dto.request.UpbitPostOrderRequest;
 import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetAccountResponse;
 import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetOrderResponse;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.exception.UpbitPrivateRestException;
+import main.arbitrage.infrastructure.exchange.upbit.exception.UpbitRestException;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class UpbitPrivateRestService implements ExchangePrivateRestService {
-    private final String accessKey;
-    private final String secretKey;
-    private final OkHttpClient okHttpClient;
-    private final ObjectMapper objectMapper;
-    private final List<String> symbolNames;
-
-    private static final String SERVER_URI = "https://api.upbit.com";
-
+public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
     public UpbitPrivateRestService(String accessKey, String secretKey, OkHttpClient okHttpClient,
             ObjectMapper objectMapper, List<String> symbolNames) {
-        if (accessKey.isEmpty() || secretKey.isEmpty()) {
-            throw new WeakKeyException("The specified key byte array is 0 bits");
-        }
-        this.accessKey = accessKey;
-        this.secretKey = secretKey;
-        this.okHttpClient = okHttpClient;
-        this.objectMapper = objectMapper;
-        this.symbolNames = symbolNames;
+        super(accessKey, secretKey, okHttpClient, objectMapper, symbolNames);
     }
 
-    public List<UpbitGetAccountResponse> getAccount()
-            throws UpbitPrivateRestException, IOException {
+    public List<UpbitGetAccountResponse> getAccount() throws UpbitRestException, IOException {
         String token = generateToken();
         Request request = new Request.Builder().url(SERVER_URI + "/v1/accounts")
                 .addHeader("Content-Type", "application/json")
@@ -73,39 +43,35 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
                 .constructCollectionType(List.class, UpbitGetAccountResponse.class));
     }
 
-    public Optional<UpbitGetAccountResponse> getKRW()
-            throws UpbitPrivateRestException, IOException {
+    public Optional<UpbitGetAccountResponse> getKRW() throws UpbitRestException, IOException {
         List<UpbitGetAccountResponse> account = getAccount();
         return account.stream().filter(upbitAccount -> upbitAccount.getCurrency().equals("KRW"))
                 .findFirst();
     }
 
     public String order(String market, Side side, OrdType ordType, Double price, Double volume)
-            throws UpbitPrivateRestException, IOException {
+            throws UpbitRestException, IOException {
         if (market == null || side == null || ordType == null) {
-            throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
+            throw new UpbitRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
         }
 
         // orderType Validation
         switch (ordType) {
             case limit -> {
                 if (volume == null || price == null) {
-                    throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.",
-                            "validation_error");
+                    throw new UpbitRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
                 }
             }
             // 매수
             case price -> {
                 if (price == null || side.equals(Side.ask)) {
-                    throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.",
-                            "validation_error");
+                    throw new UpbitRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
                 }
             }
             // 매도
             case market -> {
                 if (volume == null || side.equals(Side.bid)) {
-                    throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.",
-                            "validation_error");
+                    throw new UpbitRestException("(업비트) 잘못 된 주문 API 요청입니다.", "validation_error");
                 }
             }
         }
@@ -145,7 +111,7 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
     }
 
     public UpbitGetOrderResponse order(String uuid, int repeat)
-            throws UpbitPrivateRestException, InterruptedException, IOException {
+            throws UpbitRestException, InterruptedException, IOException {
         if (repeat < 2)
             return null;
 
@@ -173,101 +139,5 @@ public class UpbitPrivateRestService implements ExchangePrivateRestService {
         }
 
         return dto;
-    }
-
-    @Override
-    public String convertSymbol(String symbol) {
-        String upperSymbol = symbol.toUpperCase().replace("KRW-", "");
-
-        if (!symbolNames.contains(upperSymbol))
-            throw new BinancePrivateRestException("(업비트) 지원하지 않는 심볼입니다.", "invalid_symbol");
-
-        return "KRW-" + upperSymbol;
-    }
-
-    @Override
-    public void validateResponse(String responseBody)
-            throws UpbitPrivateRestException, JsonProcessingException {
-        JsonNode json = objectMapper.readTree(responseBody);
-        String errorCode = json.get("error").get("name").asText();
-        switch (errorCode) {
-            case "invalid_query_payload":
-                throw new UpbitPrivateRestException("(업비트) JWT 헤더의 페이로드가 올바르지 않습니다.", errorCode);
-            case "jwt_verification":
-                throw new UpbitPrivateRestException("(업비트) JWT 헤더 검증에 실패했습니다.", errorCode);
-            case "expired_access_key":
-                throw new UpbitPrivateRestException("(업비트) API 키가 만료되었습니다.", errorCode);
-            case "nonce_used":
-                throw new UpbitPrivateRestException("(업비트) 이미 사용된 nonce값입니다.", errorCode);
-            case "no_authorization_i_p":
-                throw new UpbitPrivateRestException("(업비트) 허용되지 않은 IP 주소입니다.", errorCode);
-            case "out_of_scope":
-                throw new UpbitPrivateRestException("(업비트) 허용되지 않은 기능입니다.", errorCode);
-            case "create_ask_error":
-                throw new UpbitPrivateRestException("(업비트) 매수 주문 요청 정보가 올바르지 않습니다.", errorCode);
-            case "create_bid_error":
-                throw new UpbitPrivateRestException("(업비트) 매도 주문 요청 정보가 올바르지 않습니다.", errorCode);
-            case "insufficient_funds_ask":
-                throw new UpbitPrivateRestException("(업비트) 매수 가능 잔고가 부족합니다.", errorCode);
-            case "insufficient_funds_bid":
-                throw new UpbitPrivateRestException("(업비트) 매도 가능 잔고가 부족합니다.", errorCode);
-            case "under_min_total_ask":
-                throw new UpbitPrivateRestException("(업비트) 최소 매수 금액 미만입니다.", errorCode);
-            case "under_min_total_bid":
-                throw new UpbitPrivateRestException("(업비트) 최소 매도 금액 미만입니다.", errorCode);
-            case "withdraw_address_not_registerd":
-                throw new UpbitPrivateRestException("(업비트) 허용 되지 않은 출금 주소입니다.", errorCode);
-            case "validation_error", "invalid_parameter":
-                throw new UpbitPrivateRestException("(업비트) 잘못 된 주문 API 요청입니다.", errorCode);
-            default:
-                throw new UpbitPrivateRestException("(업비트) 알 수 없는 에러가 발생했습니다.", errorCode);
-        }
-    }
-
-    @Override
-    public String generateToken() {
-        try {
-            String base64EncodedKey =
-                    Base64.getEncoder().encodeToString(secretKey.getBytes(StandardCharsets.UTF_8));
-            byte[] keyBytes = Decoders.BASE64.decode(base64EncodedKey);
-            SecretKey key = Keys.hmacShaKeyFor(keyBytes);
-
-            return Jwts.builder().claim("access_key", accessKey)
-                    .claim("nonce", UUID.randomUUID().toString()).signWith(key).compact();
-        } catch (Exception e) {
-            throw new UpbitPrivateRestException("(업비트) JWT 헤더 검증에 실패했습니다.", "jwt_verification");
-        }
-    }
-
-    @Override
-    public String generateToken(Map<String, Object> params) {
-        try {
-            String queryString = generateQueryString(params);
-            String queryHash = generateQueryHash(queryString);
-            String base64EncodedKey =
-                    Base64.getEncoder().encodeToString(secretKey.getBytes(StandardCharsets.UTF_8));
-            byte[] keyBytes = Decoders.BASE64.decode(base64EncodedKey);
-            SecretKey key = Keys.hmacShaKeyFor(keyBytes);
-
-            return Jwts.builder().claim("access_key", accessKey)
-                    .claim("nonce", UUID.randomUUID().toString()).claim("query_hash", queryHash)
-                    .claim("query_hash_alg", "SHA512").signWith(key).compact();
-        } catch (Exception e) {
-            throw new UpbitPrivateRestException("(업비트) JWT 헤더 검증에 실패했습니다.", "jwt_verification");
-        }
-    }
-
-    @Override
-    public String generateQueryString(Map<String, Object> params) {
-        return params.entrySet().stream().map(entry -> entry.getKey() + "=" + entry.getValue())
-                .collect(Collectors.joining("&"));
-    }
-
-    @Override
-    public String generateQueryHash(String queryString) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("SHA-512");
-        md.update(queryString.getBytes(StandardCharsets.UTF_8));
-        return String.format("%0128x", new BigInteger(1, md.digest()));
-
     }
 }

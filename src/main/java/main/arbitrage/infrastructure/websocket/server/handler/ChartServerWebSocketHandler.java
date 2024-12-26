@@ -21,7 +21,7 @@ public class ChartServerWebSocketHandler extends BaseServerSocketHandler<ChartBy
 
     private String extractSymbol(WebSocketSession session) {
         String path = session.getUri().getPath();
-        return path.substring(path.lastIndexOf('/') + 1).toLowerCase();
+        return path.substring(path.lastIndexOf('/') + 1).toUpperCase();
     }
 
     @Override
