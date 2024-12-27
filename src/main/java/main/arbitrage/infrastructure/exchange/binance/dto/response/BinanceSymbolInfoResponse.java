@@ -1,15 +1,9 @@
 package main.arbitrage.infrastructure.exchange.binance.dto.response;
 
-import lombok.Builder;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.MarginType;
 
-@Getter
-@Builder
-public class BinanceSymbolInfoResponse {
-    private final String symbol;
-    private final MarginType marginType;
-    private final String isAutoAddMargin;
-    private final Integer leverage;
-    private final String maxNotionalValue;
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public record BinanceSymbolInfoResponse(String symbol, MarginType marginType,
+        String isAutoAddMargin, Integer leverage, String maxNotionalValue) {
 }

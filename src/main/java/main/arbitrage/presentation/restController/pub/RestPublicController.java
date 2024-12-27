@@ -22,14 +22,14 @@ public class RestPublicController {
     @PostMapping(PublicRestControllerUrlConstants.SEND_EMAIL)
     public ResponseEntity<?> postSendEmail(@Valid @RequestBody SendEmailRequest request)
             throws Exception {
-        String code = userApplicationService.sendEmail(request.getEmail());
+        String code = userApplicationService.sendEmail(request.email());
         return ResponseEntity.ok(SendEmailResponse.builder().code(code).build());
     }
 
     @PostMapping(PublicRestControllerUrlConstants.CHECK_CODE)
     public ResponseEntity<?> postCheckCode(@Valid @RequestBody CheckCodeRequest request) {
-        boolean ok = userApplicationService.checkCode(request.getOriginCode(),
-                request.getEncryptedCode());
+        boolean ok =
+                userApplicationService.checkCode(request.originCode(), request.encryptedCode());
         if (ok) {
             return ResponseEntity.ok().build();
         } else {

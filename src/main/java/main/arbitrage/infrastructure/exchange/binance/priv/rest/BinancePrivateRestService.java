@@ -48,7 +48,7 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
     public Optional<BinanceGetAccountResponse> getUSDT() throws IOException, BinanceRestException {
         List<BinanceGetAccountResponse> account = getAccount();
-        return account.stream().filter(binanceAccount -> binanceAccount.getAsset().equals("USDT"))
+        return account.stream().filter(binanceAccount -> binanceAccount.asset().equals("USDT"))
                 .findFirst();
     }
 

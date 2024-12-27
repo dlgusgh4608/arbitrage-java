@@ -167,14 +167,14 @@ public class UserApplicationService {
             if (upbitKRW.isEmpty()) {
                 userProfileDtoBuilder.upbitBalance(null);
             } else {
-                userProfileDtoBuilder.upbitBalance(Double.parseDouble(upbitKRW.get().getBalance()));
+                userProfileDtoBuilder.upbitBalance(Double.parseDouble(upbitKRW.get().balance()));
             }
 
             if (binanceUSDT.isEmpty()) {
                 userProfileDtoBuilder.binanceBalance(null);
             } else {
                 userProfileDtoBuilder
-                        .binanceBalance(Double.parseDouble(binanceUSDT.get().getBalance()));
+                        .binanceBalance(Double.parseDouble(binanceUSDT.get().balance()));
             }
         }
 
@@ -189,7 +189,7 @@ public class UserApplicationService {
     @Transactional
     public String updateNickname(EditUserNicknameRequest req) {
         Long userId = SecurityUtil.getUserId();
-        String nickname = req.getNickname();
+        String nickname = req.nickname();
 
         Optional<User> userOptional = userService.findByUserId(userId);
 

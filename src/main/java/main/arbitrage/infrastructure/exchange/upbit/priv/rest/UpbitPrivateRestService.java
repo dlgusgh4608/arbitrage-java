@@ -45,7 +45,7 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
 
     public Optional<UpbitGetAccountResponse> getKRW() throws UpbitRestException, IOException {
         List<UpbitGetAccountResponse> account = getAccount();
-        return account.stream().filter(upbitAccount -> upbitAccount.getCurrency().equals("KRW"))
+        return account.stream().filter(upbitAccount -> upbitAccount.currency().equals("KRW"))
                 .findFirst();
     }
 
@@ -133,7 +133,7 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
         UpbitGetOrderResponse dto =
                 objectMapper.readValue(responseBody, UpbitGetOrderResponse.class);
 
-        if (dto.getState().equals(State.wait) || dto.getState().equals(State.watch)) {
+        if (dto.state().equals(State.wait) || dto.state().equals(State.watch)) {
             Thread.sleep(1000);
             return order(uuid, repeat - 1);
         }

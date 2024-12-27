@@ -21,16 +21,16 @@ public class BuyOrderService {
         public BuyOrderResponse createMarketBuyOrder(User user, Symbol symbol,
                         ExchangeRate exchangeRate, BinanceOrderResponse binanceOrderRes,
                         UpbitGetOrderResponse upbitOrderRes) {
-                double binanceAvgPrice = binanceOrderRes.getAvgPrice(); // 바이낸스 평단가
-                double binanceQty = binanceOrderRes.getExecutedQty(); // 바이낸스 체결 개수
+                double binanceAvgPrice = binanceOrderRes.avgPrice(); // 바이낸스 평단가
+                double binanceQty = binanceOrderRes.executedQty(); // 바이낸스 체결 개수
                 double binanceTotalPrice = binanceAvgPrice * binanceQty; // 바이낸스 숏에 사용한 총 USDT
                 double binanceCommission =
                                 MathUtil.roundTo(binanceTotalPrice * BINANCE_TAKER_COMM, 8); // 바이낸스
                                                                                              // 수수료
-                double upbitTotalPrice = upbitOrderRes.getPrice(); // 업비트 구매에 사용한 총 KRW
-                double upbitQty = upbitOrderRes.getExecutedVolume(); // 업비트 구매된 개수
+                double upbitTotalPrice = upbitOrderRes.price(); // 업비트 구매에 사용한 총 KRW
+                double upbitQty = upbitOrderRes.executedVolume(); // 업비트 구매된 개수
                 double upbitAvgPrice = Math.round(upbitTotalPrice / upbitQty); // 업비트 평단가
-                double upbitCommission = upbitOrderRes.getPaidFee(); // 업비트 수수료
+                double upbitCommission = upbitOrderRes.paidFee(); // 업비트 수수료
                 double usdToKrw = exchangeRate.getRate(); // 원달러 환율
 
                 double premium = MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice,

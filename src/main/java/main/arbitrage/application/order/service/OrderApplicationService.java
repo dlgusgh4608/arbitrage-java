@@ -47,7 +47,7 @@ public class OrderApplicationService {
         if (exchangeRate == null)
             throw new Exception("Exchange rate is not found");
 
-        Symbol symbol = symbolVariableService.findSymbolByName(req.getSymbol());
+        Symbol symbol = symbolVariableService.findSymbolByName(req.symbol());
 
         if (symbol == null)
             throw new IllegalArgumentException("Symbol is not found");
@@ -69,12 +69,12 @@ public class OrderApplicationService {
         UpbitPrivateRestService upbitService = upbitExchangePrivateRestPair.getUpbit();
 
         BinanceOrderResponse binanceOrderRes = binanceService.order( // 시장가 숏
-                symbol.getName(), BinanceEnums.Side.SELL, BinanceEnums.Type.MARKET, req.getQty(),
+                symbol.getName(), BinanceEnums.Side.SELL, BinanceEnums.Type.MARKET, req.qty(),
                 null);
 
         String uuid = upbitService.order(symbol.getName(), UpbitOrderEnums.Side.bid,
                 UpbitOrderEnums.OrdType.price,
-                (double) Math.round(binanceOrderRes.getCumQuote() * fixedExchangeRate.getRate()),
+                (double) Math.round(binanceOrderRes.cumQuote() * fixedExchangeRate.getRate()),
                 null);
 
         UpbitGetOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
@@ -100,15 +100,15 @@ public class OrderApplicationService {
         BinancePrivateRestService binanceService = upbitExchangePrivateRestPair.getBinance();
         UpbitPrivateRestService upbitService = upbitExchangePrivateRestPair.getUpbit();
 
-        String usdt = binanceService.getUSDT().get().getBalance();
-        String krw = upbitService.getKRW().get().getBalance();
+        String usdt = binanceService.getUSDT().get().balance();
+        String krw = upbitService.getKRW().get().balance();
         BinanceSymbolInfoResponse symbolInfo = binanceService.symbolInfo(symbolName);
 
         BinanceLeverageBracketResponse binanceLeverageBracketResponse =
                 binanceService.getLeverageBrackets(symbolName);
 
         return UserTradeInfo.builder().krw(Double.valueOf(krw)).usdt(Double.valueOf(usdt))
-                .marginType(symbolInfo.getMarginType()).leverage(symbolInfo.getLeverage())
+                .marginType(symbolInfo.marginType()).leverage(symbolInfo.leverage())
                 .brackets(binanceLeverageBracketResponse.brackets()).build();
     }
 }
