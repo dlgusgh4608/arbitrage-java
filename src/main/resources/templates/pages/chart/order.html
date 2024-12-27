@@ -1,0 +1,131 @@
+<article class="w-100 p-3 shadow rounded order-form ele-bg-color">
+    <div class="d-flex mb-3">
+        <button class="modal-btn" id="edit-margin-mode">CROSSED</button>
+        <button class="modal-btn" id="update-leverage-modal">x125</button>
+    </div>
+    <ul class="nav nav-underline mb-3">
+        <li class="nav-item order-type-wrap">
+            <div class="nav-link order-type-item active" id="buy">
+                <span class="text-color">BUY</span>
+            </div>
+        </li>
+        <li class="nav-item order-type-wrap">
+            <div class="nav-link order-type-item" id="sell">
+                <span class="text-color">SELL</span>
+            </div>
+        </li>
+    </ul>
+    <div class="d-flex justify-content-between mb-3">
+        <div>
+            <span class="fw-semibold text-gray7" id="order-type-text">BUY </span>
+            <span class="qty-text" id="qty-text">-</span>
+            <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
+        </div>
+        <div>
+            <span class="fw-semibold text-gray7" id="order-type-text">MAX </span>
+            <span class="qty-text" id="max-qty">-</span>
+            <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
+        </div>
+    </div>
+    <div class="qty-wrap mb-4">
+        <input type="range" class="qty" value=0 id="qty">
+        <div class="value-bubble" id="tooltip">0</div>
+    </div>
+    <div class="d-flex justify-content-between wallet-wrap mb-3">
+        <div>
+            <div class="text-gray7">UPBIT</div>
+
+            <div class="wallet-text">
+                <span id="upbit-krw">-</span>
+                <span>KRW</span>
+            </div>
+            <div class="wallet-text">
+                <span id="upbit-usd">-</span>
+                <span>USD</span>
+            </div>
+        </div>
+        <div>
+            <div class="text-gray7" style="text-align: right;">BINANCE</div>
+            <div class="wallet-text" style="text-align: right;">
+                <span id="binance-krw">-</span>
+                <span>KRW</span>
+            </div>
+            <div class="wallet-text" style="text-align: right;">
+                <span id="binance-usd">-</span>
+                <span>USD</span>
+            </div>
+        </div>
+    </div>
+    <button id="order-btn" class="btn order-btn buy-btn">
+        BUY
+    </button>
+</article>
+<script th:inline="javascript">
+    $(function () {
+        let isBuy = true
+
+        const range = $('#qty');
+        const tooltip = $('#tooltip');
+        const currentQty = $('#qty-text')
+        const orderTypeText = $('#order-type-text')
+        const maxQtyEle = $('#max-qty')
+        const orderBtn = $('#order-btn')
+        const editMarginModeBtn = ('#edit-margin-mode')
+        const updateLeverageBtn = ('#update-leverage-modal')
+
+        editMarginModeBtn.text(marginType || 'CROSSED')
+        updateLeverageBtn.text(leverage || 'x1')
+        currentQty.text(minQty)
+        maxQtyEle.text(maxQty)
+        range.attr('min', minQty).attr('max', maxQty).attr('size', stepSize).attr('step', stepSize)
+
+        const clear = () => {
+            range.val(0)
+            currentQty.text('0')
+            tooltip.css('left', `0%`).text('0%')
+        }
+
+        $('#buy').click(function () {
+            isBuy = true
+
+            orderBtn.removeClass('sell-btn')
+            orderBtn.addClass('buy-btn')
+            orderBtn.text('BUY')
+
+            $(this).addClass('active')
+            $('#sell').removeClass('active')
+            orderTypeText.text('BUY')
+
+            clear()
+        })
+
+        $('#sell').click(function () {
+            isBuy = false
+
+            orderBtn.removeClass('buy-btn')
+            orderBtn.addClass('sell-btn')
+            orderBtn.text('SELL')
+
+            $(this).addClass('active')
+            $('#buy').removeClass('active')
+            orderTypeText.text('SELL')
+
+            clear()
+        })
+
+        range.on('input', function () {
+            const { max, min } = this
+            const val = $(this).val()
+            const percent = ((val - min) / (max - min)) * 100;
+
+            tooltip.css('left', `${percent}%`).text(`${Math.round(percent)}%`);
+            currentQty.text(val)
+        });
+
+        range.hover(() => {
+            tooltip.show()
+        }, () => {
+            tooltip.hide()
+        })
+    })
+</script>

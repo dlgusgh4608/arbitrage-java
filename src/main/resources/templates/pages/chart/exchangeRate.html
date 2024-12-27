@@ -1,0 +1,17 @@
+<article class="w-100 shadow rounded ele-bg-color">
+    <div class="d-flex d-flex justify-content-between align-items-center">
+        <div class="dropdown p-3">
+            <div class="dropdown-toggle fw-bold fs-5" style="cursor: pointer;" data-bs-toggle="dropdown"
+                th:text="${#strings.toUpperCase(param.symbol)}"></div>
+            <ul class="dropdown-menu">
+                <li th:each="symbol : ${supportedSymbols}">
+                    <a class="dropdown-item" th:href="@{/chart(symbol=${symbol})}" th:text="${symbol}">symbolName</a>
+                </li>
+            </ul>
+        </div>
+        <div class="p-3">
+            <span>환율: </span>
+            <span id="usdToKrw">-</span>
+        </div>
+    </div>
+</article>

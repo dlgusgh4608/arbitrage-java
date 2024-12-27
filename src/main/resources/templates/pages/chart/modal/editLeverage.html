@@ -1,0 +1,119 @@
+<div class="modal fade" id="leverage-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <section class="modal-content">
+            <article class="modal-header" style="border-bottom: none;">
+                <h5 class="modal-title" th:text="${#strings.toUpperCase(param.symbol) + ' 레버리지 조정'}">
+                    레버리지 조정
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </article>
+            <article class="modal-body">
+                <div class="leverage-input-container border-gray3">
+                    <div id="minus" class="leverage-btn minus">-</div>
+                    <div class="leverage-input-wrap">
+                        <input id="leverage-input" class="leverage-input" type="number" min="1" value="1" th:step="1">
+                        <label for="leverage-input" class="leverage-input-sub">x</label>
+                    </div>
+                    <div id="plus" class="leverage-btn plus">+</div>
+                </div>
+                <div class="qty-wrap mb-4">
+                    <input type="range" class="qty" min="1" th:step="1" value="1" id="leverage-range">
+                    <div class="value-bubble" id="leverage-tooltip">0</div>
+                </div>
+                <p class="margin-mode-info">
+                    <span class="text-gray6">*현재 레버리지에서의 최대 포지션:</span>
+                    <span class="text-gray6" id="max-leverage-value">230,000,000</span>
+                    <span class="text-gray6">USDT</span>
+                </p>
+                <p class="margin-mode-info text-gray6">*레버리지 변경은 포지션 및 미체결 주문에도 적용됩니다.</p>
+                <p class="margin-mode-info text-down-color fw-semibold">
+                    ※ [10x]와 같은 더 높은 레버리지를 선택하면 청산 위험이 커집니다. 항상 위험 수준을 관리하세요. ※
+                </p>
+            </article>
+            <article class="modal-footer" style="border-top: none;">
+                <button type="button" class="btn-point w-100" id="update-leverage">저장</button>
+            </article>
+        </section>
+    </div>
+</div>
+<script th:inline="javascript">
+    $(function () {
+        const MAX = brackets[0].initialLeverage
+        const MIN = 1
+
+        const inputContainer = $('.leverage-input-container')
+        const inputWrap = $('.leverage-input-wrap')
+        const input = $('#leverage-input')
+        const range = $('#leverage-range')
+        const tooltip = $('#leverage-tooltip')
+        const maxLeverageValue = $('#max-leverage-value')
+
+
+
+        input.attr('max', MAX)
+        range.attr('max', MAX)
+
+        $('#update-leverage-modal').on('click', () => {
+            const modal = new bootstrap.Modal($('#leverage-modal'));
+            modal.show();
+        })
+
+        input.focusin(() => {
+            inputContainer.css('border', '1px solid var(--point-color)')
+        })
+
+        input.focusout(() => {
+            inputContainer.css('border', '1px solid var(--gray9)').css('opacity', '.7')
+        })
+
+        input.keyup(e => {
+            const value = e.target.value
+
+            const regex = /\D/g // is not number
+            const replaceValue = value.replace(regex, '')
+
+            if (Number(replaceValue) > MAX) {
+                return input.val(MAX)
+            }
+
+            if (Number(replaceValue) < MIN) {
+                return input.val(MIN)
+            }
+
+            input.val(replaceValue)
+        })
+
+        input.change(e => range.val(e.target.value).trigger('input'))
+
+        range.on('input', function () {
+            const { max, min } = this
+            const val = $(this).val()
+            const percent = ((val - min) / (max - min)) * 100;
+
+            const { notionalCap } = brackets.find(v => v.initialLeverage <= Number(val))
+            maxLeverageValue.text(notionalCap.toLocaleString())
+            tooltip.css('left', `${percent}%`).text(val);
+            input.val(val)
+        })
+
+        range.hover(() => {
+            tooltip.show()
+        }, () => {
+            tooltip.hide()
+        })
+
+        $('#minus').on('click', () => {
+            const leverage = Number(input.val())
+            if (leverage > MIN) input.val(leverage - 1).trigger('change')
+        })
+
+        $('#plus').on('click', () => {
+            const leverage = Number(input.val())
+            if (leverage < MAX) input.val(leverage + 1).trigger('change')
+        })
+
+        input.val(leverage).trigger('change')
+
+        // update-leverage
+    })
+</script>

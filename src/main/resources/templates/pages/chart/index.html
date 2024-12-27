@@ -1,0 +1,233 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/default}">
+
+<head>
+    <title>차트</title>
+    <link rel="stylesheet" th:href="@{/css/chart.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial/dist/chartjs-chart-financial.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-crosshair"></script>
+</head>
+<main layout:fragment="content">
+    <!-- 전역변수 선언 -->
+    <script th:inline="javascript">
+        const [symbol] = [[${ param.symbol }]]
+        const prices = [[${ prices }]]
+        const userTradeInfo = [[${ userTradeInfo }]]
+        const symbolInfo = [[${ symbolInfo }]]
+
+        const { maxQty, minQty, stepSize } = symbolInfo
+
+        const krw = userTradeInfo?.krw
+        const usdt = userTradeInfo?.usdt
+        const marginType = userTradeInfo?.marginType
+        const leverage = userTradeInfo?.leverage
+        const brackets = userTradeInfo?.brackets
+    </script>
+    <th:block th:replace="~{pages/chart/modal/marginMode}"></th:block>
+    <th:block th:replace="~{pages/chart/modal/editLeverage}"></th:block>
+    <section class="container-xxl d-flex pt-5 gap-2 main-section">
+        <section class="d-flex flex-column col-9 gap-2 chart-section">
+            <th:block th:replace="~{pages/chart/exchangeRate}"></th:block>
+            <th:block th:replace="~{pages/chart/chart}"></th:block>
+        </section>
+        <section class="d-flex col-3 gap-2 order-section">
+            <th:block th:replace="~{pages/chart/orderbook}"></th:block>
+            <th:block th:replace="~{pages/chart/order}"></th:block>
+        </section>
+    </section>
+    <script type='module' th:src="@{/js/modules/chart/index.js}"></script>
+    <script th:inline="javascript">
+        $(() => {
+            const { websocketClient, createCandleOfMinutes, setOrderbook, updateCandleOfMinutes } = myModule
+
+            const upbitKrwEle = $('#upbit-krw')
+            const upbitUsdEle = $('#upbit-usd')
+            const binanceKrwEle = $('#binance-krw')
+            const binanceUsdEle = $('#binance-usd')
+            const isolatedEle = $('#isolated')
+            const crossedEle = $('#crossed')
+
+
+            if (krw) upbitKrwEle.text(Math.floor(krw).toLocaleString())
+            if (usdt) binanceUsdEle.text(usdt.toLocaleString())
+            if (marginType === 'ISOLATED') isolatedEle.addClass('select')
+            else crossedEle.addClass('select')
+
+            const chartDataSets = createCandleOfMinutes(prices)
+
+            const ctx = document.getElementById('candlestickChart').getContext('2d')
+
+            const chart = new Chart(ctx, {
+                type: 'candlestick',
+                data: {
+                    datasets: [{
+                        label: 'OHLC',
+                        data: chartDataSets,
+                        borderColors: {
+                            up: '#2ebd85',
+                            down: '#f6465d',
+                            unchanged: '#999999'
+                        },
+                        backgroundColors: {
+                            up: '#2ebd85',
+                            down: '#f6465d',
+                            unchanged: '#999999'
+                        },
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'minute',
+                                stepSize: 1,
+                            },
+                            min: new Date(Date.now() - (60 * 1000 * 100)).getTime(),
+                            // max: Date.now(),
+                            ticks: {
+                                source: 'data'
+                            },
+                            offset: true,
+                            grid: {
+                                offset: true
+                            }
+                        },
+                        y: {
+                            position: 'right',
+                            // y축도 데이터를 모두 포함하도록 설정
+                            beginAtZero: false,
+                            grace: '5%'  // 위아래 5% 여백
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: true,
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function (context) {
+                                    const point = context.raw;
+                                    return [
+                                        `Open: ${point.o}`,
+                                        `High: ${point.h}`,
+                                        `Low: ${point.l}`,
+                                        `Close: ${point.c}`
+                                    ];
+                                }
+                            }
+                        },
+                        zoom: {
+                            limits: {
+                                x: {
+                                    min: 'original',
+                                    max: 'original'
+                                }
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'x',
+                                modifierKey: null,
+                                scaleMode: 'x',
+                                threshold: 10,
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                    speed: 0.1
+                                },
+                                drag: {
+                                    enabled: false
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'x'
+                            }
+                        },
+                        crosshair: {
+                            line: {
+                                color: '#666',
+                                width: 1
+                            },
+                            sync: {
+                                enabled: false,
+                            },
+                            zoom: {
+                                enabled: false,
+                            },
+                            snap: {
+                                enabled: true
+                            }
+                        }
+                    }
+                }
+            })
+
+            function handleMessage(message) {
+                const { premium, orderbookPair } = JSON.parse(message.data)
+
+                const { upbit, binance } = orderbookPair
+
+                setOrderbook('asks', { upbit: upbit.asks.reverse(), binance: binance.asks.reverse() }, premium)
+                setOrderbook('bids', { upbit: upbit.bids, binance: binance.bids }, premium)
+
+                $('.premium').text(`${premium.premium}%`)
+                const usdToKrw = premium.usdToKrw
+                $('#usdToKrw').text(usdToKrw)
+
+                updateCandleOfMinutes(chartDataSets, premium)
+
+                if (krw) upbitUsdEle.text((krw / usdToKrw).toLocaleString())
+                if (usdt) binanceKrwEle.text(Math.floor(usdt * usdToKrw).toLocaleString())
+
+                chart.update();
+            }
+
+            websocketClient.setMessageHandler(handleMessage)
+
+            websocketClient.connect()
+
+            $('.btn').on('click', e => {
+                const { id } = e.target
+
+                const btnIds = ['min', 'min3', 'min5', 'min15']
+
+                const idHash = {
+                    min: 1,
+                    min3: 3,
+                    min5: 5,
+                    min15: 15,
+                }
+
+                stepSize = idHash[id]
+
+                const restBtnIds = btnIds.filter(btnId => btnId !== id)
+
+                $(`#${id}`).css('font-weight', 600)
+                restBtnIds.forEach(v => $(`#${v}`).css('font-weight', 500))
+            })
+        })
+    </script>
+</main>
+
+</html>

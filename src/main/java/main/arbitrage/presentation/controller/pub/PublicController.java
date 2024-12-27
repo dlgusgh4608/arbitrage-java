@@ -157,6 +157,6 @@ public class PublicController {
         model.addAttribute("symbolInfo", symbolInfo);
         model.addAttribute("userTradeInfo", userTradeInfo);
 
-        return "pages/chart";
+        return "pages/chart/index";
     }
 }

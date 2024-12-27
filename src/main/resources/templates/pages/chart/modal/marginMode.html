@@ -1,0 +1,41 @@
+<div class="modal fade" id="margin-mode-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="border-bottom: none;">
+                <h5 class="modal-title" th:text="${#strings.toUpperCase(param.symbol) + ' 마진모드'}">마진 모드</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-center mb-3">
+                    <button id="isolated" class="w-50 modal-btn p-2">ISOLATED</button>
+                    <button id="crossed" class="w-50 modal-btn p-2">CROSSED</button>
+                </div>
+                <p class="margin-mode-info fw-semibold text-up-color">※마진 모드를 전환하면 연동된 Binance의 MarginMode가 변경됩니다.※
+                </p>
+                <p class="margin-mode-info text-gray6">*마진 모드를 전환하면 선택한 계약에만 적용됩니다.</p>
+                <p class="margin-mode-info text-gray6">*Cross 모드 : 동일한 마진 자산에 대한 모든 교차 포지션은 동일한 자산 교차 마진 잔액을 공유합니다.
+                    청산 시
+                    자산의 전체 마진 잔액과 자산에 대한 나머지 오픈
+                    포지션이 몰수될 수 있습니다.</p>
+                <p class="margin-mode-info text-gray6">*Isolate 모드 : 각 포지션에 할당된 마진 금액을 제한하여 개별 포지션에 대한 위험을 관리합니다.
+                    포지션의 마진
+                    비율이
+                    100%에 도달하면 포지션이 청산됩니다. 이
+                    모드를 사용하여 포지션에 마진을 추가하거나 제거할 수 있습니다.</p>
+            </div>
+            <div class="modal-footer" style="border-top: none;">
+                <button type="button" class="btn-point w-100" id="update-margin-mode">저장</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    $(function () {
+        $('#edit-margin-mode').on('click', () => {
+            const modal = new bootstrap.Modal($('#margin-mode-modal'));
+            modal.show();
+        })
+
+        // #update-margin-mode 
+    })
+</script>
