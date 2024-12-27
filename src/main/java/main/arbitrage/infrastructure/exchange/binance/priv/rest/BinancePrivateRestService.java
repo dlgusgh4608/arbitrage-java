@@ -11,6 +11,7 @@ import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Sid
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Type;
 import main.arbitrage.infrastructure.exchange.binance.dto.request.BinancePostOrderRequest;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceGetAccountResponse;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceLeverageBracketResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceSymbolInfoResponse;
 import main.arbitrage.infrastructure.exchange.binance.exception.BinanceRestException;
@@ -113,6 +114,33 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
         List<BinanceSymbolInfoResponse> responseList =
                 objectMapper.readValue(responseBody, objectMapper.getTypeFactory()
                         .constructCollectionType(List.class, BinanceSymbolInfoResponse.class));
+
+        return responseList.get(0);
+    }
+
+    public BinanceLeverageBracketResponse getLeverageBrackets(String symbolName) throws Exception {
+        String symbol = convertSymbol(symbolName);
+
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("timestamp", System.currentTimeMillis());
+        params.put("symbol", symbol);
+        String queryString = generateToken(params);
+
+        Request request =
+                new Request.Builder().url(DEFAULT_URL + "/v1/leverageBracket" + "?" + queryString)
+                        .addHeader("Content-Type", "application/json")
+                        .addHeader("X-MBX-APIKEY", accessKey).get().build();
+
+        Response response = okHttpClient.newCall(request).execute();
+
+        String responseBody = response.body().string();
+
+        if (!response.isSuccessful())
+            validateResponse(responseBody);
+
+        List<BinanceLeverageBracketResponse> responseList =
+                objectMapper.readValue(responseBody, objectMapper.getTypeFactory()
+                        .constructCollectionType(List.class, BinanceLeverageBracketResponse.class));
 
         return responseList.get(0);
     }

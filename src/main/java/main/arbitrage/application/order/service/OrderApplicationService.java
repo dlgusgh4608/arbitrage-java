@@ -14,6 +14,7 @@ import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceLeverageBracketResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceSymbolInfoResponse;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
@@ -103,7 +104,11 @@ public class OrderApplicationService {
         String krw = upbitService.getKRW().get().getBalance();
         BinanceSymbolInfoResponse symbolInfo = binanceService.symbolInfo(symbolName);
 
+        BinanceLeverageBracketResponse binanceLeverageBracketResponse =
+                binanceService.getLeverageBrackets(symbolName);
+
         return UserTradeInfo.builder().krw(Double.valueOf(krw)).usdt(Double.valueOf(usdt))
-                .marginType(symbolInfo.getMarginType()).leverage(symbolInfo.getLeverage()).build();
+                .marginType(symbolInfo.getMarginType()).leverage(symbolInfo.getLeverage())
+                .brackets(binanceLeverageBracketResponse.brackets()).build();
     }
 }
