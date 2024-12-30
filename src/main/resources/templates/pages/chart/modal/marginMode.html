@@ -32,12 +32,47 @@
 <script th:inline="javascript">
     $(function () {
         if (isAnonymous && isOk) {
+
+            const updateMarginModeEle = $('#update-margin-mode')
+            const isolatedBtn = $('#isolated')
+            const crossedBtn = $('#crossed')
+            const modalBtn = $('#edit-margin-mode')
+
+            isolatedBtn.click(() => {
+                isolatedBtn.addClass('select')
+                crossedBtn.removeClass('select')
+            })
+
+            crossedBtn.click(() => {
+                crossedBtn.addClass('select')
+                isolatedBtn.removeClass('select')
+            })
+
             $('#edit-margin-mode').on('click', () => {
                 const modal = new bootstrap.Modal($('#margin-mode-modal'));
                 modal.show();
             })
 
-            // #update-margin-mode 
+            updateMarginModeEle.click(async () => {
+                const selectMarginModeText = $(".select").text()
+
+                const modal = bootstrap.Modal.getInstance($('#margin-mode-modal'));
+
+                const payload = {
+                    symbol,
+                    marginType: selectMarginModeText
+                }
+
+
+                const { success, data } = await fetcher('PATCH', '/api/update-margin-mode', payload)
+
+                if (success) {
+                    modalBtn.text(selectMarginModeText)
+                    modal.hide()
+                } else {
+                    alert('서버 오류입니다. 다시 시도해주세요.')
+                }
+            })
         }
     })
 </script>

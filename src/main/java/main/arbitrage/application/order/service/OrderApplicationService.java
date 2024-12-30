@@ -26,6 +26,7 @@ import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetOrderRe
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
 import main.arbitrage.presentation.dto.request.BuyOrderRequest;
 import main.arbitrage.presentation.dto.request.UpdateLeverageRequest;
+import main.arbitrage.presentation.dto.request.UpdateMarginTypeRequest;
 import main.arbitrage.presentation.dto.response.BuyOrderResponse;
 import main.arbitrage.presentation.dto.view.UserTradeInfo;
 
@@ -134,6 +135,26 @@ public class OrderApplicationService {
 
         BinanceChangeLeverageResponse response =
                 binanceService.changeLeverage(req.symbol(), req.leverage());
+
+        return response;
+    }
+
+    @Transactional
+    public boolean updateMarginType(UpdateMarginTypeRequest req) throws Exception {
+        Long userId = SecurityUtil.getUserId();
+
+        Optional<UserEnv> userEnvOptional = userEnvService.findByUserId(userId);
+
+        if (userEnvOptional.isEmpty())
+            throw new IllegalArgumentException("UserEnv is not found");
+
+        UserEnv userEnv = userEnvOptional.get();
+
+        ExchangePrivateRestPair upbitExchangePrivateRestPair =
+                exchangePrivateRestFactory.create(userEnv);
+        BinancePrivateRestService binanceService = upbitExchangePrivateRestPair.getBinance();
+
+        boolean response = binanceService.updateMarginType(req.symbol(), req.marginType());
 
         return response;
     }

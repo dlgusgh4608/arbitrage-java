@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.MarginType;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Side;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Type;
 import main.arbitrage.infrastructure.exchange.binance.dto.request.BinancePostOrderRequest;
@@ -172,5 +173,32 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
             validateResponse(responseBody);
 
         return objectMapper.readValue(responseBody, BinanceChangeLeverageResponse.class);
+    }
+
+    public boolean updateMarginType(String symbolName, MarginType marginType) throws Exception {
+        String symbol = convertSymbol(symbolName);
+
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("timestamp", System.currentTimeMillis());
+        params.put("symbol", symbol);
+        params.put("marginType", marginType.name());
+        String queryString = generateToken(params);
+
+        RequestBody body = RequestBody.create(new byte[0], null);
+
+        Request request =
+                new Request.Builder().url(DEFAULT_URL + "/v1/marginType" + "?" + queryString)
+                        .addHeader("Content-Type", "application/json")
+                        .addHeader("X-MBX-APIKEY", accessKey).post(body).build();
+
+
+        Response response = okHttpClient.newCall(request).execute();
+
+        String responseBody = response.body().string();
+
+        if (!response.isSuccessful())
+            validateResponse(responseBody);
+
+        return true;
     }
 }

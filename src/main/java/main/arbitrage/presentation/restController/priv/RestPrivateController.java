@@ -15,6 +15,7 @@ import main.arbitrage.global.util.cookie.CookieUtil;
 import main.arbitrage.presentation.dto.request.BuyOrderRequest;
 import main.arbitrage.presentation.dto.request.EditUserNicknameRequest;
 import main.arbitrage.presentation.dto.request.UpdateLeverageRequest;
+import main.arbitrage.presentation.dto.request.UpdateMarginTypeRequest;
 import main.arbitrage.presentation.restController.priv.constant.PrivateRestControllerUrlConstants;
 
 @RestController
@@ -42,5 +43,11 @@ public class RestPrivateController {
     public ResponseEntity<?> patchLeverage(@Valid @RequestBody UpdateLeverageRequest req)
             throws Exception {
         return ResponseEntity.ok(orderApplicationService.updateLeverage(req));
+    }
+
+    @PatchMapping(PrivateRestControllerUrlConstants.MARGIN_MODE)
+    public ResponseEntity<?> patchLeverage(@Valid @RequestBody UpdateMarginTypeRequest req)
+            throws Exception {
+        return ResponseEntity.ok(orderApplicationService.updateMarginType(req));
     }
 }
