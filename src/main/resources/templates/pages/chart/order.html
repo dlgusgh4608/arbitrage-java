@@ -1,7 +1,22 @@
-<article class="w-100 p-3 shadow rounded order-form ele-bg-color">
+<!-- 거래 가능 -->
+<article sec:authorize="isAuthenticated()" th:if="${
+    symbolInfo?.maxQty != null && 
+    symbolInfo?.minQty != null && 
+    symbolInfo?.stepSize != null && 
+    symbolInfo?.minUsdt != null &&
+    userTradeInfo?.krw != null && 
+    userTradeInfo?.usdt != null && 
+    userTradeInfo?.marginType != null && 
+    userTradeInfo?.leverage != null && 
+    userTradeInfo?.brackets != null
+}" class="w-100 p-3 shadow rounded order-form ele-bg-color">
     <div class="d-flex mb-3">
-        <button class="modal-btn" id="edit-margin-mode">CROSSED</button>
-        <button class="modal-btn" id="update-leverage-modal">x125</button>
+        <button class="modal-btn" id="edit-margin-mode">
+            CROSSED
+        </button>
+        <button class="modal-btn" id="update-leverage-modal">
+            x1
+        </button>
     </div>
     <ul class="nav nav-underline mb-3">
         <li class="nav-item order-type-wrap">
@@ -60,72 +75,105 @@
         BUY
     </button>
 </article>
+
+<!-- 거래 불가 env를 다시 등록 -->
+<article sec:authorize="isAuthenticated()" th:unless="${
+    symbolInfo?.maxQty != null && 
+    symbolInfo?.minQty != null && 
+    symbolInfo?.stepSize != null && 
+    symbolInfo?.minUsdt != null &&
+    userTradeInfo?.krw != null && 
+    userTradeInfo?.usdt != null && 
+    userTradeInfo?.marginType != null && 
+    userTradeInfo?.leverage != null && 
+    userTradeInfo?.brackets != null
+}" class="d-flex align-items-center w-100 p-3 shadow rounded order-form ele-bg-color order-disabled">
+    <div class="w-100 text-center">
+        <a th:href="@{/user/env-register}" class="text-point-color">ENV</a>
+        <span class="text-color">를 먼저 등록해주세요.</span>
+    </div>
+</article>
+
+<!-- 로그인이 되어있지 않음 -->
+<article sec:authorize="isAnonymous()"
+    class="d-flex align-items-center w-100 p-3 shadow rounded order-form ele-bg-color order-disabled">
+    <div class="w-100 text-center">
+        <a th:href="@{/login}" class="text-point-color">로그인</a>
+        <span class="text-color"> or </span>
+        <a th:href="@{/signup}" class="text-point-color">회원가입</a>
+    </div>
+</article>
+
 <script th:inline="javascript">
-    $(function () {
-        let isBuy = true
+    $(() => {
+        if (isAnonymous && isOk) {
+            let isBuy = true
 
-        const range = $('#qty');
-        const tooltip = $('#tooltip');
-        const currentQty = $('#qty-text')
-        const orderTypeText = $('#order-type-text')
-        const maxQtyEle = $('#max-qty')
-        const orderBtn = $('#order-btn')
-        const editMarginModeBtn = ('#edit-margin-mode')
-        const updateLeverageBtn = ('#update-leverage-modal')
+            const range = $('#qty')
+            const tooltip = $('#tooltip')
+            const currentQty = $('#qty-text')
+            const orderTypeText = $('#order-type-text')
+            const maxQtyEle = $('#max-qty')
+            const orderBtn = $('#order-btn')
+            const editMarginModeBtn = $('#edit-margin-mode')
+            const updateLeverageBtn = $('#update-leverage-modal')
 
-        editMarginModeBtn.text(marginType || 'CROSSED')
-        updateLeverageBtn.text(leverage || 'x1')
-        currentQty.text(minQty)
-        maxQtyEle.text(maxQty)
-        range.attr('min', minQty).attr('max', maxQty).attr('size', stepSize).attr('step', stepSize)
+            editMarginModeBtn.text(marginType || 'CROSSED')
+            updateLeverageBtn.text(`x${leverage}` || 'x1')
+            updateLeverageBtn.val(leverage)
+            currentQty.text(minQty)
+            maxQtyEle.text(maxQty)
 
-        const clear = () => {
-            range.val(0)
-            currentQty.text('0')
-            tooltip.css('left', `0%`).text('0%')
+            range.attr('min', minQty).attr('max', maxQty).attr('size', stepSize).attr('step', stepSize)
+
+            const clear = () => {
+                range.val(0)
+                currentQty.text('0')
+                tooltip.css('left', `0%`).text('0%')
+            }
+
+            $('#buy').click(function () {
+                isBuy = true
+
+                orderBtn.removeClass('sell-btn')
+                orderBtn.addClass('buy-btn')
+                orderBtn.text('BUY')
+
+                $(this).addClass('active')
+                $('#sell').removeClass('active')
+                orderTypeText.text('BUY')
+
+                clear()
+            })
+
+            $('#sell').click(function () {
+                isBuy = false
+
+                orderBtn.removeClass('buy-btn')
+                orderBtn.addClass('sell-btn')
+                orderBtn.text('SELL')
+
+                $(this).addClass('active')
+                $('#buy').removeClass('active')
+                orderTypeText.text('SELL')
+
+                clear()
+            })
+
+            range.on('input', function () {
+                const { max, min } = this
+                const val = $(this).val()
+                const percent = ((val - min) / (max - min)) * 100;
+
+                tooltip.css('left', `${percent}%`).text(`${Math.round(percent)}%`);
+                currentQty.text(val)
+            });
+
+            range.hover(() => {
+                tooltip.show()
+            }, () => {
+                tooltip.hide()
+            })
         }
-
-        $('#buy').click(function () {
-            isBuy = true
-
-            orderBtn.removeClass('sell-btn')
-            orderBtn.addClass('buy-btn')
-            orderBtn.text('BUY')
-
-            $(this).addClass('active')
-            $('#sell').removeClass('active')
-            orderTypeText.text('BUY')
-
-            clear()
-        })
-
-        $('#sell').click(function () {
-            isBuy = false
-
-            orderBtn.removeClass('buy-btn')
-            orderBtn.addClass('sell-btn')
-            orderBtn.text('SELL')
-
-            $(this).addClass('active')
-            $('#buy').removeClass('active')
-            orderTypeText.text('SELL')
-
-            clear()
-        })
-
-        range.on('input', function () {
-            const { max, min } = this
-            const val = $(this).val()
-            const percent = ((val - min) / (max - min)) * 100;
-
-            tooltip.css('left', `${percent}%`).text(`${Math.round(percent)}%`);
-            currentQty.text(val)
-        });
-
-        range.hover(() => {
-            tooltip.show()
-        }, () => {
-            tooltip.hide()
-        })
     })
 </script>

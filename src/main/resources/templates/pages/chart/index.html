@@ -24,13 +24,31 @@
         const userTradeInfo = [[${ userTradeInfo }]]
         const symbolInfo = [[${ symbolInfo }]]
 
-        const { maxQty, minQty, stepSize } = symbolInfo
+        const principal = [[${ #authentication.getPrincipal() }]]
 
-        const krw = userTradeInfo?.krw
-        const usdt = userTradeInfo?.usdt
-        const marginType = userTradeInfo?.marginType
-        const leverage = userTradeInfo?.leverage
-        const brackets = userTradeInfo?.brackets
+        const isOk =
+            symbolInfo?.maxQty != null &&
+            symbolInfo?.minQty != null &&
+            symbolInfo?.stepSize != null &&
+            symbolInfo?.minUsdt != null &&
+            userTradeInfo?.krw != null &&
+            userTradeInfo?.usdt != null &&
+            userTradeInfo?.marginType != null &&
+            userTradeInfo?.leverage != null &&
+            userTradeInfo?.brackets != null
+
+        const isAnonymous = principal !== "anonymousUser"
+
+        const maxQty = symbolInfo?.maxQty ? symbolInfo.maxQty : 0
+        const minQty = symbolInfo?.minQty ? symbolInfo.minQty : 0
+        const stepSize = symbolInfo?.stepSize ? symbolInfo.stepSize : 0
+        const minUsdt = symbolInfo?.minUsdt ? symbolInfo.minUsdt : 0
+
+        const krw = userTradeInfo?.krw ? userTradeInfo.krw : 0
+        const usdt = userTradeInfo?.usdt ? userTradeInfo.usdt : 0
+        const marginType = userTradeInfo?.marginType ? userTradeInfo.marginType : 'CROSSED'
+        const leverage = userTradeInfo?.leverage ? userTradeInfo.leverage : 0
+        const brackets = userTradeInfo?.brackets ? userTradeInfo.brackets : []
     </script>
     <th:block th:replace="~{pages/chart/modal/marginMode}"></th:block>
     <th:block th:replace="~{pages/chart/modal/editLeverage}"></th:block>
@@ -47,7 +65,7 @@
     <script type='module' th:src="@{/js/modules/chart/index.js}"></script>
     <script th:inline="javascript">
         $(() => {
-            const { websocketClient, createCandleOfMinutes, setOrderbook, updateCandleOfMinutes } = myModule
+            const { websocketClient, createCandleOfMinutes, setOrderbook, updateCandleOfMinutes, calculateQty } = myModule
 
             const upbitKrwEle = $('#upbit-krw')
             const upbitUsdEle = $('#upbit-usd')
@@ -56,9 +74,15 @@
             const isolatedEle = $('#isolated')
             const crossedEle = $('#crossed')
 
+            const range = $('#qty') // order.html에 있는 qty range input
+            const leverageEle = $('#update-leverage-modal') // order.html에 있는 leverage
+            const maxQtyEle = $('#max-qty') // order.html에 있는 max qty text ele
 
-            if (krw) upbitKrwEle.text(Math.floor(krw).toLocaleString())
-            if (usdt) binanceUsdEle.text(usdt.toLocaleString())
+            // wallet update
+            upbitKrwEle.text(Math.floor(krw).toLocaleString())
+            binanceUsdEle.text(usdt.toLocaleString())
+
+            // margin type update
             if (marginType === 'ISOLATED') isolatedEle.addClass('select')
             else crossedEle.addClass('select')
 
@@ -183,6 +207,11 @@
                 }
             })
 
+            const prev = {
+                minQty: Number(range.attr('min')),
+                maxQty: Number(range.attr('max')),
+            }
+
             function handleMessage(message) {
                 const { premium, orderbookPair } = JSON.parse(message.data)
 
@@ -192,40 +221,61 @@
                 setOrderbook('bids', { upbit: upbit.bids, binance: binance.bids }, premium)
 
                 $('.premium').text(`${premium.premium}%`)
+
                 const usdToKrw = premium.usdToKrw
                 $('#usdToKrw').text(usdToKrw)
 
                 updateCandleOfMinutes(chartDataSets, premium)
 
-                if (krw) upbitUsdEle.text((krw / usdToKrw).toLocaleString())
-                if (usdt) binanceKrwEle.text(Math.floor(usdt * usdToKrw).toLocaleString())
-
+                // chart draw
                 chart.update();
+
+                if (isAnonymous && isOk) {
+                    // wallet update2
+                    upbitUsdEle.text((krw / usdToKrw).toLocaleString())
+                    binanceKrwEle.text(Math.floor(usdt * usdToKrw).toLocaleString())
+
+                    const leverage = leverageEle.val()
+
+                    const { max, min } = calculateQty(premium, krw, usdt, Number(leverage), symbolInfo)
+                    const { maxQty, minQty } = prev
+
+                    if (max !== maxQty) {
+                        prev.maxQty = max
+                        range.attr('max', max)
+                        maxQtyEle.text(max)
+                    }
+                    if (min !== minQty) {
+                    }
+
+                    range.attr('min', min)
+                    prev.minQty = min
+                }
             }
 
             websocketClient.setMessageHandler(handleMessage)
 
             websocketClient.connect()
 
-            $('.btn').on('click', e => {
-                const { id } = e.target
+            // $('.btn').on('click', e => {
+            //     const { id } = e.target
 
-                const btnIds = ['min', 'min3', 'min5', 'min15']
+            //     const btnIds = ['min', 'min3', 'min5', 'min15']
 
-                const idHash = {
-                    min: 1,
-                    min3: 3,
-                    min5: 5,
-                    min15: 15,
-                }
+            //     const idHash = {
+            //         min: 1,
+            //         min3: 3,
+            //         min5: 5,
+            //         min15: 15,
+            //     }
 
-                stepSize = idHash[id]
+            //     stepSize = idHash[id]
 
-                const restBtnIds = btnIds.filter(btnId => btnId !== id)
+            //     const restBtnIds = btnIds.filter(btnId => btnId !== id)
 
-                $(`#${id}`).css('font-weight', 600)
-                restBtnIds.forEach(v => $(`#${v}`).css('font-weight', 500))
-            })
+            //     $(`#${id}`).css('font-weight', 600)
+            //     restBtnIds.forEach(v => $(`#${v}`).css('font-weight', 500))
+            // })
         })
     </script>
 </main>

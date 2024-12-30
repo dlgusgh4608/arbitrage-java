@@ -195,6 +195,10 @@
     align-items: center;
 }
 
+.order-disabled {
+    min-height: 300px;
+}
+
 @media(max-width: 1400px) {
     .main-section {
         flex-direction: column;

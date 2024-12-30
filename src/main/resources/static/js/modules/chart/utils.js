@@ -94,3 +94,41 @@ export const setOrderbook = (cls = '', { upbit, binance }, premium) => {
         }
     })
 }
+
+function countDecimals(value) {
+    if (Math.floor(value) === value) return 0
+    return value.toString().split(".")[1]?.length || 0
+}
+
+function floorTo(value, to) {
+    return Math.floor(value * Math.pow(10, to)) / Math.pow(10, to)
+}
+
+export const calculateQty = (
+    premium,
+    krw,
+    usdt,
+    currentLeverage = 0,
+    defaultSymbolInfo = { maxQty: 0, minQty: 0, stepSize: 0, minUsdt: 0 }
+) => {
+    if (!krw) return { min: 0, max: 0 }
+    if (!usdt) return { min: 0, max: 0 }
+    if (currentLeverage < 0) return { min: 0, max: 0 }
+    if (!premium?.usdToKrw) return { min: 0, max: 0 }
+
+    const { upbit, binance } = premium
+    const { maxQty, minQty, minUsdt, stepSize } = defaultSymbolInfo
+
+    const decimalPlaces = countDecimals(stepSize)
+
+    const upbitQty = floorTo(krw / upbit, decimalPlaces)
+    const binanceQty = floorTo((usdt * currentLeverage) / binance, decimalPlaces)
+    const minimumQtyFromExchange = floorTo(minUsdt / binance, decimalPlaces)
+
+    const min = Math.min(upbitQty, binanceQty, minQty, minimumQtyFromExchange)
+    const maxQtyOfExchange = Math.min(upbitQty, binanceQty)
+
+    const max = Math.min(maxQtyOfExchange, maxQty)
+
+    return { max, min }
+}

@@ -44,21 +44,38 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
 
             Map<String, BinanceExchangeInfoResponse> exchangeHashMap = new HashMap<>();
 
-            String CURRENT_FILTER_TYPE = "MARKET_LOT_SIZE";
+            String MARKET_LOT_SIZE = "MARKET_LOT_SIZE"; // 시장가 체결 필터
+            String MIN_NOTIONAL = "MIN_NOTIONAL"; // 최소 주문금액 필터
 
             for (JsonNode symbol : symbols) {
                 String symbolName = symbol.get("baseAsset").asText();
-                String quoteAsset = symbol.get("quoteAsset").asText();
+                String symbolFullName = symbol.get("symbol").asText();
 
-                if (supportedSymbolNames.contains(symbolName) && "USDT".equals(quoteAsset)) {
+                if (supportedSymbolNames.stream().map(s -> s.concat("USDT")).toList()
+                        .contains(symbolFullName)) {
+
                     JsonNode filters = symbol.get("filters");
 
+                    Double maxQty = null;
+                    Double minQty = null;
+                    Double stepSize = null;
+                    Double minUsdt = null;
+
                     for (JsonNode filter : filters) {
-                        if (CURRENT_FILTER_TYPE.equals(filter.get("filterType").asText())) {
-                            exchangeHashMap.put(symbolName, objectMapper.treeToValue(filter,
-                                    BinanceExchangeInfoResponse.class));
+                        String filterType = filter.get("filterType").asText();
+
+                        if (MARKET_LOT_SIZE.equals(filterType)) {
+                            maxQty = filter.get("maxQty").asDouble();
+                            minQty = filter.get("minQty").asDouble();
+                            stepSize = filter.get("stepSize").asDouble();
+                        } else if (MIN_NOTIONAL.equals(filterType)) {
+                            minUsdt = filter.get("notional").asDouble();
                         }
                     }
+
+                    exchangeHashMap.put(symbolName,
+                            new BinanceExchangeInfoResponse(maxQty, minQty, stepSize, minUsdt));
+
                 }
             }
 

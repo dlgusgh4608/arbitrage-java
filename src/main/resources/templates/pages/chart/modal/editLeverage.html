@@ -38,82 +38,83 @@
 </div>
 <script th:inline="javascript">
     $(function () {
-        const MAX = brackets[0].initialLeverage
-        const MIN = 1
+        if (isAnonymous && isOk) {
+            const MAX = brackets[0]?.initialLeverage
+            const MIN = 1
 
-        const inputContainer = $('.leverage-input-container')
-        const inputWrap = $('.leverage-input-wrap')
-        const input = $('#leverage-input')
-        const range = $('#leverage-range')
-        const tooltip = $('#leverage-tooltip')
-        const maxLeverageValue = $('#max-leverage-value')
+            const inputContainer = $('.leverage-input-container')
+            const inputWrap = $('.leverage-input-wrap')
+            const input = $('#leverage-input')
+            const range = $('#leverage-range')
+            const tooltip = $('#leverage-tooltip')
+            const maxLeverageValue = $('#max-leverage-value')
 
+            input.attr('max', MAX)
+            range.attr('max', MAX)
 
+            $('#update-leverage-modal').on('click', () => {
+                const modal = new bootstrap.Modal($('#leverage-modal'));
+                modal.show();
+            })
 
-        input.attr('max', MAX)
-        range.attr('max', MAX)
+            input.focusin(() => {
+                inputContainer.css('border', '1px solid var(--point-color)')
+            })
 
-        $('#update-leverage-modal').on('click', () => {
-            const modal = new bootstrap.Modal($('#leverage-modal'));
-            modal.show();
-        })
+            input.focusout(() => {
+                inputContainer.css('border', '1px solid var(--gray9)').css('opacity', '.7')
+            })
 
-        input.focusin(() => {
-            inputContainer.css('border', '1px solid var(--point-color)')
-        })
+            input.keyup(e => {
+                const value = e.target.value
 
-        input.focusout(() => {
-            inputContainer.css('border', '1px solid var(--gray9)').css('opacity', '.7')
-        })
+                const regex = /\D/g // is not number
+                const replaceValue = value.replace(regex, '')
 
-        input.keyup(e => {
-            const value = e.target.value
+                if (Number(replaceValue) > MAX) {
+                    return input.val(MAX)
+                }
 
-            const regex = /\D/g // is not number
-            const replaceValue = value.replace(regex, '')
+                if (Number(replaceValue) < MIN) {
+                    return input.val(MIN)
+                }
 
-            if (Number(replaceValue) > MAX) {
-                return input.val(MAX)
-            }
+                input.val(replaceValue)
+            })
 
-            if (Number(replaceValue) < MIN) {
-                return input.val(MIN)
-            }
+            input.change(e => range.val(e.target.value).trigger('input'))
 
-            input.val(replaceValue)
-        })
+            range.on('input', function () {
+                const { max, min } = this
+                const val = $(this).val()
+                const percent = ((val - min) / (max - min)) * 100;
 
-        input.change(e => range.val(e.target.value).trigger('input'))
+                const currentBracket = brackets.find(v => v?.initialLeverage <= Number(val))
+                const notionalCap = currentBracket?.notionalCap ? currentBracket.notionalCap : 0
+                maxLeverageValue.text(notionalCap.toLocaleString())
+                tooltip.css('left', `${percent}%`).text(val);
+                input.val(val)
+            })
 
-        range.on('input', function () {
-            const { max, min } = this
-            const val = $(this).val()
-            const percent = ((val - min) / (max - min)) * 100;
+            range.hover(() => {
+                tooltip.show()
+            }, () => {
+                tooltip.hide()
+            })
 
-            const { notionalCap } = brackets.find(v => v.initialLeverage <= Number(val))
-            maxLeverageValue.text(notionalCap.toLocaleString())
-            tooltip.css('left', `${percent}%`).text(val);
-            input.val(val)
-        })
+            $('#minus').on('click', () => {
+                const leverage = Number(input.val())
+                if (leverage > MIN) input.val(leverage - 1).trigger('change')
+            })
 
-        range.hover(() => {
-            tooltip.show()
-        }, () => {
-            tooltip.hide()
-        })
+            $('#plus').on('click', () => {
+                const leverage = Number(input.val())
+                if (leverage < MAX) input.val(leverage + 1).trigger('change')
+            })
 
-        $('#minus').on('click', () => {
-            const leverage = Number(input.val())
-            if (leverage > MIN) input.val(leverage - 1).trigger('change')
-        })
+            input.val(leverage).trigger('change')
 
-        $('#plus').on('click', () => {
-            const leverage = Number(input.val())
-            if (leverage < MAX) input.val(leverage + 1).trigger('change')
-        })
-
-        input.val(leverage).trigger('change')
-
-        // update-leverage
+            // update-leverage
+        }
     })
 </script>

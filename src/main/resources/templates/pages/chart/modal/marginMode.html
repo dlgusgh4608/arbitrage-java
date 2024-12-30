@@ -31,11 +31,13 @@
 </div>
 <script th:inline="javascript">
     $(function () {
-        $('#edit-margin-mode').on('click', () => {
-            const modal = new bootstrap.Modal($('#margin-mode-modal'));
-            modal.show();
-        })
+        if (isAnonymous && isOk) {
+            $('#edit-margin-mode').on('click', () => {
+                const modal = new bootstrap.Modal($('#margin-mode-modal'));
+                modal.show();
+            })
 
-        // #update-margin-mode 
+            // #update-margin-mode 
+        }
     })
 </script>
