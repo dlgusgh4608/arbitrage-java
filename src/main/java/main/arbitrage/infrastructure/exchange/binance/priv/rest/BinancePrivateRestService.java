@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Side;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Type;
 import main.arbitrage.infrastructure.exchange.binance.dto.request.BinancePostOrderRequest;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceChangeLeverageResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceGetAccountResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceLeverageBracketResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
@@ -143,5 +144,33 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
                         .constructCollectionType(List.class, BinanceLeverageBracketResponse.class));
 
         return responseList.get(0);
+    }
+
+    public BinanceChangeLeverageResponse changeLeverage(String symbolName, int leverage)
+            throws Exception {
+        String symbol = convertSymbol(symbolName);
+
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("timestamp", System.currentTimeMillis());
+        params.put("symbol", symbol);
+        params.put("leverage", leverage);
+        String queryString = generateToken(params);
+
+        RequestBody body = RequestBody.create(new byte[0], null);
+
+        Request request =
+                new Request.Builder().url(DEFAULT_URL + "/v1/leverage" + "?" + queryString)
+                        .addHeader("Content-Type", "application/json")
+                        .addHeader("X-MBX-APIKEY", accessKey).post(body).build();
+
+
+        Response response = okHttpClient.newCall(request).execute();
+
+        String responseBody = response.body().string();
+
+        if (!response.isSuccessful())
+            validateResponse(responseBody);
+
+        return objectMapper.readValue(responseBody, BinanceChangeLeverageResponse.class);
     }
 }

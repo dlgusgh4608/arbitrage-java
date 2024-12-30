@@ -14,6 +14,7 @@ import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceChangeLeverageResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceLeverageBracketResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceSymbolInfoResponse;
@@ -24,6 +25,7 @@ import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums;
 import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetOrderResponse;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
 import main.arbitrage.presentation.dto.request.BuyOrderRequest;
+import main.arbitrage.presentation.dto.request.UpdateLeverageRequest;
 import main.arbitrage.presentation.dto.response.BuyOrderResponse;
 import main.arbitrage.presentation.dto.view.UserTradeInfo;
 
@@ -110,5 +112,29 @@ public class OrderApplicationService {
         return UserTradeInfo.builder().krw(Double.valueOf(krw)).usdt(Double.valueOf(usdt))
                 .marginType(symbolInfo.marginType()).leverage(symbolInfo.leverage())
                 .brackets(binanceLeverageBracketResponse.brackets()).build();
+    }
+
+
+    @Transactional
+    public BinanceChangeLeverageResponse updateLeverage(UpdateLeverageRequest req)
+            throws Exception {
+        Long userId = SecurityUtil.getUserId();
+
+        Optional<UserEnv> userEnvOptional = userEnvService.findByUserId(userId);
+
+        if (userEnvOptional.isEmpty())
+            throw new IllegalArgumentException("UserEnv is not found");
+
+        UserEnv userEnv = userEnvOptional.get();
+
+        ExchangePrivateRestPair upbitExchangePrivateRestPair =
+                exchangePrivateRestFactory.create(userEnv);
+        BinancePrivateRestService binanceService = upbitExchangePrivateRestPair.getBinance();
+
+
+        BinanceChangeLeverageResponse response =
+                binanceService.changeLeverage(req.symbol(), req.leverage());
+
+        return response;
     }
 }

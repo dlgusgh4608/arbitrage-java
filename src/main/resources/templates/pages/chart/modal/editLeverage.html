@@ -48,11 +48,14 @@
             const range = $('#leverage-range')
             const tooltip = $('#leverage-tooltip')
             const maxLeverageValue = $('#max-leverage-value')
+            const updateLeverageEle = $('#update-leverage')
+
+            const modalBtn = $('#update-leverage-modal')
 
             input.attr('max', MAX)
             range.attr('max', MAX)
 
-            $('#update-leverage-modal').on('click', () => {
+            modalBtn.on('click', () => {
                 const modal = new bootstrap.Modal($('#leverage-modal'));
                 modal.show();
             })
@@ -115,6 +118,33 @@
             input.val(leverage).trigger('change')
 
             // update-leverage
+            updateLeverageEle.click(async () => {
+                const value = Number(input.val())
+                const maxValue = Number(input.attr('max'))
+                const minValue = Number(input.attr('min'))
+
+                if (maxValue < value || minValue > value) return alert('invalid value')
+
+                const modal = bootstrap.Modal.getInstance($('#leverage-modal'));
+
+                const payload = {
+                    symbol,
+                    leverage: value
+                }
+
+                const { success, data } = await fetcher('PATCH', '/api/update-leverage', payload)
+
+                if (success) {
+                    const leverage = data.leverage
+                    input.val(leverage)
+                    modalBtn.text(`x${leverage}`)
+                    modalBtn.val(leverage)
+                    modal.hide()
+                } else {
+                    alert('서버 오류입니다. 다시 시도해주세요.')
+                }
+            })
+
         }
     })
 </script>
