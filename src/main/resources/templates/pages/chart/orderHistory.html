@@ -1,0 +1,67 @@
+<section class="container-xxl pt-2 order-history">
+    <article class="w-100 p-3 shadow rounded ele-bg-color">
+        <ul class="nav nav-underline mb-3 order-history-nav">
+            <li class="nav-item">
+                <div class="nav-link order-history-nav-item active" id="position">
+                    <span class="text-color">Position</span>
+                </div>
+            </li>
+            <li class="nav-item">
+                <div class="nav-link order-history-nav-item" id="order-history">
+                    <span class="text-color">Order History</span>
+                </div>
+            </li>
+        </ul>
+        <div>
+            <div class="d-flex">
+                <div class="zz">심볼</div>
+                <div class="zz">바이낸스 평단가</div>
+                <div class="zz">바이낸스 수량</div>
+                <div class="zz">바이낸스 청산가</div>
+                <div class="zz">바이낸스 수익률</div>
+                <div class="zz">업비트 평단가</div>
+                <div class="zz">업비트 수량</div>
+                <div class="zz">업비트 수익률</div>
+            </div>
+            <div class="d-flex">
+                <div class="zz" th:text="${#strings.toUpperCase(param.symbol)}"></div>
+                <div class="zz" id="binance-avg-price"></div>
+                <div class="zz" id="binance-qty"></div>
+                <div class="zz" id="binance-liquidation-price"></div>
+                <div class="zz" id="binance-profit"></div>
+                <div class="zz" id="upbit-avg-price"></div>
+                <div class="zz" id="upbit-qty"></div>
+                <div class="zz" id="upbit-profit"></div>
+            </div>
+    </article>
+</section>
+<script th:inline="javascript">
+    $(() => {
+        if (upbitPosition && binancePosition) {
+            const binanceAvgPrice = $("#binance-avg-price")
+            const binanceQty = $("#binance-qty")
+            const binanceLiquidationPrice = $('#binance-liquidation-price')
+            const upbitAvgPrice = $("#upbit-avg-price")
+            const upbitQty = $("#upbit-qty")
+
+            const { entryPrice, liquidationPrice, positionAmt } = binancePosition
+            const { avg_buy_price, balance } = upbitPosition
+
+            binanceAvgPrice.text(Number(entryPrice).toLocaleString())
+            binanceQty.text(Math.abs(Number(positionAmt)))
+            binanceLiquidationPrice.text(liquidationPrice)
+            upbitAvgPrice.text(Number(avg_buy_price).toLocaleString())
+            upbitQty.text(balance)
+        }
+
+        $('#position').click(function () {
+            $(this).addClass('active')
+            $('#order-history').removeClass('active')
+        })
+
+        $('#order-history').click(function () {
+            $(this).addClass('active')
+            $('#position').removeClass('active')
+        })
+    })
+</script>

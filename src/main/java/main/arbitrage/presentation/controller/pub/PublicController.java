@@ -149,7 +149,7 @@ public class PublicController {
                 collectorScheduleService.getExchangeInfo(upperCaseSymbol);
 
         UserTradeInfo userTradeInfo = authContext != null
-                ? orderApplicationService.getSymbolInfo(symbol, authContext.getUserId())
+                ? orderApplicationService.getTradeInfo(symbol, authContext.getUserId())
                 : null;
 
         model.addAttribute("supportedSymbols", supportedSymbols);

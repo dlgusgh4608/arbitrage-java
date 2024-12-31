@@ -33,7 +33,7 @@
     <div class="d-flex justify-content-between mb-3">
         <div>
             <span class="fw-semibold text-gray7" id="order-type-text">BUY </span>
-            <span class="qty-text" id="qty-text">-</span>
+            <span class="qty-text" id="qty-text">0</span>
             <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
         </div>
         <div>
@@ -121,7 +121,6 @@
             editMarginModeBtn.text(marginType || 'CROSSED')
             updateLeverageBtn.text(`x${leverage}` || 'x1')
             updateLeverageBtn.val(leverage)
-            currentQty.text(minQty)
             maxQtyEle.text(maxQty)
 
             range.attr('min', minQty).attr('max', maxQty).attr('size', stepSize).attr('step', stepSize)
@@ -174,6 +173,29 @@
             }, () => {
                 tooltip.hide()
             })
+
+            // order
+            orderBtn.click(async () => {
+                const payload = {
+                    orderType: 'BUY',
+                    symbol,
+                    qty: range.val()
+                }
+
+                console.log(payload)
+
+                const { success, data } = await fetcher('POST', '/api/order', payload)
+
+                if (success) {
+                    console.log('success')
+                    console.log(data)
+                } else {
+                    console.log('failure')
+                    console.log(data)
+                }
+            })
+
+
         }
     })
 </script>

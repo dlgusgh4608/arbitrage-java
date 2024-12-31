@@ -1,5 +1,5 @@
 import WebsocketClient from '../WebsocketClient.js'
-import { calculateQty, createCandleOfMinutes, setOrderbook, updateCandleOfMinutes } from './utils.js'
+import { createCandleOfMinutes, setOrderbook, updateCandleOfMinutes, updateOrderInfo, updatePosition } from './utils.js'
 
 const URL = `ws://localhost:8000/ws/chart/${symbol}`
 const client = new WebsocketClient(URL)
@@ -10,5 +10,6 @@ window.myModule = {
     createCandleOfMinutes,
     setOrderbook,
     updateCandleOfMinutes,
-    calculateQty,
+    updateOrderInfo,
+    updatePosition,
 }

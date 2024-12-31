@@ -15,6 +15,14 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-crosshair"></script>
+
+    <style>
+        .zz {
+            flex: 1;
+            font-size: .7rem;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <main layout:fragment="content">
     <!-- 전역변수 선언 -->
@@ -49,10 +57,12 @@
         const marginType = userTradeInfo?.marginType ? userTradeInfo.marginType : 'CROSSED'
         const leverage = userTradeInfo?.leverage ? userTradeInfo.leverage : 0
         const brackets = userTradeInfo?.brackets ? userTradeInfo.brackets : []
+        const upbitPosition = userTradeInfo?.upbitPosition
+        const binancePosition = userTradeInfo?.binancePosition
     </script>
     <th:block th:replace="~{pages/chart/modal/marginMode}"></th:block>
     <th:block th:replace="~{pages/chart/modal/editLeverage}"></th:block>
-    <section class="container-xxl d-flex pt-5 gap-2 main-section">
+    <section class="container-xxl d-flex justify-content-center pt-5 gap-2 main-section">
         <section class="d-flex flex-column col-9 gap-2 chart-section">
             <th:block th:replace="~{pages/chart/exchangeRate}"></th:block>
             <th:block th:replace="~{pages/chart/chart}"></th:block>
@@ -62,10 +72,19 @@
             <th:block th:replace="~{pages/chart/order}"></th:block>
         </section>
     </section>
-    <script type='module' th:src="@{/js/modules/chart/index.js}"></script>
+    <th:block th:replace="~{pages/chart/orderHistory}"></th:block>
+    <script type='module' th:src=" @{/js/modules/chart/index.js}">
+    </script>
     <script th:inline="javascript">
         $(() => {
-            const { websocketClient, createCandleOfMinutes, setOrderbook, updateCandleOfMinutes, calculateQty } = myModule
+            const {
+                websocketClient,
+                createCandleOfMinutes,
+                setOrderbook,
+                updateCandleOfMinutes,
+                updatePosition,
+                updateOrderInfo
+            } = myModule
 
             const upbitKrwEle = $('#upbit-krw')
             const upbitUsdEle = $('#upbit-usd')
@@ -77,6 +96,8 @@
             const range = $('#qty') // order.html에 있는 qty range input
             const leverageEle = $('#update-leverage-modal') // order.html에 있는 leverage
             const maxQtyEle = $('#max-qty') // order.html에 있는 max qty text ele
+            const binanceProfitEle = $('#binance-profit') // orderHistory에 있는 ele
+            const upbitProfitEle = $('#upbit-profit') // orderHistory에 있는 ele
 
             // wallet update
             upbitKrwEle.text(Math.floor(krw).toLocaleString())
@@ -212,6 +233,7 @@
                 maxQty: Number(range.attr('max')),
             }
 
+
             function handleMessage(message) {
                 const { premium, orderbookPair } = JSON.parse(message.data)
 
@@ -230,31 +252,14 @@
                 // chart draw
                 chart.update();
 
-                if (isAnonymous && isOk) {
-                    // wallet update2
-                    upbitUsdEle.text((krw / usdToKrw).toLocaleString())
-                    binanceKrwEle.text(Math.floor(usdt * usdToKrw).toLocaleString())
+                // update order info
+                updateOrderInfo(premium, usdToKrw, leverageEle, maxQtyEle, range, upbitUsdEle, binanceKrwEle, prev)
 
-                    const leverage = leverageEle.val()
-
-                    const { max, min } = calculateQty(premium, krw, usdt, Number(leverage), symbolInfo)
-                    const { maxQty, minQty } = prev
-
-                    if (max !== maxQty) {
-                        prev.maxQty = max
-                        range.attr('max', max)
-                        maxQtyEle.text(max)
-                    }
-                    if (min !== minQty) {
-                    }
-
-                    range.attr('min', min)
-                    prev.minQty = min
-                }
+                // update position
+                updatePosition(premium, binanceProfitEle, upbitProfitEle)
             }
 
             websocketClient.setMessageHandler(handleMessage)
-
             websocketClient.connect()
 
             // $('.btn').on('click', e => {

@@ -12,8 +12,8 @@ import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.order.service.OrderApplicationService;
 import main.arbitrage.application.user.service.UserApplicationService;
 import main.arbitrage.global.util.cookie.CookieUtil;
-import main.arbitrage.presentation.dto.request.BuyOrderRequest;
 import main.arbitrage.presentation.dto.request.EditUserNicknameRequest;
+import main.arbitrage.presentation.dto.request.OrderRequest;
 import main.arbitrage.presentation.dto.request.UpdateLeverageRequest;
 import main.arbitrage.presentation.dto.request.UpdateMarginTypeRequest;
 import main.arbitrage.presentation.restController.priv.constant.PrivateRestControllerUrlConstants;
@@ -33,10 +33,9 @@ public class RestPrivateController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping(PrivateRestControllerUrlConstants.BUY_ORDER)
-    public ResponseEntity<?> postBuyOrder(@Valid @RequestBody BuyOrderRequest req)
-            throws Exception {
-        return ResponseEntity.ok(orderApplicationService.createBuyOrder(req));
+    @PostMapping(PrivateRestControllerUrlConstants.ORDER)
+    public ResponseEntity<?> postBuyOrder(@Valid @RequestBody OrderRequest req) throws Exception {
+        return ResponseEntity.ok(orderApplicationService.createOrder(req));
     }
 
     @PatchMapping(PrivateRestControllerUrlConstants.UPDATE_LEVERAGE)

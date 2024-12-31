@@ -49,6 +49,17 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
                 .findFirst();
     }
 
+    public Optional<UpbitGetAccountResponse> getCurrentSymbol(
+            List<UpbitGetAccountResponse> originArray, String symbolName) {
+        return originArray.stream()
+                .filter(upbitAccount -> upbitAccount.currency().equals(symbolName.toUpperCase()))
+                .findFirst();
+    }
+
+    public Optional<UpbitGetAccountResponse> getKRW(List<UpbitGetAccountResponse> originArray) {
+        return getCurrentSymbol(originArray, "KRW");
+    }
+
     public String order(String market, Side side, OrdType ordType, Double price, Double volume)
             throws UpbitRestException, IOException {
         if (market == null || side == null || ordType == null) {

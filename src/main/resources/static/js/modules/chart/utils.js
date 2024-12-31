@@ -104,7 +104,42 @@ function floorTo(value, to) {
     return Math.floor(value * Math.pow(10, to)) / Math.pow(10, to)
 }
 
-export const calculateQty = (
+
+
+export const updatePosition = (premium, binanceProfitEle, upbitProfitEle) => {
+    if (!(upbitPosition && binancePosition)) return
+
+    const { binance, upbit } = premium
+    const { avg_buy_price } = upbitPosition
+    const { entryPrice } = binancePosition
+
+    const calculateLongProfitRate = (entryPrice, markPrice) => {
+        return ((markPrice - entryPrice) / entryPrice) * 100;
+    }
+
+    const calculateShortProfitRate = (entryPrice, markPrice) => {
+        return calculateLongProfitRate(entryPrice, markPrice) * -1
+    }
+
+    const binanceProfitRate = calculateShortProfitRate(entryPrice, binance)
+    const upbitProfitRate = calculateLongProfitRate(avg_buy_price, upbit)
+
+    if (binanceProfitRate > 0) {
+        binanceProfitEle.addClass('text-up-color')
+    } else {
+        binanceProfitEle.addClass('text-down-color')
+    }
+    if (upbitProfitRate > 0) {
+        upbitProfitEle.addClass('text-up-color')
+    } else {
+        upbitProfitEle.addClass('text-down-color')
+    }
+
+    binanceProfitEle.text(binanceProfitRate.toFixed(2).concat('%'))
+    upbitProfitEle.text(upbitProfitRate.toFixed(2).concat('%'))
+}
+
+const calculateQty = (
     premium,
     krw,
     usdt,
@@ -125,10 +160,43 @@ export const calculateQty = (
     const binanceQty = floorTo((usdt * currentLeverage) / binance, decimalPlaces)
     const minimumQtyFromExchange = floorTo(minUsdt / binance, decimalPlaces)
 
-    const min = Math.min(upbitQty, binanceQty, minQty, minimumQtyFromExchange)
     const maxQtyOfExchange = Math.min(upbitQty, binanceQty)
+
+    const min = Math.max(minQty, minimumQtyFromExchange)
 
     const max = Math.min(maxQtyOfExchange, maxQty)
 
     return { max, min }
+}
+
+export const updateOrderInfo = (
+    premium,
+    usdToKrw,
+    leverageEle,
+    maxQtyEle,
+    range,
+    upbitUsdEle,
+    binanceKrwEle,
+    prev
+) => {
+    if (!(isAnonymous && isOk)) return
+
+    upbitUsdEle.text((krw / usdToKrw).toLocaleString())
+    binanceKrwEle.text(Math.floor(usdt * usdToKrw).toLocaleString())
+
+    const leverage = leverageEle.val()
+
+    const { max, min } = calculateQty(premium, krw, usdt, Number(leverage), symbolInfo)
+    const { maxQty, minQty } = prev
+
+    if (max !== maxQty) {
+        prev.maxQty = max
+        range.attr('max', max)
+        maxQtyEle.text(max)
+    }
+
+    if (min !== minQty) {
+        range.attr('min', min)
+        prev.minQty = min
+    }
 }

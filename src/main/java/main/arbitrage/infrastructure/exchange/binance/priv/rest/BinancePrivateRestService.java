@@ -15,6 +15,7 @@ import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceChange
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceGetAccountResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceLeverageBracketResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinancePositionInfoResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceSymbolInfoResponse;
 import main.arbitrage.infrastructure.exchange.binance.exception.BinanceRestException;
 import okhttp3.OkHttpClient;
@@ -117,6 +118,9 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
                 objectMapper.readValue(responseBody, objectMapper.getTypeFactory()
                         .constructCollectionType(List.class, BinanceSymbolInfoResponse.class));
 
+        if (responseList.isEmpty())
+            return null;
+
         return responseList.get(0);
     }
 
@@ -143,6 +147,9 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
         List<BinanceLeverageBracketResponse> responseList =
                 objectMapper.readValue(responseBody, objectMapper.getTypeFactory()
                         .constructCollectionType(List.class, BinanceLeverageBracketResponse.class));
+
+        if (responseList.isEmpty())
+            return null;
 
         return responseList.get(0);
     }
@@ -174,6 +181,37 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
         return objectMapper.readValue(responseBody, BinanceChangeLeverageResponse.class);
     }
+
+    public BinancePositionInfoResponse getPositionInfo(String symbolName) throws Exception {
+        String symbol = convertSymbol(symbolName);
+
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("timestamp", System.currentTimeMillis());
+        params.put("symbol", symbol);
+        String queryString = generateToken(params);
+
+        Request request =
+                new Request.Builder().url(DEFAULT_URL + "/v3/positionRisk" + "?" + queryString)
+                        .addHeader("Content-Type", "application/json")
+                        .addHeader("X-MBX-APIKEY", accessKey).get().build();
+
+        Response response = okHttpClient.newCall(request).execute();
+
+        String responseBody = response.body().string();
+
+        if (!response.isSuccessful())
+            validateResponse(responseBody);
+
+        List<BinancePositionInfoResponse> responseList =
+                objectMapper.readValue(responseBody, objectMapper.getTypeFactory()
+                        .constructCollectionType(List.class, BinancePositionInfoResponse.class));
+
+        if (responseList.isEmpty())
+            return null;
+
+        return responseList.get(0);
+    }
+
 
     public boolean updateMarginType(String symbolName, MarginType marginType) throws Exception {
         String symbol = convertSymbol(symbolName);
