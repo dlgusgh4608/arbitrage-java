@@ -9,7 +9,7 @@ import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 public class ExchangeRateDTO {
     private final String toCurrency;
     private final String fromCurrency;
-    private final double rate;
+    private final float rate;
 
     public static ExchangeRate toEntity(ExchangeRateDTO dto) {
         return ExchangeRate.builder().toCurrency(dto.getToCurrency())
