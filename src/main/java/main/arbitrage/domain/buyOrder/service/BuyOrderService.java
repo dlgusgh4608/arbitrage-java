@@ -32,7 +32,7 @@ public class BuyOrderService {
                 double upbitQty = upbitOrderRes.executedVolume(); // 업비트 구매된 개수
                 double upbitAvgPrice = Math.round(upbitTotalPrice / upbitQty); // 업비트 평단가
                 double upbitCommission = upbitOrderRes.paidFee(); // 업비트 수수료
-                double usdToKrw = exchangeRate.getRate(); // 원달러 환율
+                float usdToKrw = exchangeRate.getRate(); // 원달러 환율
 
                 double premium = MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice,
                                 usdToKrw);
