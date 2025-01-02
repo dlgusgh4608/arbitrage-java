@@ -12,27 +12,84 @@
                 </div>
             </li>
         </ul>
-        <div>
-            <div class="d-flex">
-                <div class="zz">심볼</div>
-                <div class="zz">바이낸스 평단가</div>
-                <div class="zz">바이낸스 수량</div>
-                <div class="zz">바이낸스 청산가</div>
-                <div class="zz">바이낸스 수익률</div>
-                <div class="zz">업비트 평단가</div>
-                <div class="zz">업비트 수량</div>
-                <div class="zz">업비트 수익률</div>
+        <!-- position -->
+        <div id="position-wrap" class="d-block"
+            th:with="hasPosition=${userTradeInfo.upbitPosition != null && userTradeInfo.binancePosition != null ? true : false}">
+            <div class="d-flex align-items-center py-2">
+                <div class="history-item">심볼</div>
+                <div class="history-item">바이낸스 평단가</div>
+                <div class="history-item">바이낸스 수량</div>
+                <div class="history-item">바이낸스 청산가</div>
+                <div class="history-item">바이낸스 수익률</div>
+                <div class="history-item">업비트 평단가</div>
+                <div class="history-item">업비트 수량</div>
+                <div class="history-item">업비트 수익률</div>
             </div>
-            <div class="d-flex">
-                <div class="zz" th:text="${#strings.toUpperCase(param.symbol)}"></div>
-                <div class="zz" id="binance-avg-price"></div>
-                <div class="zz" id="binance-qty"></div>
-                <div class="zz" id="binance-liquidation-price"></div>
-                <div class="zz" id="binance-profit"></div>
-                <div class="zz" id="upbit-avg-price"></div>
-                <div class="zz" id="upbit-qty"></div>
-                <div class="zz" id="upbit-profit"></div>
+            <div class="d-flex align-items-center py-2" th:if="${hasPosition}">
+                <div class="history-item" th:text="${#strings.toUpperCase(param.symbol)}"></div>
+                <div class="history-item" id="binance-avg-price"></div>
+                <div class="history-item" id="binance-qty"></div>
+                <div class="history-item" id="binance-liquidation-price"></div>
+                <div class="history-item" id="binance-profit"></div>
+                <div class="history-item" id="upbit-avg-price"></div>
+                <div class="history-item" id="upbit-qty"></div>
+                <div class="history-item" id="upbit-profit"></div>
             </div>
+        </div>
+        <!-- order history -->
+        <div id="order-history-wrap" class="d-none">
+            <div class="d-flex align-items-center py-2">
+                <div class="order-history-item-empty"></div>
+                <div class="history-item">심볼</div>
+                <div class="history-item">타입</div>
+                <div class="history-item">바이낸스 평단가</div>
+                <div class="history-item">바이낸스 수량</div>
+                <div class="history-item">바이낸스 수수료</div>
+                <div class="history-item">업비트 평단가</div>
+                <div class="history-item">업비트 수량</div>
+                <div class="history-item">업비트 수수료</div>
+                <div class="history-item">기준 환율</div>
+                <div class="history-item">수수료 타입</div>
+                <div class="history-item">프리미엄</div>
+                <div class="history-item">거래 상태 / 수익률</div>
+            </div>
+            <div>
+                <div class="d-flex align-items-center py-2">
+                    <div class="order-history-item-chevron-wrap close">
+                        <th:block th:replace="~{fragments/svg/chevron :: down}"></th:block>
+                    </div>
+                    <div class="history-item">ETH</div>
+                    <div class="history-item text-up-color">BUY</div>
+                    <div class="history-item">3425.9</div>
+                    <div class="history-item">0.006</div>
+                    <div class="history-item">0.0102777</div>
+                    <div class="history-item">5064004</div>
+                    <div class="history-item">0.00596603</div>
+                    <div class="history-item">15.105988</div>
+                    <div class="history-item">1469.805</div>
+                    <div class="history-item">TAKER</div>
+                    <div class="history-item">0.568</div>
+                    <div class="history-item">RUN</div>
+                </div>
+                <div class="d-none py-2">
+                    <div class="order-history-item-chevron-wrap"></div>
+                    <div class="history-item">
+                        <th:block th:replace="~{fragments/svg/chevron :: right-down}"></th:block>
+                    </div>
+                    <div class="history-item text-down-color">SELL</div>
+                    <div class="history-item">3425.9</div>
+                    <div class="history-item">0.006</div>
+                    <div class="history-item">0.0102777</div>
+                    <div class="history-item">5064004</div>
+                    <div class="history-item">0.00596603</div>
+                    <div class="history-item">15.105988</div>
+                    <div class="history-item">1469.805</div>
+                    <div class="history-item">TAKER</div>
+                    <div class="history-item">0.568</div>
+                    <div class="history-item">1.52%</div>
+                </div>
+            </div>
+        </div>
     </article>
 </section>
 <script th:inline="javascript">
@@ -54,14 +111,39 @@
             upbitQty.text(balance)
         }
 
+        const blockToNone = (ele) => ele.removeClass('d-block').addClass('d-none')
+        const noneToBlock = (ele) => ele.addClass('d-block').removeClass('d-none')
+        const flexToNone = (ele) => ele.removeClass('d-flex').addClass('d-none')
+        const noneToFlex = (ele) => ele.addClass('d-flex').removeClass('d-none')
+
         $('#position').click(function () {
             $(this).addClass('active')
             $('#order-history').removeClass('active')
+            blockToNone($('#order-history-wrap'))
+            noneToBlock($('#position-wrap'))
         })
 
         $('#order-history').click(function () {
             $(this).addClass('active')
             $('#position').removeClass('active')
+            blockToNone($('#position-wrap'))
+            noneToBlock($('#order-history-wrap'))
+        })
+
+        $('.order-history-item-chevron-wrap').each(function () {
+            $(this).click(function () {
+                const ele = $(this)
+
+                const nextAll = $(this).parent().nextAll()
+
+                if (ele.hasClass('close')) {
+                    ele.removeClass('close').addClass('open')
+                    nextAll.each(function () { noneToFlex($(this)) })
+                } else {
+                    ele.removeClass('open').addClass('close')
+                    nextAll.each(function () { flexToNone($(this)) })
+                }
+            })
         })
     })
 </script>

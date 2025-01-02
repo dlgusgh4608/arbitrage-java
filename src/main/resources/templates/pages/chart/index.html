@@ -15,14 +15,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-crosshair"></script>
-
-    <style>
-        .zz {
-            flex: 1;
-            font-size: .7rem;
-            font-weight: bold;
-        }
-    </style>
 </head>
 <main layout:fragment="content">
     <!-- 전역변수 선언 -->
@@ -93,9 +85,13 @@
             const isolatedEle = $('#isolated')
             const crossedEle = $('#crossed')
 
-            const range = $('#qty') // order.html에 있는 qty range input
+            // 구매할 수 있는 수량은 leverage와 현재 가격에 따라 변동되기 때문에
+            // 레버리지와 구매 수량에 관련된 ele를 가져옴
+            const buyQtyRange = $('#buy-qty-range') // order.html에 있는 qty range input
+            const sellQtyRange = $('#sell-qty-range') // order.html에 있는 qty range input
+            const maxBuyQty = $('#max-buy-qty') // order.html에 있는 max qty text ele
             const leverageEle = $('#update-leverage-modal') // order.html에 있는 leverage
-            const maxQtyEle = $('#max-qty') // order.html에 있는 max qty text ele
+
             const binanceProfitEle = $('#binance-profit') // orderHistory에 있는 ele
             const upbitProfitEle = $('#upbit-profit') // orderHistory에 있는 ele
 
@@ -229,10 +225,9 @@
             })
 
             const prev = {
-                minQty: Number(range.attr('min')),
-                maxQty: Number(range.attr('max')),
+                minQty: Number(buyQtyRange.attr('min')),
+                maxQty: Number(buyQtyRange.attr('max')),
             }
-
 
             function handleMessage(message) {
                 const { premium, orderbookPair } = JSON.parse(message.data)
@@ -253,7 +248,7 @@
                 chart.update();
 
                 // update order info
-                updateOrderInfo(premium, usdToKrw, leverageEle, maxQtyEle, range, upbitUsdEle, binanceKrwEle, prev)
+                updateOrderInfo(premium, usdToKrw, leverageEle, maxBuyQty, buyQtyRange, sellQtyRange, upbitUsdEle, binanceKrwEle, prev)
 
                 // update position
                 updatePosition(premium, binanceProfitEle, upbitProfitEle)

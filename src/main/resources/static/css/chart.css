@@ -219,6 +219,34 @@
     opacity: .7;
 }
 
+.history-item {
+    flex: 1;
+    font-size: .7rem;
+    font-weight: bold;
+    list-style: none;
+}
+
+.order-history-item-empty {
+    width: 30px;
+    height: 16px;
+}
+
+.order-history-item-chevron-wrap {
+    display: flex;
+    align-items: center;
+    width: 30px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.order-history-item-chevron-wrap.open>svg {
+    transform: rotate(180deg);
+}
+
+.order-history-item-chevron-wrap.close>svg {
+    transform: rotate(0deg);
+}
+
 @media(max-width: 1400px) {
     .main-section {
         flex-direction: column;

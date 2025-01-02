@@ -30,21 +30,41 @@
             </div>
         </li>
     </ul>
-    <div class="d-flex justify-content-between mb-3">
-        <div>
-            <span class="fw-semibold text-gray7" id="order-type-text">BUY </span>
-            <span class="qty-text" id="qty-text">0</span>
-            <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
+    <div class="d-block" id="buy-qty-wrap">
+        <div class="d-flex justify-content-between mb-3">
+            <div>
+                <span class="fw-semibold text-gray7">BUY </span>
+                <span class="qty-text" id="current-buy-qty">0</span>
+                <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
+            </div>
+            <div>
+                <span class="fw-semibold text-gray7">MAX </span>
+                <span class="qty-text" id="max-buy-qty">0</span>
+                <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
+            </div>
         </div>
-        <div>
-            <span class="fw-semibold text-gray7" id="order-type-text">MAX </span>
-            <span class="qty-text" id="max-qty">-</span>
-            <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
+        <div class="qty-wrap mb-4">
+            <input type="range" class="qty" value=0 id="buy-qty-range">
+            <div class="value-bubble" id="buy-qty-tooltip">0</div>
         </div>
     </div>
-    <div class="qty-wrap mb-4">
-        <input type="range" class="qty" value=0 id="qty">
-        <div class="value-bubble" id="tooltip">0</div>
+    <div class="d-none" id="sell-qty-wrap">
+        <div class="d-flex justify-content-between mb-3">
+            <div>
+                <span class="fw-semibold text-gray7">SELL </span>
+                <span class="qty-text" id="current-sell-qty">0</span>
+                <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
+            </div>
+            <div>
+                <span class="fw-semibold text-gray7">MAX </span>
+                <span class="qty-text" id="max-sell-qty">0</span>
+                <span class="qty-text" th:text="${#strings.toUpperCase(param.symbol)}"></span>
+            </div>
+        </div>
+        <div class="qty-wrap mb-4">
+            <input type="range" class="qty" value=0 id="sell-qty-range">
+            <div class="value-bubble" id="sell-qty-tooltip">0</div>
+        </div>
     </div>
     <div class="d-flex justify-content-between wallet-wrap mb-3">
         <div>
@@ -107,82 +127,113 @@
 <script th:inline="javascript">
     $(() => {
         if (isAnonymous && isOk) {
-            let isBuy = true
+            // buy
+            const buyQtyEle = $('#buy-qty-wrap')
+            const buyRange = $('#buy-qty-range')
+            const maxBuyQty = $('#max-buy-qty')
+            const buyTooltip = $('#buy-qty-tooltip')
+            const currentBuyQty = $('#current-buy-qty')
+            // sell
+            const sellQtyEle = $('#sell-qty-wrap')
+            const sellRange = $('#sell-qty-range')
+            const maxSellQty = $('#max-sell-qty')
+            const sellTooltip = $('#sell-qty-tooltip')
+            const currentSellQty = $('#current-sell-qty')
 
-            const range = $('#qty')
-            const tooltip = $('#tooltip')
-            const currentQty = $('#qty-text')
-            const orderTypeText = $('#order-type-text')
-            const maxQtyEle = $('#max-qty')
+
+            // 공용
             const orderBtn = $('#order-btn')
             const editMarginModeBtn = $('#edit-margin-mode')
             const updateLeverageBtn = $('#update-leverage-modal')
 
+            // leverage와 margin type set
             editMarginModeBtn.text(marginType || 'CROSSED')
             updateLeverageBtn.text(`x${leverage}` || 'x1')
             updateLeverageBtn.val(leverage)
-            maxQtyEle.text(maxQty)
 
-            range.attr('min', minQty).attr('max', maxQty).attr('size', stepSize).attr('step', stepSize)
+            // buy 및 sell set
+            buyRange.attr('size', stepSize).attr('step', stepSize)
+            sellRange.attr('size', stepSize).attr('step', stepSize)
 
-            const clear = () => {
-                range.val(0)
-                currentQty.text('0')
-                tooltip.css('left', `0%`).text('0%')
+            if (upbitPosition && binancePosition) {
+                const binanceQty = Math.abs(binancePosition.positionAmt)
+                sellRange.attr('max', binanceQty)
+                maxSellQty.text(binanceQty)
+            } else {
+                sellRange.attr('max', '0')
             }
 
-            $('#buy').click(function () {
-                isBuy = true
 
-                orderBtn.removeClass('sell-btn')
-                orderBtn.addClass('buy-btn')
-                orderBtn.text('BUY')
+            $('#buy').click(function () {
+                orderBtn.removeClass('sell-btn').addClass('buy-btn').text('BUY')
 
                 $(this).addClass('active')
                 $('#sell').removeClass('active')
-                orderTypeText.text('BUY')
 
-                clear()
+                buyQtyEle.addClass('d-block').removeClass('d-none')
+                sellQtyEle.addClass('d-none').removeClass('d-block')
             })
 
             $('#sell').click(function () {
-                isBuy = false
-
-                orderBtn.removeClass('buy-btn')
-                orderBtn.addClass('sell-btn')
-                orderBtn.text('SELL')
+                orderBtn.removeClass('buy-btn').addClass('sell-btn').text('SELL')
 
                 $(this).addClass('active')
                 $('#buy').removeClass('active')
-                orderTypeText.text('SELL')
 
-                clear()
+                sellQtyEle.addClass('d-block').removeClass('d-none')
+                buyQtyEle.addClass('d-none').removeClass('d-block')
             })
 
-            range.on('input', function () {
+            buyRange.on('input', function () {
                 const { max, min } = this
                 const val = $(this).val()
-                const percent = ((val - min) / (max - min)) * 100;
 
-                tooltip.css('left', `${percent}%`).text(`${Math.round(percent)}%`);
-                currentQty.text(val)
-            });
+                if (val === max && max === min) {
+                    buyTooltip.css('left', '100%').text('100%')
+                    currentBuyQty.text(val)
+                    return
+                }
 
-            range.hover(() => {
-                tooltip.show()
+                const percent = ((val - min) / (max - min)) * 100
+
+                buyTooltip.css('left', `${percent}%`).text(`${Math.round(percent)}%`)
+                currentBuyQty.text(val)
+            })
+
+            buyRange.hover(() => {
+                buyTooltip.show()
             }, () => {
-                tooltip.hide()
+                buyTooltip.hide()
+            })
+
+            sellRange.on('input', function () {
+                const { max, min } = this
+                const val = $(this).val()
+                if (val === max && max === min) {
+                    sellTooltip.css('left', '100%').text('100%')
+                    currentSellQty.text(val)
+                    return
+                }
+
+                const percent = ((val - min) / (max - min)) * 100
+
+                sellTooltip.css('left', `${percent}%`).text(`${Math.round(percent)}%`)
+                currentSellQty.text(val)
+            })
+
+            sellRange.hover(() => {
+                sellTooltip.show()
+            }, () => {
+                sellTooltip.hide()
             })
 
             // order
             orderBtn.click(async () => {
                 const payload = {
-                    orderType: 'BUY',
+                    orderType: isBuy ? "BUY" : 'SELL',
                     symbol,
                     qty: range.val()
                 }
-
-                console.log(payload)
 
                 const { success, data } = await fetcher('POST', '/api/order', payload)
 

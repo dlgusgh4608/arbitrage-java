@@ -173,8 +173,9 @@ export const updateOrderInfo = (
     premium,
     usdToKrw,
     leverageEle,
-    maxQtyEle,
-    range,
+    maxBuyQty,
+    buyQtyRange,
+    sellQtyRange,
     upbitUsdEle,
     binanceKrwEle,
     prev
@@ -191,12 +192,15 @@ export const updateOrderInfo = (
 
     if (max !== maxQty) {
         prev.maxQty = max
-        range.attr('max', max)
-        maxQtyEle.text(max)
+        buyQtyRange.attr('max', max)
+        maxBuyQty.text(max)
     }
 
     if (min !== minQty) {
-        range.attr('min', min)
+        buyQtyRange.attr('min', min)
+        sellQtyRange.attr('min', min)
         prev.minQty = min
+        if (max === min) buyQtyRange.val(max).trigger('input')
+        if (Number(sellQtyRange.attr('max')) === min) sellQtyRange.val(max).trigger('input')
     }
 }
