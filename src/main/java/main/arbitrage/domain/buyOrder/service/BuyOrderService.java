@@ -1,5 +1,6 @@
 package main.arbitrage.domain.buyOrder.service;
 
+import java.util.List;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.domain.buyOrder.entity.BuyOrder;
@@ -36,8 +37,8 @@ public class BuyOrderService {
                 double premium = MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice,
                                 usdToKrw);
 
-                buyOrderRepository.save(BuyOrder.builder().user(user).symbol(symbol)
-                                .exchangeRate(exchangeRate).premium((float) premium)
+                BuyOrder buyOrder = buyOrderRepository.save(BuyOrder.builder().user(user)
+                                .symbol(symbol).exchangeRate(exchangeRate).premium((float) premium)
                                 .upbitPrice(upbitAvgPrice).upbitQuantity((float) upbitQty)
                                 .upbitCommission((float) upbitCommission)
                                 .binancePrice((float) binanceAvgPrice)
@@ -45,11 +46,14 @@ public class BuyOrderService {
                                 .binanceCommission((float) binanceCommission).isMaker(false)
                                 .isClose(false).build());
 
-                return BuyOrderResponse.builder().premium(premium).binanceAvgPrice(binanceAvgPrice)
-                                .binanceQty(binanceQty).binanceTotalPrice(binanceTotalPrice)
-                                .binanceCommission(binanceCommission)
-                                .upbitTotalPrice(upbitTotalPrice).upbitQty(upbitQty)
-                                .upbitAvgPrice(upbitAvgPrice).upbitCommission(upbitCommission)
-                                .usdToKrw(usdToKrw).build();
+                return BuyOrderResponse.fromEntity(buyOrder);
+        }
+
+        public List<BuyOrder> getOpenOrders(User user) {
+                return buyOrderRepository.findByUserAndIsCloseFalse(user);
+        }
+
+        public List<BuyOrder> getOrders(User user, Symbol symbol) {
+                return buyOrderRepository.findByUserAndSymbol(user, symbol);
         }
 }

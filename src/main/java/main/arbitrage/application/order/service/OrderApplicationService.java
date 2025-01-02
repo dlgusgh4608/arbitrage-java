@@ -1,5 +1,6 @@
 package main.arbitrage.application.order.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.context.event.EventListener;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.auth.security.SecurityUtil;
+import main.arbitrage.domain.buyOrder.entity.BuyOrder;
 import main.arbitrage.domain.buyOrder.service.BuyOrderService;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.symbol.entity.Symbol;
@@ -147,6 +149,16 @@ public class OrderApplicationService {
 
         // 레버리지 한도
         tradeInfoBuilder.brackets(binanceService.getLeverageBrackets(symbolName).brackets());
+
+
+        // 주문 history
+        List<BuyOrderResponse> orders = new ArrayList<>();
+        List<BuyOrder> buyOrders = buyOrderService.getOrders(userEnv.getUser(),
+                symbolVariableService.findSymbolByName(symbolName));
+        for (BuyOrder buyOrder : buyOrders) {
+            orders.add(BuyOrderResponse.fromEntity(buyOrder));
+        }
+        tradeInfoBuilder.orders(orders);
 
         return tradeInfoBuilder.build();
     }

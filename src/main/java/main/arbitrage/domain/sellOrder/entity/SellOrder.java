@@ -1,7 +1,6 @@
-package main.arbitrage.domain.buyOrder.entity;
+package main.arbitrage.domain.sellOrder.entity;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import jakarta.persistence.Column;
@@ -12,34 +11,26 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import main.arbitrage.domain.buyOrder.entity.BuyOrder;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
-import main.arbitrage.domain.sellOrder.entity.SellOrder;
-import main.arbitrage.domain.symbol.entity.Symbol;
-import main.arbitrage.domain.user.entity.User;
 
 @Entity
-@Table(name = "buy_order")
+@Table(name = "sell_order")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BuyOrder {
+public class SellOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "symbol_id", nullable = false)
-    private Symbol symbol;
+    @JoinColumn(name = "buy_order_id", nullable = false)
+    private BuyOrder buyOrder;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "exchange_rate_id", nullable = false)
@@ -72,6 +63,9 @@ public class BuyOrder {
     @Column(name = "is_close", columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isClose;
 
+    @Column(name = "profit_rate", columnDefinition = "REAL")
+    private float profitRate;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -79,26 +73,4 @@ public class BuyOrder {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "buy_order_id")
-    private List<SellOrder> sellOrders;
-
-    @Builder
-    public BuyOrder(User user, Symbol symbol, ExchangeRate exchangeRate, float premium,
-            double upbitPrice, float upbitQuantity, float upbitCommission, float binancePrice,
-            float binanceQuantity, float binanceCommission, boolean isMaker, boolean isClose) {
-        this.user = user;
-        this.symbol = symbol;
-        this.exchangeRate = exchangeRate;
-        this.premium = premium;
-        this.upbitPrice = upbitPrice;
-        this.upbitQuantity = upbitQuantity;
-        this.upbitCommission = upbitCommission;
-        this.binancePrice = binancePrice;
-        this.binanceQuantity = binanceQuantity;
-        this.binanceCommission = binanceCommission;
-        this.isMaker = isMaker;
-        this.isClose = isClose;
-    }
 }

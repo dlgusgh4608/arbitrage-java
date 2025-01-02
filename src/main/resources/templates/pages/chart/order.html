@@ -230,9 +230,9 @@
             // order
             orderBtn.click(async () => {
                 const payload = {
-                    orderType: isBuy ? "BUY" : 'SELL',
+                    orderType: "BUY",
                     symbol,
-                    qty: range.val()
+                    qty: buyRange.val()
                 }
 
                 const { success, data } = await fetcher('POST', '/api/order', payload)

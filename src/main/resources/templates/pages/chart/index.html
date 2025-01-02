@@ -35,7 +35,8 @@
             userTradeInfo?.usdt != null &&
             userTradeInfo?.marginType != null &&
             userTradeInfo?.leverage != null &&
-            userTradeInfo?.brackets != null
+            userTradeInfo?.brackets != null &&
+            userTradeInfo?.orders != null
 
         const isAnonymous = principal !== "anonymousUser"
 
@@ -49,6 +50,7 @@
         const marginType = userTradeInfo?.marginType ? userTradeInfo.marginType : 'CROSSED'
         const leverage = userTradeInfo?.leverage ? userTradeInfo.leverage : 0
         const brackets = userTradeInfo?.brackets ? userTradeInfo.brackets : []
+        const orderHistory = userTradeInfo.orders
         const upbitPosition = userTradeInfo?.upbitPosition
         const binancePosition = userTradeInfo?.binancePosition
     </script>

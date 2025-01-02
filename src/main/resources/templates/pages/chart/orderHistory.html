@@ -53,40 +53,41 @@
                 <div class="history-item">프리미엄</div>
                 <div class="history-item">거래 상태 / 수익률</div>
             </div>
-            <div>
+            <div th:each="order: ${userTradeInfo.orders}">
                 <div class="d-flex align-items-center py-2">
-                    <div class="order-history-item-chevron-wrap close">
+                    <div th:if="${not #lists.isEmpty(order.sellOrders)}" class="order-history-item-chevron-wrap close">
                         <th:block th:replace="~{fragments/svg/chevron :: down}"></th:block>
                     </div>
-                    <div class="history-item">ETH</div>
-                    <div class="history-item text-up-color">BUY</div>
-                    <div class="history-item">3425.9</div>
-                    <div class="history-item">0.006</div>
-                    <div class="history-item">0.0102777</div>
-                    <div class="history-item">5064004</div>
-                    <div class="history-item">0.00596603</div>
-                    <div class="history-item">15.105988</div>
-                    <div class="history-item">1469.805</div>
-                    <div class="history-item">TAKER</div>
-                    <div class="history-item">0.568</div>
-                    <div class="history-item">RUN</div>
+                    <div th:unless="${not #lists.isEmpty(order.sellOrders)}" class="order-history-item-empty"></div>
+                    <div class="history-item" th:text="${order.symbol}"></div>
+                    <div class="history-item text-up-color" th:text="BUY"></div>
+                    <div class="history-item" th:text="${order.binanceAvgPrice}"></div>
+                    <div class="history-item" th:text="${order.binanceQty}"></div>
+                    <div class="history-item" th:text="${order.binanceCommission}"></div>
+                    <div class="history-item" th:text="${order.upbitAvgPrice}"></div>
+                    <div class="history-item" th:text="${order.upbitQty}"></div>
+                    <div class="history-item" th:text="${order.upbitCommission}"></div>
+                    <div class="history-item" th:text="${order.usdToKrw}"></div>
+                    <div class="history-item" th:text="${order.maker ? 'MAKER' : 'TAKER'}"></div>
+                    <div class="history-item" th:text="${order.premium}"></div>
+                    <div class="history-item" th:text="${order.close ? 'CLOSE' : 'RUN'}"></div>
                 </div>
-                <div class="d-none py-2">
+                <div class="d-none py-2" th:each="sellOrder: ${order.sellOrders}">
                     <div class="order-history-item-chevron-wrap"></div>
                     <div class="history-item">
                         <th:block th:replace="~{fragments/svg/chevron :: right-down}"></th:block>
                     </div>
-                    <div class="history-item text-down-color">SELL</div>
-                    <div class="history-item">3425.9</div>
-                    <div class="history-item">0.006</div>
-                    <div class="history-item">0.0102777</div>
-                    <div class="history-item">5064004</div>
-                    <div class="history-item">0.00596603</div>
-                    <div class="history-item">15.105988</div>
-                    <div class="history-item">1469.805</div>
-                    <div class="history-item">TAKER</div>
-                    <div class="history-item">0.568</div>
-                    <div class="history-item">1.52%</div>
+                    <div class="history-item text-down-color" th:text="SELL"></div>
+                    <div class="history-item" th:text="${sellOrder.binanceAvgPrice}"></div>
+                    <div class="history-item" th:text="${sellOrder.binanceQty}"></div>
+                    <div class="history-item" th:text="${sellOrder.binanceCommission}"></div>
+                    <div class="history-item" th:text="${sellOrder.upbitAvgPrice}"></div>
+                    <div class="history-item" th:text="${sellOrder.upbitQty}"></div>
+                    <div class="history-item" th:text="${sellOrder.upbitCommission}"></div>
+                    <div class="history-item" th:text="${sellOrder.usdToKrw}"></div>
+                    <div class="history-item" th:text="${sellOrder.maker ? 'MAKER' : 'TAKER'}"></div>
+                    <div class="history-item" th:text="${sellOrder.premium}"></div>
+                    <div class="history-item" th:text="${sellOrder.profitRate + %}"></div>
                 </div>
             </div>
         </div>
