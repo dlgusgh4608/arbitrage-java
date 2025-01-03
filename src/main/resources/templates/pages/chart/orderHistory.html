@@ -14,7 +14,7 @@
         </ul>
         <!-- position -->
         <div id="position-wrap" class="d-block"
-            th:with="hasPosition=${userTradeInfo.upbitPosition != null && userTradeInfo.binancePosition != null ? true : false}">
+            th:with="hasPosition=${userTradeInfo?.upbitPosition != null && userTradeInfo?.binancePosition != null ? true : false}">
             <div class="d-flex align-items-center py-2">
                 <div class="history-item">심볼</div>
                 <div class="history-item">바이낸스 평단가</div>
@@ -53,7 +53,7 @@
                 <div class="history-item">프리미엄</div>
                 <div class="history-item">거래 상태 / 수익률</div>
             </div>
-            <div th:each="order: ${userTradeInfo.orders}">
+            <div class="orders" th:each="order: ${userTradeInfo.orders}" th:id="${'order-' + order.id}">
                 <div class="d-flex align-items-center py-2">
                     <div th:if="${not #lists.isEmpty(order.sellOrders)}" class="order-history-item-chevron-wrap close">
                         <th:block th:replace="~{fragments/svg/chevron :: down}"></th:block>
@@ -68,7 +68,7 @@
                     <div class="history-item" th:text="${order.upbitQty}"></div>
                     <div class="history-item" th:text="${order.upbitCommission}"></div>
                     <div class="history-item" th:text="${order.usdToKrw}"></div>
-                    <div class="history-item" th:text="${order.maker ? 'MAKER' : 'TAKER'}"></div>
+                    <div class="history-item" th:text="${order.isMaker ? 'MAKER' : 'TAKER'}"></div>
                     <div class="history-item" th:text="${order.premium}"></div>
                     <div class="history-item" th:text="${order.close ? 'CLOSE' : 'RUN'}"></div>
                 </div>
@@ -85,9 +85,9 @@
                     <div class="history-item" th:text="${sellOrder.upbitQty}"></div>
                     <div class="history-item" th:text="${sellOrder.upbitCommission}"></div>
                     <div class="history-item" th:text="${sellOrder.usdToKrw}"></div>
-                    <div class="history-item" th:text="${sellOrder.maker ? 'MAKER' : 'TAKER'}"></div>
+                    <div class="history-item" th:text="${sellOrder.isMaker ? 'MAKER' : 'TAKER'}"></div>
                     <div class="history-item" th:text="${sellOrder.premium}"></div>
-                    <div class="history-item" th:text="${sellOrder.profitRate + %}"></div>
+                    <div class="history-item" th:text="${sellOrder.profitRate + '%'}"></div>
                 </div>
             </div>
         </div>

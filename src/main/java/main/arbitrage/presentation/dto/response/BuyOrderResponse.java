@@ -10,6 +10,7 @@ import main.arbitrage.domain.buyOrder.entity.BuyOrder;
 @Builder
 @ToString
 public class BuyOrderResponse {
+    private final Long id;
     private final String symbol;
     private final float premium;
     private final float binanceAvgPrice;
@@ -20,7 +21,7 @@ public class BuyOrderResponse {
     private final float upbitQty;
     private final double upbitAvgPrice;
     private final float upbitCommission;
-    private final double usdToKrw;
+    private final float usdToKrw;
     private final boolean isMaker;
     private final boolean isClose;
     private final List<SellOrderResponse> sellOrders;
@@ -38,14 +39,15 @@ public class BuyOrderResponse {
         private final float upbitQty;
         private final double upbitAvgPrice;
         private final float upbitCommission;
-        private final double usdToKrw;
+        private final float usdToKrw;
         private final boolean isMaker;
-        private final double profitRate;
+        private final float profitRate;
     }
 
     public static BuyOrderResponse fromEntity(BuyOrder buyOrder) {
-        return BuyOrderResponse.builder().symbol(buyOrder.getSymbol().getName())
-                .premium(buyOrder.getPremium()).binanceAvgPrice(buyOrder.getBinancePrice())
+        return BuyOrderResponse.builder().id(buyOrder.getId())
+                .symbol(buyOrder.getSymbol().getName()).premium(buyOrder.getPremium())
+                .binanceAvgPrice(buyOrder.getBinancePrice())
                 .binanceQty(buyOrder.getBinanceQuantity())
                 .binanceTotalPrice(buyOrder.getBinancePrice() * buyOrder.getBinanceQuantity())
                 .binanceCommission(buyOrder.getBinanceCommission())

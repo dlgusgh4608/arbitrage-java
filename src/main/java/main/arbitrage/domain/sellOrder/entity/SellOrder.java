@@ -13,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import main.arbitrage.domain.buyOrder.entity.BuyOrder;
@@ -60,9 +61,6 @@ public class SellOrder {
     @Column(name = "is_maker", columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isMaker;
 
-    @Column(name = "is_close", columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private boolean isClose;
-
     @Column(name = "profit_rate", columnDefinition = "REAL")
     private float profitRate;
 
@@ -73,4 +71,25 @@ public class SellOrder {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Builder
+    public SellOrder(BuyOrder buyOrder, ExchangeRate exchangeRate, float premium, double upbitPrice,
+            float upbitQuantity, float upbitCommission, float binancePrice, float binanceQuantity,
+            float binanceCommission, boolean isMaker, float profitRate) {
+        this.exchangeRate = exchangeRate;
+        this.premium = premium;
+        this.upbitPrice = upbitPrice;
+        this.upbitQuantity = upbitQuantity;
+        this.upbitCommission = upbitCommission;
+        this.binancePrice = binancePrice;
+        this.binanceQuantity = binanceQuantity;
+        this.binanceCommission = binanceCommission;
+        this.isMaker = isMaker;
+        this.profitRate = profitRate;
+        this.buyOrder = buyOrder;
+
+        if (buyOrder != null && !buyOrder.getSellOrders().contains(this)) {
+            buyOrder.getSellOrders().add(this);
+        }
+    }
 }

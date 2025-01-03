@@ -14,15 +14,15 @@ public final class MathUtil {
     }
 
     // 평균값을 구할때에는 krw도 소수점이 존재할 수 있기에 double로 사용
-    public static double krwToUsd(double krw, double exchangeRate) {
+    public static double krwToUsd(double krw, float exchangeRate) {
         return roundTo(krw / exchangeRate, 4);
     }
 
-    public static double usdToKrw(double usd, double exchangeRate) {
+    public static double usdToKrw(double usd, float exchangeRate) {
         return roundTo(usd * exchangeRate, 0);
     }
 
-    public static double calculatePremium(double upbit, double binance, double exchangeRate) {
+    public static double calculatePremium(double upbit, double binance, float exchangeRate) {
         return roundTo((upbit / exchangeRate / binance - 1) * 100, 4);
     }
 }

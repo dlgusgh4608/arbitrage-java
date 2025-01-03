@@ -91,9 +91,7 @@
             </div>
         </div>
     </div>
-    <button id="order-btn" class="btn order-btn buy-btn">
-        BUY
-    </button>
+    <button id="order-btn" class="btn order-btn buy-btn">BUY</button>
 </article>
 
 <!-- 거래 불가 env를 다시 등록 -->
@@ -228,11 +226,22 @@
             })
 
             // order
-            orderBtn.click(async () => {
+            orderBtn.click(async function () {
+                const orderType = $(this).text().trim()
+                if (orderType !== 'BUY' && orderType !== 'SELL') return alert('새로고침 후 다시 시도해주세요.')
+
+                const qty = orderType === 'BUY' ? buyRange.val() : sellRange.val()
+                const minQty = orderType === 'BUY' ? buyRange.attr('min') : sellRange.attr('min')
+                const maxQty = orderType === 'BUY' ? buyRange.attr('max') : sellRange.attr('max')
+
+                if (Number(qty) < Number(minQty)) return alert(`주문 개수는 최소 주문 개수 보다 커야합니다. 최소 주문 개수: ${minQty}`)
+                if (Number(qty) > Number(maxQty)) return alert(`주문 개수는 최대 주문 개수 보다 작아야합니다. 최대 주문 개수: ${minQty}`)
+
+
                 const payload = {
-                    orderType: "BUY",
+                    orderType,
                     symbol,
-                    qty: buyRange.val()
+                    qty
                 }
 
                 const { success, data } = await fetcher('POST', '/api/order', payload)

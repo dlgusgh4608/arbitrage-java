@@ -1,6 +1,9 @@
 package main.arbitrage.domain.buyOrder.entity;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -80,9 +83,8 @@ public class BuyOrder {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "buy_order_id")
-    private List<SellOrder> sellOrders;
+    @OneToMany(mappedBy = "buyOrder", fetch = FetchType.LAZY)
+    private List<SellOrder> sellOrders = new ArrayList<>();
 
     @Builder
     public BuyOrder(User user, Symbol symbol, ExchangeRate exchangeRate, float premium,
@@ -100,5 +102,27 @@ public class BuyOrder {
         this.binanceCommission = binanceCommission;
         this.isMaker = isMaker;
         this.isClose = isClose;
+    }
+
+    public void close() {
+        this.isClose = true;
+    }
+
+    public BigDecimal getRestBinanceQty() {
+        BigDecimal totalBinanceQty = BigDecimal.valueOf(this.binanceQuantity);
+        BigDecimal soldQty = sellOrders.stream()
+                .map(sellOrder -> BigDecimal.valueOf(sellOrder.getBinanceQuantity()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return totalBinanceQty.subtract(soldQty).setScale(8, RoundingMode.HALF_UP);
+    }
+
+    public BigDecimal getRestUpbitQty() {
+        BigDecimal totalUpbitQty = BigDecimal.valueOf(this.upbitQuantity);
+        BigDecimal soldQty = sellOrders.stream()
+                .map(sellOrder -> BigDecimal.valueOf(sellOrder.getUpbitQuantity()))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return totalUpbitQty.subtract(soldQty).setScale(8, RoundingMode.HALF_UP);
     }
 }

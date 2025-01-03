@@ -1,5 +1,7 @@
 package main.arbitrage.application.order.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -7,10 +9,12 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import main.arbitrage.application.order.dto.OrderCalcResult;
 import main.arbitrage.auth.security.SecurityUtil;
 import main.arbitrage.domain.buyOrder.entity.BuyOrder;
 import main.arbitrage.domain.buyOrder.service.BuyOrderService;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
+import main.arbitrage.domain.sellOrder.service.SellOrderService;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.domain.user.entity.User;
@@ -39,6 +43,7 @@ import main.arbitrage.presentation.dto.view.UserTradeInfo;
 @RequiredArgsConstructor
 public class OrderApplicationService {
     private final BuyOrderService buyOrderService;
+    private final SellOrderService sellOrderService;
     private final ExchangePrivateRestFactory exchangePrivateRestFactory;
     private final UserEnvService userEnvService;
     private final SymbolVariableService symbolVariableService;
@@ -81,6 +86,7 @@ public class OrderApplicationService {
         BinancePrivateRestService binanceService = upbitExchangePrivateRestPair.getBinance();
         UpbitPrivateRestService upbitService = upbitExchangePrivateRestPair.getUpbit();
 
+        // 구매 로직
         if (orderType.equals(OrderType.BUY.name())) {
             BinanceOrderResponse binanceOrderRes = binanceService.order( // 시장가 숏
                     symbol.getName(), BinanceEnums.Side.SELL, BinanceEnums.Type.MARKET, req.qty(),
@@ -93,11 +99,79 @@ public class OrderApplicationService {
 
             UpbitGetOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
 
-            // if(upbitOrderRes == null) {} // upbit order의 정보를 가져오는데 실패했을경우 바이낸스도 신속하게 팔아치우기
-
             return buyOrderService.createMarketBuyOrder(user, symbol, fixedExchangeRate,
                     binanceOrderRes, upbitOrderRes);
-        } else {
+        } else { // 판매 로직
+            BigDecimal qty = BigDecimal.valueOf(req.qty());
+
+            List<BuyOrder> openOrders = buyOrderService.getOpenOrders(user, symbol);
+
+            List<OrderCalcResult> results = new ArrayList<>();
+            BigDecimal upbitTotalQty = BigDecimal.ZERO;
+
+            for (BuyOrder buyOrder : openOrders) {
+                // qty가 0이면 break
+                if (qty.signum() == 0)
+                    break;
+
+                BigDecimal restBinanceQty = buyOrder.getRestBinanceQty();
+                BigDecimal restUpbitQty = buyOrder.getRestUpbitQty();
+
+                if (qty.compareTo(restBinanceQty) >= 0) {
+                    // 남은 수량이 현재 주문의 잔여 수량보다 크거나 같은 경우
+                    OrderCalcResult orderItem =
+                            OrderCalcResult.builder().buyOrder(buyOrder).binanceQty(restBinanceQty)
+                                    .upbitQty(restUpbitQty).isClose(true).build();
+
+                    upbitTotalQty = upbitTotalQty.add(restUpbitQty);
+                    results.add(orderItem);
+                    qty = qty.subtract(restBinanceQty);
+                } else {
+                    // 남은 수량이 현재 주문의 잔여 수량보다 작은 경우
+                    // 잔여 수량에 대한 퍼센트를 이용해 upbit에 대한 qty를 구한 후 add
+                    BigDecimal percent = qty.divide(restBinanceQty, 8, RoundingMode.HALF_UP);
+                    BigDecimal calculatedUpbitQty =
+                            restUpbitQty.multiply(percent).setScale(8, RoundingMode.HALF_UP);
+
+                    OrderCalcResult orderItem = OrderCalcResult.builder().buyOrder(buyOrder)
+                            .binanceQty(qty).upbitQty(calculatedUpbitQty).isClose(false).build();
+
+                    upbitTotalQty = upbitTotalQty.add(calculatedUpbitQty);
+                    results.add(orderItem);
+                    qty = BigDecimal.ZERO;
+                }
+            }
+
+            // qty가 음수이면 에러 발생
+            if (qty.signum() < 0)
+                throw new Exception("qty to larger");
+
+            BinanceOrderResponse binanceOrderRes = binanceService.order( // 시장가 롱 ( 판매 )
+                    symbol.getName(), BinanceEnums.Side.BUY, BinanceEnums.Type.MARKET, req.qty(),
+                    null);
+
+            String uuid = upbitService.order(symbol.getName(), UpbitOrderEnums.Side.ask,
+                    UpbitOrderEnums.OrdType.market, null, upbitTotalQty.doubleValue());
+
+            UpbitGetOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
+
+            for (OrderCalcResult orderCalcResult : results) {
+                if (orderCalcResult.isClose()) {
+                    orderCalcResult.getBuyOrder().close();
+                }
+
+                sellOrderService.createMarketOrder(orderCalcResult, binanceOrderRes, upbitOrderRes,
+                        fixedExchangeRate);
+            }
+
+            List<BuyOrderResponse> z = results.stream()
+                    .map(r -> BuyOrderResponse.fromEntity(r.getBuyOrder())).toList();
+
+            // 여기서부터 이어 작성해야함.
+            for (BuyOrderResponse r : z) {
+                System.out.println(r);
+            }
+
             return null;
         }
     }
