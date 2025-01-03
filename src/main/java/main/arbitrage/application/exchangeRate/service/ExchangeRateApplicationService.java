@@ -20,7 +20,7 @@ public class ExchangeRateApplicationService {
 
     @Scheduled(fixedDelay = 1000 * 10) // 10sec
     protected void scheduleOnEmit() {
-        float usdToKrw = usdToKrwCrawler.craw();
+        double usdToKrw = usdToKrwCrawler.craw();
 
         ExchangeRateDTO exchangeRateDto = ExchangeRateDTO.builder().fromCurrency("USD")
                 .toCurrency("KRW").rate(usdToKrw).build();

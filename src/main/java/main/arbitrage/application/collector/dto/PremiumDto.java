@@ -10,7 +10,7 @@ public class PremiumDTO {
     private final double premium;
     private final double upbit;
     private final double binance;
-    private final float usdToKrw;
+    private final double usdToKrw;
     private final Long upbitTradeAt;
     private final Long binanceTradeAt;
 }

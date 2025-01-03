@@ -31,16 +31,15 @@ public class BuyOrderService {
         double upbitQty = upbitOrderRes.executedVolume(); // 업비트 구매된 개수
         double upbitAvgPrice = Math.round(upbitTotalPrice / upbitQty); // 업비트 평단가
         double upbitCommission = upbitOrderRes.paidFee(); // 업비트 수수료
-        float usdToKrw = exchangeRate.getRate(); // 원달러 환율
+        double usdToKrw = exchangeRate.getRate(); // 원달러 환율
 
         double premium = MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, usdToKrw);
 
         BuyOrder buyOrder = buyOrderRepository.save(BuyOrder.builder().user(user).symbol(symbol)
-                .exchangeRate(exchangeRate).premium((float) premium).upbitPrice(upbitAvgPrice)
-                .upbitQuantity((float) upbitQty).upbitCommission((float) upbitCommission)
-                .binancePrice((float) binanceAvgPrice).binanceQuantity((float) binanceQty)
-                .binanceCommission((float) binanceCommission).isMaker(false).isClose(false)
-                .build());
+                .exchangeRate(exchangeRate).premium(premium).upbitPrice(upbitAvgPrice)
+                .upbitQuantity(upbitQty).upbitCommission(upbitCommission)
+                .binancePrice(binanceAvgPrice).binanceQuantity(binanceQty)
+                .binanceCommission(binanceCommission).isMaker(false).isClose(false).build());
 
         return BuyOrderResponse.fromEntity(buyOrder);
     }

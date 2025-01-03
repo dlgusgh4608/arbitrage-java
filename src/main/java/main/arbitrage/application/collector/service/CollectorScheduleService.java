@@ -110,7 +110,7 @@ public class CollectorScheduleService {
                     return;
                 }
 
-                float exchangeRateValue = exchangeRate.getRate();
+                double exchangeRateValue = exchangeRate.getRate();
                 double upbitPrc = upbitTrade.getPrice();
                 double binancePrc = binanceTrade.getPrice();
                 long upbitTradeAt = upbitTrade.getTimestamp();

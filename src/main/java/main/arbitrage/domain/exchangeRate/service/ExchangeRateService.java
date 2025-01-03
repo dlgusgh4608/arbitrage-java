@@ -17,7 +17,7 @@ public class ExchangeRateService {
     private final Map<String, ExchangeRateDTO> prevExchangeRateMap = new ConcurrentHashMap<>();
 
     public ExchangeRate setExchangeRate(ExchangeRateDTO exchangeRateDto) {
-        float rate = exchangeRateDto.getRate();
+        double rate = exchangeRateDto.getRate();
 
         if (rate == 0)
             return null;
@@ -31,7 +31,7 @@ public class ExchangeRateService {
 
             prevExchangeRateMap.put(key, exchangeRateDto);
         } else {
-            float prevDtoRate = prevDto.getRate();
+            double prevDtoRate = prevDto.getRate();
             if (prevDtoRate == rate)
                 return null;
 

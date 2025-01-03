@@ -35,14 +35,14 @@ public class ExchangeRate {
     private String fromCurrency;
 
     @Column(name = "rate", columnDefinition = "REAL")
-    private float rate;
+    private double rate;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Builder
-    public ExchangeRate(String fromCurrency, String toCurrency, float rate) {
+    public ExchangeRate(String fromCurrency, String toCurrency, double rate) {
         this.fromCurrency = fromCurrency;
         this.toCurrency = toCurrency;
         this.rate = rate;

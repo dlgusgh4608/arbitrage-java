@@ -10,9 +10,9 @@ import main.arbitrage.domain.price.entity.Price;
 @Builder
 public class PriceView {
     private final String symbol;
-    private final float premium;
+    private final double premium;
     private final double upbit;
-    private final float binance;
+    private final double binance;
     private final Timestamp upbitTradeAt;
     private final Timestamp binanceTradeAt;
     private final Timestamp createdAt;

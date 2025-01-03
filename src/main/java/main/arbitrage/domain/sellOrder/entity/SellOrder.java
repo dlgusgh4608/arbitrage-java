@@ -38,31 +38,31 @@ public class SellOrder {
     private ExchangeRate exchangeRate;
 
     @Column(name = "premium", nullable = false, columnDefinition = "REAL")
-    private float premium;
+    private double premium;
 
     @Column(name = "upbit_price", nullable = false, columnDefinition = "DOUBLE PRECISION")
     private double upbitPrice;
 
     @Column(name = "upbit_quantity", nullable = false, columnDefinition = "REAL")
-    private float upbitQuantity;
+    private double upbitQuantity;
 
     @Column(name = "upbit_commission", nullable = false, columnDefinition = "REAL")
-    private float upbitCommission;
+    private double upbitCommission;
 
     @Column(name = "binance_price", nullable = false, columnDefinition = "REAL")
-    private float binancePrice;
+    private double binancePrice;
 
     @Column(name = "binance_quantity", nullable = false, columnDefinition = "REAL")
-    private float binanceQuantity;
+    private double binanceQuantity;
 
     @Column(name = "binance_commission", nullable = false, columnDefinition = "REAL")
-    private float binanceCommission;
+    private double binanceCommission;
 
     @Column(name = "is_maker", columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean isMaker;
 
     @Column(name = "profit_rate", columnDefinition = "REAL")
-    private float profitRate;
+    private double profitRate;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -73,9 +73,9 @@ public class SellOrder {
     private LocalDateTime updatedAt;
 
     @Builder
-    public SellOrder(BuyOrder buyOrder, ExchangeRate exchangeRate, float premium, double upbitPrice,
-            float upbitQuantity, float upbitCommission, float binancePrice, float binanceQuantity,
-            float binanceCommission, boolean isMaker, float profitRate) {
+    public SellOrder(BuyOrder buyOrder, ExchangeRate exchangeRate, double premium,
+            double upbitPrice, double upbitQuantity, double upbitCommission, double binancePrice,
+            double binanceQuantity, double binanceCommission, boolean isMaker, double profitRate) {
         this.exchangeRate = exchangeRate;
         this.premium = premium;
         this.upbitPrice = upbitPrice;
