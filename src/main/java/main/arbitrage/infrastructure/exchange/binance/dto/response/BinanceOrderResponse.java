@@ -5,6 +5,13 @@ import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Sid
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Status;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record BinanceOrderResponse(String clientOrderId, String symbol, Side side, Status status,
-        double price, double origQty, double avgPrice, double executedQty, double cumQuote) {
-}
+public record BinanceOrderResponse(
+    String clientOrderId,
+    String symbol,
+    Side side,
+    Status status,
+    double price,
+    double origQty,
+    double avgPrice,
+    double executedQty,
+    double cumQuote) {}

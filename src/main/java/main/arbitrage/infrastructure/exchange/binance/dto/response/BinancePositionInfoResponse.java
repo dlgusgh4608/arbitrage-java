@@ -3,9 +3,8 @@ package main.arbitrage.infrastructure.exchange.binance.dto.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record BinancePositionInfoResponse(String entryPrice, String liquidationPrice,
-        String positionAmt) {
-}
+public record BinancePositionInfoResponse(
+    String entryPrice, String liquidationPrice, String positionAmt) {}
 // adl: 3
 // askNotional: "0"
 // bidNotional: "0"

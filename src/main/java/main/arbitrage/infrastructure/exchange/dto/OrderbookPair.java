@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class OrderbookPair {
-    private final OrderbookDto upbit;
-    private final OrderbookDto binance;
+  private final OrderbookDto upbit;
+  private final OrderbookDto binance;
 }

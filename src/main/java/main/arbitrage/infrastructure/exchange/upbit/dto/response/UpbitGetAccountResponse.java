@@ -6,7 +6,10 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public record UpbitGetAccountResponse(String currency, String balance, String locked,
-        String avgBuyPrice, Boolean avgBuyPriceModified, String unitCurrency) {
-}
-
+public record UpbitGetAccountResponse(
+    String currency,
+    String balance,
+    String locked,
+    String avgBuyPrice,
+    Boolean avgBuyPriceModified,
+    String unitCurrency) {}

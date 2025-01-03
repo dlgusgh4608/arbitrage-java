@@ -6,8 +6,8 @@ import lombok.Getter;
 @Getter
 @Builder
 public class OAuthSignupView {
-    private final String provider;
-    private final String providerId;
-    private final String email;
-    private final String accessToken;
+  private final String provider;
+  private final String providerId;
+  private final String email;
+  private final String accessToken;
 }

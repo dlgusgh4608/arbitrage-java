@@ -1,35 +1,35 @@
 package main.arbitrage.application.exchangeRate.service;
 
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.exchangeRate.dto.ExchangeRateDTO;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
 import main.arbitrage.infrastructure.crawler.UsdToKrwCrawler;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class ExchangeRateApplicationService {
-    private final UsdToKrwCrawler usdToKrwCrawler;
-    private final ExchangeRateService exchangeRateService;
-    private final ApplicationEventPublisher publisher;
-    // private final ObjectMapper objectMapper;
-    // private final EventEmitter emitter;
+  private final UsdToKrwCrawler usdToKrwCrawler;
+  private final ExchangeRateService exchangeRateService;
+  private final ApplicationEventPublisher publisher;
 
-    @Scheduled(fixedDelay = 1000 * 10) // 10sec
-    protected void scheduleOnEmit() {
-        double usdToKrw = usdToKrwCrawler.craw();
+  // private final ObjectMapper objectMapper;
+  // private final EventEmitter emitter;
 
-        ExchangeRateDTO exchangeRateDto = ExchangeRateDTO.builder().fromCurrency("USD")
-                .toCurrency("KRW").rate(usdToKrw).build();
+  @Scheduled(fixedDelay = 1000 * 10) // 10sec
+  protected void scheduleOnEmit() {
+    double usdToKrw = usdToKrwCrawler.craw();
 
-        ExchangeRate exchangeRate = exchangeRateService.setExchangeRate(exchangeRateDto);
+    ExchangeRateDTO exchangeRateDto =
+        ExchangeRateDTO.builder().fromCurrency("USD").toCurrency("KRW").rate(usdToKrw).build();
 
-        if (exchangeRate == null)
-            return;
+    ExchangeRate exchangeRate = exchangeRateService.setExchangeRate(exchangeRateDto);
 
-        publisher.publishEvent(exchangeRate);
-    }
+    if (exchangeRate == null) return;
+
+    publisher.publishEvent(exchangeRate);
+  }
 }

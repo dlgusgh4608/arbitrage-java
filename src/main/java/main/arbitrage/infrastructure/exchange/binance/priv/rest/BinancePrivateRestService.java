@@ -1,12 +1,12 @@
 package main.arbitrage.infrastructure.exchange.binance.priv.rest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.MarginType;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Side;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Type;
@@ -24,219 +24,252 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class BinancePrivateRestService extends BaseBinancePrivateRestService {
-    public BinancePrivateRestService(String accessKey, String secretKey, OkHttpClient okHttpClient,
-            ObjectMapper objectMapper, List<String> symbolNames) {
-        super(accessKey, secretKey, okHttpClient, objectMapper, symbolNames);
+  public BinancePrivateRestService(
+      String accessKey,
+      String secretKey,
+      OkHttpClient okHttpClient,
+      ObjectMapper objectMapper,
+      List<String> symbolNames) {
+    super(accessKey, secretKey, okHttpClient, objectMapper, symbolNames);
+  }
+
+  public List<BinanceGetAccountResponse> getAccount() throws IOException, BinanceRestException {
+    Map<String, Object> params = new LinkedHashMap<>();
+    params.put("timestamp", System.currentTimeMillis());
+    String queryString = generateToken(params);
+
+    Request request =
+        new Request.Builder()
+            .url(DEFAULT_URL + "/v3/balance" + "?" + queryString)
+            .addHeader("Content-Type", "application/json")
+            .addHeader("X-MBX-APIKEY", accessKey)
+            .get()
+            .build();
+
+    Response response = okHttpClient.newCall(request).execute();
+
+    String responseBody = response.body().string();
+
+    if (!response.isSuccessful()) validateResponse(responseBody);
+
+    return objectMapper.readValue(
+        responseBody,
+        objectMapper
+            .getTypeFactory()
+            .constructCollectionType(List.class, BinanceGetAccountResponse.class));
+  }
+
+  public Optional<BinanceGetAccountResponse> getUSDT() throws IOException, BinanceRestException {
+    List<BinanceGetAccountResponse> account = getAccount();
+    return account.stream()
+        .filter(binanceAccount -> binanceAccount.asset().equals("USDT"))
+        .findFirst();
+  }
+
+  public BinanceOrderResponse order(
+      String market, Side side, Type type, Double volume, Double price)
+      throws IOException, BinanceRestException {
+    if (market == null || side == null || type == null || volume == null) {
+      throw new BinanceRestException("(바이낸스) 잘못 된 주문 API 요청입니다.", "validation_error");
     }
 
-    public List<BinanceGetAccountResponse> getAccount() throws IOException, BinanceRestException {
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put("timestamp", System.currentTimeMillis());
-        String queryString = generateToken(params);
-
-        Request request = new Request.Builder().url(DEFAULT_URL + "/v3/balance" + "?" + queryString)
-                .addHeader("Content-Type", "application/json").addHeader("X-MBX-APIKEY", accessKey)
-                .get().build();
-
-        Response response = okHttpClient.newCall(request).execute();
-
-        String responseBody = response.body().string();
-
-        if (!response.isSuccessful())
-            validateResponse(responseBody);
-
-        return objectMapper.readValue(responseBody, objectMapper.getTypeFactory()
-                .constructCollectionType(List.class, BinanceGetAccountResponse.class));
+    if (type.equals(Type.LIMIT) && price == null) {
+      throw new BinanceRestException("(바이낸스) 잘못 된 주문 API 요청입니다.", "validation_error");
     }
 
-    public Optional<BinanceGetAccountResponse> getUSDT() throws IOException, BinanceRestException {
-        List<BinanceGetAccountResponse> account = getAccount();
-        return account.stream().filter(binanceAccount -> binanceAccount.asset().equals("USDT"))
-                .findFirst();
-    }
+    String symbol = convertSymbol(market);
 
-    public BinanceOrderResponse order(String market, Side side, Type type, Double volume,
-            Double price) throws IOException, BinanceRestException {
-        if (market == null || side == null || type == null || volume == null) {
-            throw new BinanceRestException("(바이낸스) 잘못 된 주문 API 요청입니다.", "validation_error");
-        }
+    BinancePostOrderRequest requestDto =
+        BinancePostOrderRequest.builder()
+            .newClientOrderId(UUID.randomUUID().toString())
+            .type(type)
+            .symbol(symbol)
+            .side(side)
+            .price(price)
+            .quantity(volume)
+            .build();
 
-        if (type.equals(Type.LIMIT) && price == null) {
-            throw new BinanceRestException("(바이낸스) 잘못 된 주문 API 요청입니다.", "validation_error");
-        }
+    Map<String, Object> map = objectMapper.convertValue(requestDto, LinkedHashMap.class);
 
-        String symbol = convertSymbol(market);
+    String queryString = generateToken(map);
 
-        BinancePostOrderRequest requestDto =
-                BinancePostOrderRequest.builder().newClientOrderId(UUID.randomUUID().toString())
-                        .type(type).symbol(symbol).side(side).price(price).quantity(volume).build();
+    RequestBody body = RequestBody.create(new byte[0], null);
 
+    String url = DEFAULT_URL + "/v1/order" + "?" + queryString;
 
-        Map<String, Object> map = objectMapper.convertValue(requestDto, LinkedHashMap.class);
+    Request request =
+        new Request.Builder()
+            .url(url)
+            .addHeader("Content-Type", "application/json")
+            .addHeader("X-MBX-APIKEY", accessKey)
+            .post(body)
+            .build();
 
-        String queryString = generateToken(map);
+    Response response = okHttpClient.newCall(request).execute();
 
-        RequestBody body = RequestBody.create(new byte[0], null);
+    String responseBody = response.body().string();
 
-        String url = DEFAULT_URL + "/v1/order" + "?" + queryString;
+    if (!response.isSuccessful()) validateResponse(responseBody);
 
-        Request request =
-                new Request.Builder().url(url).addHeader("Content-Type", "application/json")
-                        .addHeader("X-MBX-APIKEY", accessKey).post(body).build();
+    return objectMapper.readValue(responseBody, BinanceOrderResponse.class);
+  }
 
-        Response response = okHttpClient.newCall(request).execute();
+  public BinanceSymbolInfoResponse symbolInfo(String symbolName)
+      throws IOException, BinanceRestException {
+    String symbol = convertSymbol(symbolName);
+    Map<String, Object> params = new LinkedHashMap<>();
+    params.put("timestamp", System.currentTimeMillis());
+    params.put("symbol", symbol);
+    String queryString = generateToken(params);
 
-        String responseBody = response.body().string();
+    Request request =
+        new Request.Builder()
+            .url(DEFAULT_URL + "/v1/symbolConfig" + "?" + queryString)
+            .addHeader("Content-Type", "application/json")
+            .addHeader("X-MBX-APIKEY", accessKey)
+            .get()
+            .build();
 
-        if (!response.isSuccessful())
-            validateResponse(responseBody);
+    Response response = okHttpClient.newCall(request).execute();
 
-        return objectMapper.readValue(responseBody, BinanceOrderResponse.class);
-    }
+    String responseBody = response.body().string();
 
-    public BinanceSymbolInfoResponse symbolInfo(String symbolName)
-            throws IOException, BinanceRestException {
-        String symbol = convertSymbol(symbolName);
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put("timestamp", System.currentTimeMillis());
-        params.put("symbol", symbol);
-        String queryString = generateToken(params);
+    if (!response.isSuccessful()) validateResponse(responseBody);
 
-        Request request =
-                new Request.Builder().url(DEFAULT_URL + "/v1/symbolConfig" + "?" + queryString)
-                        .addHeader("Content-Type", "application/json")
-                        .addHeader("X-MBX-APIKEY", accessKey).get().build();
+    List<BinanceSymbolInfoResponse> responseList =
+        objectMapper.readValue(
+            responseBody,
+            objectMapper
+                .getTypeFactory()
+                .constructCollectionType(List.class, BinanceSymbolInfoResponse.class));
 
-        Response response = okHttpClient.newCall(request).execute();
+    if (responseList.isEmpty()) return null;
 
-        String responseBody = response.body().string();
+    return responseList.get(0);
+  }
 
-        if (!response.isSuccessful())
-            validateResponse(responseBody);
+  public BinanceLeverageBracketResponse getLeverageBrackets(String symbolName) throws Exception {
+    String symbol = convertSymbol(symbolName);
 
-        List<BinanceSymbolInfoResponse> responseList =
-                objectMapper.readValue(responseBody, objectMapper.getTypeFactory()
-                        .constructCollectionType(List.class, BinanceSymbolInfoResponse.class));
+    Map<String, Object> params = new LinkedHashMap<>();
+    params.put("timestamp", System.currentTimeMillis());
+    params.put("symbol", symbol);
+    String queryString = generateToken(params);
 
-        if (responseList.isEmpty())
-            return null;
+    Request request =
+        new Request.Builder()
+            .url(DEFAULT_URL + "/v1/leverageBracket" + "?" + queryString)
+            .addHeader("Content-Type", "application/json")
+            .addHeader("X-MBX-APIKEY", accessKey)
+            .get()
+            .build();
 
-        return responseList.get(0);
-    }
+    Response response = okHttpClient.newCall(request).execute();
 
-    public BinanceLeverageBracketResponse getLeverageBrackets(String symbolName) throws Exception {
-        String symbol = convertSymbol(symbolName);
+    String responseBody = response.body().string();
 
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put("timestamp", System.currentTimeMillis());
-        params.put("symbol", symbol);
-        String queryString = generateToken(params);
+    if (!response.isSuccessful()) validateResponse(responseBody);
 
-        Request request =
-                new Request.Builder().url(DEFAULT_URL + "/v1/leverageBracket" + "?" + queryString)
-                        .addHeader("Content-Type", "application/json")
-                        .addHeader("X-MBX-APIKEY", accessKey).get().build();
+    List<BinanceLeverageBracketResponse> responseList =
+        objectMapper.readValue(
+            responseBody,
+            objectMapper
+                .getTypeFactory()
+                .constructCollectionType(List.class, BinanceLeverageBracketResponse.class));
 
-        Response response = okHttpClient.newCall(request).execute();
+    if (responseList.isEmpty()) return null;
 
-        String responseBody = response.body().string();
+    return responseList.get(0);
+  }
 
-        if (!response.isSuccessful())
-            validateResponse(responseBody);
+  public BinanceChangeLeverageResponse changeLeverage(String symbolName, int leverage)
+      throws Exception {
+    String symbol = convertSymbol(symbolName);
 
-        List<BinanceLeverageBracketResponse> responseList =
-                objectMapper.readValue(responseBody, objectMapper.getTypeFactory()
-                        .constructCollectionType(List.class, BinanceLeverageBracketResponse.class));
+    Map<String, Object> params = new LinkedHashMap<>();
+    params.put("timestamp", System.currentTimeMillis());
+    params.put("symbol", symbol);
+    params.put("leverage", leverage);
+    String queryString = generateToken(params);
 
-        if (responseList.isEmpty())
-            return null;
+    RequestBody body = RequestBody.create(new byte[0], null);
 
-        return responseList.get(0);
-    }
+    Request request =
+        new Request.Builder()
+            .url(DEFAULT_URL + "/v1/leverage" + "?" + queryString)
+            .addHeader("Content-Type", "application/json")
+            .addHeader("X-MBX-APIKEY", accessKey)
+            .post(body)
+            .build();
 
-    public BinanceChangeLeverageResponse changeLeverage(String symbolName, int leverage)
-            throws Exception {
-        String symbol = convertSymbol(symbolName);
+    Response response = okHttpClient.newCall(request).execute();
 
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put("timestamp", System.currentTimeMillis());
-        params.put("symbol", symbol);
-        params.put("leverage", leverage);
-        String queryString = generateToken(params);
+    String responseBody = response.body().string();
 
-        RequestBody body = RequestBody.create(new byte[0], null);
+    if (!response.isSuccessful()) validateResponse(responseBody);
 
-        Request request =
-                new Request.Builder().url(DEFAULT_URL + "/v1/leverage" + "?" + queryString)
-                        .addHeader("Content-Type", "application/json")
-                        .addHeader("X-MBX-APIKEY", accessKey).post(body).build();
+    return objectMapper.readValue(responseBody, BinanceChangeLeverageResponse.class);
+  }
 
+  public BinancePositionInfoResponse getPositionInfo(String symbolName) throws Exception {
+    String symbol = convertSymbol(symbolName);
 
-        Response response = okHttpClient.newCall(request).execute();
+    Map<String, Object> params = new LinkedHashMap<>();
+    params.put("timestamp", System.currentTimeMillis());
+    params.put("symbol", symbol);
+    String queryString = generateToken(params);
 
-        String responseBody = response.body().string();
+    Request request =
+        new Request.Builder()
+            .url(DEFAULT_URL + "/v3/positionRisk" + "?" + queryString)
+            .addHeader("Content-Type", "application/json")
+            .addHeader("X-MBX-APIKEY", accessKey)
+            .get()
+            .build();
 
-        if (!response.isSuccessful())
-            validateResponse(responseBody);
+    Response response = okHttpClient.newCall(request).execute();
 
-        return objectMapper.readValue(responseBody, BinanceChangeLeverageResponse.class);
-    }
+    String responseBody = response.body().string();
 
-    public BinancePositionInfoResponse getPositionInfo(String symbolName) throws Exception {
-        String symbol = convertSymbol(symbolName);
+    if (!response.isSuccessful()) validateResponse(responseBody);
 
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put("timestamp", System.currentTimeMillis());
-        params.put("symbol", symbol);
-        String queryString = generateToken(params);
+    List<BinancePositionInfoResponse> responseList =
+        objectMapper.readValue(
+            responseBody,
+            objectMapper
+                .getTypeFactory()
+                .constructCollectionType(List.class, BinancePositionInfoResponse.class));
 
-        Request request =
-                new Request.Builder().url(DEFAULT_URL + "/v3/positionRisk" + "?" + queryString)
-                        .addHeader("Content-Type", "application/json")
-                        .addHeader("X-MBX-APIKEY", accessKey).get().build();
+    if (responseList.isEmpty()) return null;
 
-        Response response = okHttpClient.newCall(request).execute();
+    return responseList.get(0);
+  }
 
-        String responseBody = response.body().string();
+  public boolean updateMarginType(String symbolName, MarginType marginType) throws Exception {
+    String symbol = convertSymbol(symbolName);
 
-        if (!response.isSuccessful())
-            validateResponse(responseBody);
+    Map<String, Object> params = new LinkedHashMap<>();
+    params.put("timestamp", System.currentTimeMillis());
+    params.put("symbol", symbol);
+    params.put("marginType", marginType.name());
+    String queryString = generateToken(params);
 
-        List<BinancePositionInfoResponse> responseList =
-                objectMapper.readValue(responseBody, objectMapper.getTypeFactory()
-                        .constructCollectionType(List.class, BinancePositionInfoResponse.class));
+    RequestBody body = RequestBody.create(new byte[0], null);
 
-        if (responseList.isEmpty())
-            return null;
+    Request request =
+        new Request.Builder()
+            .url(DEFAULT_URL + "/v1/marginType" + "?" + queryString)
+            .addHeader("Content-Type", "application/json")
+            .addHeader("X-MBX-APIKEY", accessKey)
+            .post(body)
+            .build();
 
-        return responseList.get(0);
-    }
+    Response response = okHttpClient.newCall(request).execute();
 
+    String responseBody = response.body().string();
 
-    public boolean updateMarginType(String symbolName, MarginType marginType) throws Exception {
-        String symbol = convertSymbol(symbolName);
+    if (!response.isSuccessful()) validateResponse(responseBody);
 
-        Map<String, Object> params = new LinkedHashMap<>();
-        params.put("timestamp", System.currentTimeMillis());
-        params.put("symbol", symbol);
-        params.put("marginType", marginType.name());
-        String queryString = generateToken(params);
-
-        RequestBody body = RequestBody.create(new byte[0], null);
-
-        Request request =
-                new Request.Builder().url(DEFAULT_URL + "/v1/marginType" + "?" + queryString)
-                        .addHeader("Content-Type", "application/json")
-                        .addHeader("X-MBX-APIKEY", accessKey).post(body).build();
-
-
-        Response response = okHttpClient.newCall(request).execute();
-
-        String responseBody = response.body().string();
-
-        if (!response.isSuccessful())
-            validateResponse(responseBody);
-
-        return true;
-    }
+    return true;
+  }
 }

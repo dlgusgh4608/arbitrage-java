@@ -10,8 +10,8 @@ import main.arbitrage.domain.buyOrder.entity.BuyOrder;
 @Builder
 @ToString
 public class OrderCalcResult {
-    private final BuyOrder buyOrder;
-    private final BigDecimal binanceQty;
-    private final BigDecimal upbitQty;
-    private final boolean isClose;
+  private final BuyOrder buyOrder;
+  private final BigDecimal binanceQty;
+  private final BigDecimal upbitQty;
+  private final boolean isClose;
 }

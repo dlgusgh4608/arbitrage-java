@@ -1,9 +1,9 @@
 package main.arbitrage.infrastructure.websocket.client;
 
 public interface WebSocketClient {
-    void connect();
+  void connect();
 
-    void disconnect();
+  void disconnect();
 
-    boolean isConnected();
+  boolean isConnected();
 }

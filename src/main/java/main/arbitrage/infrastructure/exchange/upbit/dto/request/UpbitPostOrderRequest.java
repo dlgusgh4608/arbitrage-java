@@ -15,14 +15,14 @@ import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class UpbitPostOrderRequest {
-    private final String market;
+  private final String market;
 
-    private final UpbitOrderEnums.Side side;
-    private final UpbitOrderEnums.OrdType ordType;
+  private final UpbitOrderEnums.Side side;
+  private final UpbitOrderEnums.OrdType ordType;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "0")
-    private final Double price;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "0")
+  private final Double price;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private final Double volume;
+  @JsonFormat(shape = JsonFormat.Shape.STRING)
+  private final Double volume;
 }

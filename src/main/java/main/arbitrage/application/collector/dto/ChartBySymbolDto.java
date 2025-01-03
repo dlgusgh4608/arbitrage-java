@@ -7,7 +7,7 @@ import main.arbitrage.infrastructure.exchange.dto.OrderbookPair;
 @Getter
 @Builder
 public class ChartBySymbolDTO {
-    private final String symbol;
-    private final PremiumDTO premium;
-    private final OrderbookPair orderbookPair;
+  private final String symbol;
+  private final PremiumDTO premium;
+  private final OrderbookPair orderbookPair;
 }

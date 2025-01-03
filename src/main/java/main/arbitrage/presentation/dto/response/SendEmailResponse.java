@@ -6,5 +6,5 @@ import lombok.Getter;
 @Getter
 @Builder
 public class SendEmailResponse {
-    private final String code;
+  private final String code;
 }

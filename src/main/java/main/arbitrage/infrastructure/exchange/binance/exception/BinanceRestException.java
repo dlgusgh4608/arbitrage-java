@@ -4,10 +4,10 @@ import lombok.Getter;
 
 @Getter
 public class BinanceRestException extends RuntimeException {
-    private final String errorCode;
+  private final String errorCode;
 
-    public BinanceRestException(String message, String errorCode) {
-        super(message);
-        this.errorCode = errorCode;
-    }
+  public BinanceRestException(String message, String errorCode) {
+    super(message);
+    this.errorCode = errorCode;
+  }
 }

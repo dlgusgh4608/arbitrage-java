@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class TradePair {
-    private final TradeDto upbit;
-    private final TradeDto binance;
+  private final TradeDto upbit;
+  private final TradeDto binance;
 }

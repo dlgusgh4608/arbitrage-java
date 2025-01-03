@@ -8,14 +8,14 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class TypedJsonNode<T> {
-    private final JsonNode jsonNode;
-    private final Class<T> type;
+  private final JsonNode jsonNode;
+  private final Class<T> type;
 
-    public T convertToType(ObjectMapper objectMapper) {
-        return objectMapper.convertValue(jsonNode, type);
-    }
+  public T convertToType(ObjectMapper objectMapper) {
+    return objectMapper.convertValue(jsonNode, type);
+  }
 
-    public static <T> TypedJsonNode<T> of(JsonNode jsonNode, Class<T> type) {
-        return new TypedJsonNode<>(jsonNode, type);
-    }
+  public static <T> TypedJsonNode<T> of(JsonNode jsonNode, Class<T> type) {
+    return new TypedJsonNode<>(jsonNode, type);
+  }
 }

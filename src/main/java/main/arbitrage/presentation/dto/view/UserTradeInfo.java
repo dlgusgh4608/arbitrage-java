@@ -12,12 +12,12 @@ import main.arbitrage.presentation.dto.response.BuyOrderResponse;
 @Builder
 @Getter
 public class UserTradeInfo {
-    private final Double usdt;
-    private final Double krw;
-    private final MarginType marginType;
-    private final Integer leverage;
-    private final List<BinanceLeverageBracketResponse.Brackets> brackets;
-    private final UpbitGetAccountResponse upbitPosition;
-    private final BinancePositionInfoResponse binancePosition;
-    private final List<BuyOrderResponse> orders;
+  private final Double usdt;
+  private final Double krw;
+  private final MarginType marginType;
+  private final Integer leverage;
+  private final List<BinanceLeverageBracketResponse.Brackets> brackets;
+  private final UpbitGetAccountResponse upbitPosition;
+  private final BinancePositionInfoResponse binancePosition;
+  private final List<BuyOrderResponse> orders;
 }

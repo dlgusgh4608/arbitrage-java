@@ -10,7 +10,7 @@ import main.arbitrage.domain.user.entity.User;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class OAuthUserId implements Serializable {
-    private String providerId;
-    private String provider;
-    private User user;
+  private String providerId;
+  private String provider;
+  private User user;
 }

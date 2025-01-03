@@ -8,6 +8,6 @@ import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestSe
 @Getter
 @Builder
 public class ExchangePrivateRestPair {
-    private final UpbitPrivateRestService upbit;
-    private final BinancePrivateRestService binance;
+  private final UpbitPrivateRestService upbit;
+  private final BinancePrivateRestService binance;
 }

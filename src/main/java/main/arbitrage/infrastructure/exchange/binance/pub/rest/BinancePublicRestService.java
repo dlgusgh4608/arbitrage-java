@@ -1,88 +1,94 @@
 package main.arbitrage.infrastructure.exchange.binance.pub.rest;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.springframework.stereotype.Service;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceExchangeInfoResponse;
 import main.arbitrage.infrastructure.exchange.binance.exception.BinanceRestException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.springframework.stereotype.Service;
 
 @Service
 public class BinancePublicRestService extends BaseBinancePublicRestService {
 
-    public BinancePublicRestService(OkHttpClient okHttpClient, ObjectMapper objectMapper,
-            SymbolVariableService symbolVariableService) {
-        super(okHttpClient, objectMapper, symbolVariableService);
-    }
+  public BinancePublicRestService(
+      OkHttpClient okHttpClient,
+      ObjectMapper objectMapper,
+      SymbolVariableService symbolVariableService) {
+    super(okHttpClient, objectMapper, symbolVariableService);
+  }
 
-    public Map<String, BinanceExchangeInfoResponse> getExchangeInfo() {
-        try {
-            String url = DEFAULT_URL + "/v1/exchangeInfo";
+  public Map<String, BinanceExchangeInfoResponse> getExchangeInfo() {
+    try {
+      String url = DEFAULT_URL + "/v1/exchangeInfo";
 
-            Request request = new Request.Builder().url(url)
-                    .addHeader("Content-Type", "application/json").get().build();
+      Request request =
+          new Request.Builder()
+              .url(url)
+              .addHeader("Content-Type", "application/json")
+              .get()
+              .build();
 
-            Response response = okHttpClient.newCall(request).execute();
+      Response response = okHttpClient.newCall(request).execute();
 
-            String responseBody = response.body().string();
+      String responseBody = response.body().string();
 
-            if (!response.isSuccessful()) {
-                validateResponse(responseBody);
+      if (!response.isSuccessful()) {
+        validateResponse(responseBody);
+      }
+
+      JsonNode json = objectMapper.readTree(responseBody);
+
+      JsonNode symbols = json.get("symbols");
+
+      List<String> supportedSymbolNames = symbolVariableService.getSupportedSymbolNames();
+
+      Map<String, BinanceExchangeInfoResponse> exchangeHashMap = new HashMap<>();
+
+      String MARKET_LOT_SIZE = "MARKET_LOT_SIZE"; // 시장가 체결 필터
+      String MIN_NOTIONAL = "MIN_NOTIONAL"; // 최소 주문금액 필터
+
+      for (JsonNode symbol : symbols) {
+        String symbolName = symbol.get("baseAsset").asText();
+        String symbolFullName = symbol.get("symbol").asText();
+
+        if (supportedSymbolNames.stream()
+            .map(s -> s.concat("USDT"))
+            .toList()
+            .contains(symbolFullName)) {
+
+          JsonNode filters = symbol.get("filters");
+
+          Double maxQty = null;
+          Double minQty = null;
+          Double stepSize = null;
+          Double minUsdt = null;
+
+          for (JsonNode filter : filters) {
+            String filterType = filter.get("filterType").asText();
+
+            if (MARKET_LOT_SIZE.equals(filterType)) {
+              maxQty = filter.get("maxQty").asDouble();
+              minQty = filter.get("minQty").asDouble();
+              stepSize = filter.get("stepSize").asDouble();
+            } else if (MIN_NOTIONAL.equals(filterType)) {
+              minUsdt = filter.get("notional").asDouble();
             }
+          }
 
-            JsonNode json = objectMapper.readTree(responseBody);
-
-            JsonNode symbols = json.get("symbols");
-
-            List<String> supportedSymbolNames = symbolVariableService.getSupportedSymbolNames();
-
-            Map<String, BinanceExchangeInfoResponse> exchangeHashMap = new HashMap<>();
-
-            String MARKET_LOT_SIZE = "MARKET_LOT_SIZE"; // 시장가 체결 필터
-            String MIN_NOTIONAL = "MIN_NOTIONAL"; // 최소 주문금액 필터
-
-            for (JsonNode symbol : symbols) {
-                String symbolName = symbol.get("baseAsset").asText();
-                String symbolFullName = symbol.get("symbol").asText();
-
-                if (supportedSymbolNames.stream().map(s -> s.concat("USDT")).toList()
-                        .contains(symbolFullName)) {
-
-                    JsonNode filters = symbol.get("filters");
-
-                    Double maxQty = null;
-                    Double minQty = null;
-                    Double stepSize = null;
-                    Double minUsdt = null;
-
-                    for (JsonNode filter : filters) {
-                        String filterType = filter.get("filterType").asText();
-
-                        if (MARKET_LOT_SIZE.equals(filterType)) {
-                            maxQty = filter.get("maxQty").asDouble();
-                            minQty = filter.get("minQty").asDouble();
-                            stepSize = filter.get("stepSize").asDouble();
-                        } else if (MIN_NOTIONAL.equals(filterType)) {
-                            minUsdt = filter.get("notional").asDouble();
-                        }
-                    }
-
-                    exchangeHashMap.put(symbolName,
-                            new BinanceExchangeInfoResponse(maxQty, minQty, stepSize, minUsdt));
-
-                }
-            }
-
-            return exchangeHashMap;
-        } catch (Exception e) {
-            throw new BinanceRestException("(바이낸스) 알 수 없는 에러가 발생했습니다.", "UNKNOWN_ERROR");
+          exchangeHashMap.put(
+              symbolName, new BinanceExchangeInfoResponse(maxQty, minQty, stepSize, minUsdt));
         }
+      }
 
+      return exchangeHashMap;
+    } catch (Exception e) {
+      throw new BinanceRestException("(바이낸스) 알 수 없는 에러가 발생했습니다.", "UNKNOWN_ERROR");
     }
+  }
 }

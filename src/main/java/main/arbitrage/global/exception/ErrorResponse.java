@@ -1,22 +1,21 @@
 package main.arbitrage.global.exception;
 
 import java.time.LocalDateTime;
-import org.springframework.http.HttpStatus;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Builder;
 import lombok.Getter;
 
 @Getter
+@Builder
 public class ErrorResponse {
+  private final String code;
+  private final String message;
+  private final LocalDateTime timestamp;
 
-    private final int status;
-    private final String message;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private final LocalDateTime timestamp;
-
-    public ErrorResponse(HttpStatus status, String message) {
-        this.status = status.value();
-        this.message = message;
-        this.timestamp = LocalDateTime.now();
-    }
+  public static ErrorResponse of(BaseException baseException) {
+    return ErrorResponse.builder()
+        .code(baseException.getCode())
+        .message(baseException.getClientMessage())
+        .timestamp(baseException.getTimestamp())
+        .build();
+  }
 }
