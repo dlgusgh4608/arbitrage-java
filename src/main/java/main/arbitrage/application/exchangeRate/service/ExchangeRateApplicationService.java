@@ -16,9 +16,6 @@ public class ExchangeRateApplicationService {
   private final ExchangeRateService exchangeRateService;
   private final ApplicationEventPublisher publisher;
 
-  // private final ObjectMapper objectMapper;
-  // private final EventEmitter emitter;
-
   @Scheduled(fixedDelay = 1000 * 10) // 10sec
   protected void scheduleOnEmit() {
     double usdToKrw = usdToKrwCrawler.craw();

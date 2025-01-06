@@ -22,7 +22,7 @@ public class EmailMessageService {
   private final JavaMailSender javaMailSender;
   private final SpringTemplateEngine templateEngine;
 
-  public String sendMail(EmailMessageDTO emailMessageDTO, String type) throws SendMailException {
+  public String sendMail(EmailMessageDTO emailMessageDTO, String type) {
     String authNum = generateCode();
 
     MimeMessage mimeMessage = javaMailSender.createMimeMessage();
@@ -37,11 +37,11 @@ public class EmailMessageService {
       return authNum;
 
     } catch (MailSendException e) {
-      throw new SendMailException(SendMailErrorCode.INVALID_MAIL, emailMessageDTO.getTo(), e);
+      throw new SendMailException(SendMailErrorCode.INVALID_MAIL, e);
     } catch (MessagingException e) {
-      throw new SendMailException(SendMailErrorCode.INTERNAL_ERROR, emailMessageDTO.getTo(), e);
+      throw new SendMailException(SendMailErrorCode.UNKNOWN, e);
     } catch (jakarta.mail.MessagingException e) {
-      throw new SendMailException(SendMailErrorCode.INTERNAL_ERROR, emailMessageDTO.getTo(), e);
+      throw new SendMailException(SendMailErrorCode.UNKNOWN, e);
     }
   }
 

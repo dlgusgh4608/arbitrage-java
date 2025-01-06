@@ -26,8 +26,7 @@ public class UserEnvForm {
   @NotBlank(message = "바이낸스 시크릿키는 필수 값 입니다.")
   private String binanceSecretKey;
 
-  public static UserEnv toEntity(UserEnvForm userEnvDto, User user, AESCrypto aesCrypto)
-      throws Exception {
+  public static UserEnv toEntity(UserEnvForm userEnvDto, User user, AESCrypto aesCrypto) {
     return UserEnv.builder()
         .user(user)
         .upbitAccessKey(aesCrypto.encrypt(userEnvDto.getUpbitAccessKey().getBytes()))

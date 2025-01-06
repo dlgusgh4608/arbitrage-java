@@ -1,21 +1,19 @@
 package main.arbitrage.global.exception;
 
-import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
+import main.arbitrage.global.exception.common.BaseException;
 
 @Getter
 @Builder
 public class ErrorResponse {
   private final String code;
   private final String message;
-  private final LocalDateTime timestamp;
 
-  public static ErrorResponse of(BaseException baseException) {
+  public static ErrorResponse of(BaseException e) {
     return ErrorResponse.builder()
-        .code(baseException.getCode())
-        .message(baseException.getClientMessage())
-        .timestamp(baseException.getTimestamp())
+        .code(e.getErrorCode().getCode())
+        .message(e.getErrorCode().getClientMessage())
         .build();
   }
 }

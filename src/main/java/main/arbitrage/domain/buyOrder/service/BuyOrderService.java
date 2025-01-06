@@ -3,6 +3,8 @@ package main.arbitrage.domain.buyOrder.service;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.domain.buyOrder.entity.BuyOrder;
+import main.arbitrage.domain.buyOrder.exception.BuyOrderErrorCode;
+import main.arbitrage.domain.buyOrder.exception.BuyOrderException;
 import main.arbitrage.domain.buyOrder.repository.BuyOrderRepository;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.symbol.entity.Symbol;
@@ -60,6 +62,16 @@ public class BuyOrderService {
 
   public List<BuyOrder> getOpenOrders(User user, Symbol symbol) {
     return buyOrderRepository.findByUserAndSymbolAndIsCloseFalse(user, symbol);
+  }
+
+  public List<BuyOrder> getAndExistOpenOrders(User user, Symbol symbol) {
+    List<BuyOrder> buyOrders = buyOrderRepository.findByUserAndSymbolAndIsCloseFalse(user, symbol);
+
+    if (buyOrders.isEmpty()) {
+      throw new BuyOrderException(BuyOrderErrorCode.NOT_FOUND);
+    }
+
+    return buyOrders;
   }
 
   public List<BuyOrder> getOrders(User user, Symbol symbol) {

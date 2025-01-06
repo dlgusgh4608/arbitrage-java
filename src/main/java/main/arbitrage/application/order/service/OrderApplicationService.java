@@ -2,7 +2,6 @@ package main.arbitrage.application.order.service;
 
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +17,8 @@ import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
+import main.arbitrage.global.exception.GlobalErrorCode;
+import main.arbitrage.global.exception.GlobalException;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceChangeLeverageResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
@@ -30,7 +31,6 @@ import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums;
 import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetAccountResponse;
 import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetOrderResponse;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
-import main.arbitrage.presentation.dto.enums.OrderType;
 import main.arbitrage.presentation.dto.request.OrderRequest;
 import main.arbitrage.presentation.dto.request.UpdateLeverageRequest;
 import main.arbitrage.presentation.dto.request.UpdateMarginTypeRequest;
@@ -56,25 +56,18 @@ public class OrderApplicationService {
   }
 
   @Transactional
-  public BuyOrderResponse createOrder(OrderRequest req) throws Exception {
-    if (exchangeRate == null) throw new Exception("Exchange rate is not found");
+  public void createSellOrder(OrderRequest req) {
+    if (exchangeRate == null)
+      throw new GlobalException(
+          GlobalErrorCode.EXCHANGE_RATE_NULL, "exchange_rate is null in order application service");
 
     Symbol symbol = symbolVariableService.findSymbolByName(req.symbol());
-    String orderType = req.orderType();
-
-    if (symbol == null) throw new IllegalArgumentException("Symbol is not found");
-
-    if (!orderType.equals(OrderType.BUY.name()) && !orderType.equals(OrderType.SELL.name()))
-      throw new IllegalArgumentException("Invalid order type");
 
     ExchangeRate fixedExchangeRate = exchangeRate;
 
     Long userId = SecurityUtil.getUserId();
-    Optional<UserEnv> userEnvOptional = userEnvService.findByUserId(userId);
+    UserEnv userEnv = userEnvService.findAndExistByUserId(userId);
 
-    if (userEnvOptional.isEmpty()) throw new IllegalArgumentException("UserEnv is not found");
-
-    UserEnv userEnv = userEnvOptional.get();
     User user = userEnv.getUser();
 
     ExchangePrivateRestPair upbitExchangePrivateRestPair =
@@ -82,118 +75,89 @@ public class OrderApplicationService {
     BinancePrivateRestService binanceService = upbitExchangePrivateRestPair.getBinance();
     UpbitPrivateRestService upbitService = upbitExchangePrivateRestPair.getUpbit();
 
-    // 구매 로직
-    if (orderType.equals(OrderType.BUY.name())) {
-      BinanceOrderResponse binanceOrderRes =
-          binanceService.order( // 시장가 숏
-              symbol.getName(), BinanceEnums.Side.SELL, BinanceEnums.Type.MARKET, req.qty(), null);
+    List<BuyOrder> openOrders = buyOrderService.getAndExistOpenOrders(user, symbol);
 
-      String uuid =
-          upbitService.order(
-              symbol.getName(),
-              UpbitOrderEnums.Side.bid,
-              UpbitOrderEnums.OrdType.price,
-              (double) Math.round(binanceOrderRes.cumQuote() * fixedExchangeRate.getRate()),
-              null);
+    List<OrderCalcResult> results = new ArrayList<>();
+    BigDecimal qty = BigDecimal.valueOf(req.qty());
+    BigDecimal upbitTotalQty = BigDecimal.ZERO;
 
-      UpbitGetOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
+    sellOrderService.calculateSellQty(results, openOrders, qty);
 
-      return buyOrderService.createMarketBuyOrder(
-          user, symbol, fixedExchangeRate, binanceOrderRes, upbitOrderRes);
-    } else { // 판매 로직
-      BigDecimal qty = BigDecimal.valueOf(req.qty());
+    BinanceOrderResponse binanceOrderRes =
+        binanceService.order( // 시장가 롱 ( 판매 )
+            symbol.getName(), BinanceEnums.Side.BUY, BinanceEnums.Type.MARKET, req.qty(), null);
 
-      List<BuyOrder> openOrders = buyOrderService.getOpenOrders(user, symbol);
+    String uuid =
+        upbitService.order(
+            symbol.getName(),
+            UpbitOrderEnums.Side.ask,
+            UpbitOrderEnums.OrdType.market,
+            null,
+            upbitTotalQty.doubleValue());
 
-      List<OrderCalcResult> results = new ArrayList<>();
-      BigDecimal upbitTotalQty = BigDecimal.ZERO;
+    UpbitGetOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
 
-      for (BuyOrder buyOrder : openOrders) {
-        // qty가 0이면 break
-        if (qty.signum() == 0) break;
-
-        BigDecimal restBinanceQty = buyOrder.getRestBinanceQty();
-        BigDecimal restUpbitQty = buyOrder.getRestUpbitQty();
-
-        if (qty.compareTo(restBinanceQty) >= 0) {
-          // 남은 수량이 현재 주문의 잔여 수량보다 크거나 같은 경우
-          OrderCalcResult orderItem =
-              OrderCalcResult.builder()
-                  .buyOrder(buyOrder)
-                  .binanceQty(restBinanceQty)
-                  .upbitQty(restUpbitQty)
-                  .isClose(true)
-                  .build();
-
-          upbitTotalQty = upbitTotalQty.add(restUpbitQty);
-          results.add(orderItem);
-          qty = qty.subtract(restBinanceQty);
-        } else {
-          // 남은 수량이 현재 주문의 잔여 수량보다 작은 경우
-          // 잔여 수량에 대한 퍼센트를 이용해 upbit에 대한 qty를 구한 후 add
-          BigDecimal percent = qty.divide(restBinanceQty, 8, RoundingMode.HALF_UP);
-          BigDecimal calculatedUpbitQty =
-              restUpbitQty.multiply(percent).setScale(8, RoundingMode.HALF_UP);
-
-          OrderCalcResult orderItem =
-              OrderCalcResult.builder()
-                  .buyOrder(buyOrder)
-                  .binanceQty(qty)
-                  .upbitQty(calculatedUpbitQty)
-                  .isClose(false)
-                  .build();
-
-          upbitTotalQty = upbitTotalQty.add(calculatedUpbitQty);
-          results.add(orderItem);
-          qty = BigDecimal.ZERO;
-        }
+    for (OrderCalcResult orderCalcResult : results) {
+      if (orderCalcResult.isClose()) {
+        orderCalcResult.getBuyOrder().close();
       }
 
-      // qty가 음수이면 에러 발생
-      if (qty.signum() < 0) throw new Exception("qty to larger");
+      sellOrderService.createMarketOrder(
+          orderCalcResult, binanceOrderRes, upbitOrderRes, fixedExchangeRate);
+    }
 
-      BinanceOrderResponse binanceOrderRes =
-          binanceService.order( // 시장가 롱 ( 판매 )
-              symbol.getName(), BinanceEnums.Side.BUY, BinanceEnums.Type.MARKET, req.qty(), null);
+    List<BuyOrderResponse> z =
+        results.stream().map(r -> BuyOrderResponse.fromEntity(r.getBuyOrder())).toList();
 
-      String uuid =
-          upbitService.order(
-              symbol.getName(),
-              UpbitOrderEnums.Side.ask,
-              UpbitOrderEnums.OrdType.market,
-              null,
-              upbitTotalQty.doubleValue());
-
-      UpbitGetOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
-
-      for (OrderCalcResult orderCalcResult : results) {
-        if (orderCalcResult.isClose()) {
-          orderCalcResult.getBuyOrder().close();
-        }
-
-        sellOrderService.createMarketOrder(
-            orderCalcResult, binanceOrderRes, upbitOrderRes, fixedExchangeRate);
-      }
-
-      List<BuyOrderResponse> z =
-          results.stream().map(r -> BuyOrderResponse.fromEntity(r.getBuyOrder())).toList();
-
-      // 여기서부터 이어 작성해야함.
-      for (BuyOrderResponse r : z) {
-        System.out.println(r);
-      }
-
-      return null;
+    // 여기서부터 이어 작성해야함.
+    for (BuyOrderResponse r : z) {
+      System.out.println(r);
     }
   }
 
   @Transactional
-  public UserTradeInfo getTradeInfo(String symbolName, Long userId) throws Exception {
+  public void createBuyOrder(OrderRequest req) {
+    if (exchangeRate == null)
+      throw new GlobalException(
+          GlobalErrorCode.EXCHANGE_RATE_NULL, "exchange_rate is null in order application service");
+
+    Symbol symbol = symbolVariableService.findSymbolByName(req.symbol());
+
+    ExchangeRate fixedExchangeRate = exchangeRate;
+
+    Long userId = SecurityUtil.getUserId();
+    UserEnv userEnv = userEnvService.findAndExistByUserId(userId);
+
+    User user = userEnv.getUser();
+
+    ExchangePrivateRestPair upbitExchangePrivateRestPair =
+        exchangePrivateRestFactory.create(userEnv);
+    BinancePrivateRestService binanceService = upbitExchangePrivateRestPair.getBinance();
+    UpbitPrivateRestService upbitService = upbitExchangePrivateRestPair.getUpbit();
+
+    BinanceOrderResponse binanceOrderRes =
+        binanceService.order( // 시장가 숏
+            symbol.getName(), BinanceEnums.Side.SELL, BinanceEnums.Type.MARKET, req.qty(), null);
+
+    String uuid =
+        upbitService.order(
+            symbol.getName(),
+            UpbitOrderEnums.Side.bid,
+            UpbitOrderEnums.OrdType.price,
+            (double) Math.round(binanceOrderRes.cumQuote() * fixedExchangeRate.getRate()),
+            null);
+
+    UpbitGetOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
+
+    // return buyOrderService.createMarketBuyOrder(
+    //     user, symbol, fixedExchangeRate, binanceOrderRes, upbitOrderRes);
+  }
+
+  @Transactional
+  public UserTradeInfo getTradeInfo(String symbolName, Long userId) {
     Optional<UserEnv> userEnvOptional = userEnvService.findByUserId(userId);
 
-    if (userEnvOptional.isEmpty()) {
-      return null;
-    }
+    if (userEnvOptional.isEmpty()) return null;
 
     UserTradeInfo.UserTradeInfoBuilder tradeInfoBuilder = UserTradeInfo.builder();
 
@@ -250,14 +214,10 @@ public class OrderApplicationService {
   }
 
   @Transactional
-  public BinanceChangeLeverageResponse updateLeverage(UpdateLeverageRequest req) throws Exception {
+  public BinanceChangeLeverageResponse updateLeverage(UpdateLeverageRequest req) {
     Long userId = SecurityUtil.getUserId();
 
-    Optional<UserEnv> userEnvOptional = userEnvService.findByUserId(userId);
-
-    if (userEnvOptional.isEmpty()) throw new IllegalArgumentException("UserEnv is not found");
-
-    UserEnv userEnv = userEnvOptional.get();
+    UserEnv userEnv = userEnvService.findAndExistByUserId(userId);
 
     ExchangePrivateRestPair upbitExchangePrivateRestPair =
         exchangePrivateRestFactory.create(userEnv);
@@ -270,14 +230,10 @@ public class OrderApplicationService {
   }
 
   @Transactional
-  public boolean updateMarginType(UpdateMarginTypeRequest req) throws Exception {
+  public boolean updateMarginType(UpdateMarginTypeRequest req) {
     Long userId = SecurityUtil.getUserId();
 
-    Optional<UserEnv> userEnvOptional = userEnvService.findByUserId(userId);
-
-    if (userEnvOptional.isEmpty()) throw new IllegalArgumentException("UserEnv is not found");
-
-    UserEnv userEnv = userEnvOptional.get();
+    UserEnv userEnv = userEnvService.findAndExistByUserId(userId);
 
     ExchangePrivateRestPair upbitExchangePrivateRestPair =
         exchangePrivateRestFactory.create(userEnv);

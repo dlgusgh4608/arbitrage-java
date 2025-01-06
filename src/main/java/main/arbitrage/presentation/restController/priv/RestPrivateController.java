@@ -33,20 +33,25 @@ public class RestPrivateController {
     return ResponseEntity.ok().build();
   }
 
-  @PostMapping(PrivateRestControllerUrlConstants.ORDER)
-  public ResponseEntity<?> postBuyOrder(@Valid @RequestBody OrderRequest req) throws Exception {
-    return ResponseEntity.ok(orderApplicationService.createOrder(req));
+  @PostMapping(PrivateRestControllerUrlConstants.BUY_ORDER)
+  public ResponseEntity<?> postBuyOrder(@Valid @RequestBody OrderRequest req) {
+    return ResponseEntity.ok().build();
+    // return ResponseEntity.ok(orderApplicationService.createBuyOrder(req));
+  }
+
+  @PostMapping(PrivateRestControllerUrlConstants.SELL_ORDER)
+  public ResponseEntity<?> postSellOrder(@Valid @RequestBody OrderRequest req) {
+    return ResponseEntity.ok().build();
+    // return ResponseEntity.ok(orderApplicationService.createSellOrder(req));
   }
 
   @PatchMapping(PrivateRestControllerUrlConstants.UPDATE_LEVERAGE)
-  public ResponseEntity<?> patchLeverage(@Valid @RequestBody UpdateLeverageRequest req)
-      throws Exception {
+  public ResponseEntity<?> patchLeverage(@Valid @RequestBody UpdateLeverageRequest req) {
     return ResponseEntity.ok(orderApplicationService.updateLeverage(req));
   }
 
   @PatchMapping(PrivateRestControllerUrlConstants.MARGIN_MODE)
-  public ResponseEntity<?> patchLeverage(@Valid @RequestBody UpdateMarginTypeRequest req)
-      throws Exception {
+  public ResponseEntity<?> patchLeverage(@Valid @RequestBody UpdateMarginTypeRequest req) {
     return ResponseEntity.ok(orderApplicationService.updateMarginType(req));
   }
 }

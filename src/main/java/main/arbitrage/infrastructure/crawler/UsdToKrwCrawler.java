@@ -23,7 +23,10 @@ public class UsdToKrwCrawler {
 
       return Double.parseDouble(rateToString.replace(",", ""));
     } catch (IOException e) {
-      throw new CrawlerException(CrawlerErrorCode.ZERO_BYTE);
+      if (e.getMessage().contains("Underlying input stream returned zero bytes")) {
+        throw new CrawlerException(CrawlerErrorCode.ZERO_BYTE, e);
+      }
+      throw new CrawlerException(CrawlerErrorCode.UNKNOWN, e);
     }
   }
 }

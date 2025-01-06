@@ -1,12 +1,10 @@
 package main.arbitrage.infrastructure.exchange.upbit.priv.rest;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.WeakKeyException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -18,8 +16,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
 import main.arbitrage.infrastructure.exchange.ExchangeRestService;
-import main.arbitrage.infrastructure.exchange.binance.exception.BinanceRestException;
-import main.arbitrage.infrastructure.exchange.upbit.exception.UpbitRestException;
+import main.arbitrage.infrastructure.exchange.upbit.exception.UpbitErrorCode;
+import main.arbitrage.infrastructure.exchange.upbit.exception.UpbitException;
 import okhttp3.OkHttpClient;
 
 public abstract class BaseUpbitPrivateRestService implements ExchangeRestService {
@@ -37,9 +35,8 @@ public abstract class BaseUpbitPrivateRestService implements ExchangeRestService
       OkHttpClient okHttpClient,
       ObjectMapper objectMapper,
       List<String> symbolNames) {
-    if (accessKey.isEmpty() || secretKey.isEmpty()) {
-      throw new WeakKeyException("The specified key byte array is 0 bits");
-    }
+    if (accessKey.isEmpty() || secretKey.isEmpty())
+      throw new UpbitException(UpbitErrorCode.EMPTY_KEYS);
     this.accessKey = accessKey;
     this.secretKey = secretKey;
     this.okHttpClient = okHttpClient;
@@ -51,8 +48,7 @@ public abstract class BaseUpbitPrivateRestService implements ExchangeRestService
   public String convertSymbol(String symbol) {
     String upperSymbol = symbol.toUpperCase().replace("KRW-", "");
 
-    if (!symbolNames.contains(upperSymbol))
-      throw new BinanceRestException("(업비트) 지원하지 않는 심볼입니다.", "invalid_symbol");
+    if (!symbolNames.contains(upperSymbol)) throw new UpbitException(UpbitErrorCode.INVALID_SYMBOL);
 
     return "KRW-" + upperSymbol;
   }
@@ -85,7 +81,7 @@ public abstract class BaseUpbitPrivateRestService implements ExchangeRestService
           .signWith(key)
           .compact();
     } catch (Exception e) {
-      throw new UpbitRestException("(업비트) JWT 헤더 검증에 실패했습니다.", "jwt_verification");
+      throw new UpbitException(UpbitErrorCode.JWT_VERIFICATION, e);
     }
   }
 
@@ -107,46 +103,44 @@ public abstract class BaseUpbitPrivateRestService implements ExchangeRestService
           .signWith(key)
           .compact();
     } catch (Exception e) {
-      throw new UpbitRestException("(업비트) JWT 헤더 검증에 실패했습니다.", "jwt_verification");
+      throw new UpbitException(UpbitErrorCode.JWT_VERIFICATION, e);
     }
   }
 
   @Override
-  public void validateResponse(String responseBody)
-      throws UpbitRestException, JsonProcessingException {
-    JsonNode json = objectMapper.readTree(responseBody);
+  public void validateResponse(JsonNode json) {
     String errorCode = json.get("error").get("name").asText();
     switch (errorCode) {
       case "invalid_query_payload":
-        throw new UpbitRestException("(업비트) JWT 헤더의 페이로드가 올바르지 않습니다.", errorCode);
+        throw new UpbitException(UpbitErrorCode.INVALID_QUERY_PAYLOAD, errorCode);
       case "jwt_verification":
-        throw new UpbitRestException("(업비트) JWT 헤더 검증에 실패했습니다.", errorCode);
+        throw new UpbitException(UpbitErrorCode.JWT_VERIFICATION, errorCode);
       case "expired_access_key":
-        throw new UpbitRestException("(업비트) API 키가 만료되었습니다.", errorCode);
+        throw new UpbitException(UpbitErrorCode.EXPIRED_ACCESS_KEY, errorCode);
       case "nonce_used":
-        throw new UpbitRestException("(업비트) 이미 사용된 nonce값입니다.", errorCode);
+        throw new UpbitException(UpbitErrorCode.NONCE_USED, errorCode);
       case "no_authorization_i_p":
-        throw new UpbitRestException("(업비트) 허용되지 않은 IP 주소입니다.", errorCode);
+        throw new UpbitException(UpbitErrorCode.NO_AUTHORIZATION_IP, errorCode);
       case "out_of_scope":
-        throw new UpbitRestException("(업비트) 허용되지 않은 기능입니다.", errorCode);
+        throw new UpbitException(UpbitErrorCode.OUT_OF_SCOPE, errorCode);
       case "create_ask_error":
-        throw new UpbitRestException("(업비트) 매수 주문 요청 정보가 올바르지 않습니다.", errorCode);
+        throw new UpbitException(UpbitErrorCode.CREATE_ASK_ERROR, errorCode);
       case "create_bid_error":
-        throw new UpbitRestException("(업비트) 매도 주문 요청 정보가 올바르지 않습니다.", errorCode);
+        throw new UpbitException(UpbitErrorCode.CREATE_BID_ERROR, errorCode);
       case "insufficient_funds_ask":
-        throw new UpbitRestException("(업비트) 매수 가능 잔고가 부족합니다.", errorCode);
+        throw new UpbitException(UpbitErrorCode.INSUFFICIENT_FUNDS_ASK, errorCode);
       case "insufficient_funds_bid":
-        throw new UpbitRestException("(업비트) 매도 가능 잔고가 부족합니다.", errorCode);
+        throw new UpbitException(UpbitErrorCode.INSUFFICIENT_FUNDS_BID, errorCode);
       case "under_min_total_ask":
-        throw new UpbitRestException("(업비트) 최소 매수 금액 미만입니다.", errorCode);
+        throw new UpbitException(UpbitErrorCode.UNDER_MIN_TOTAL_ASK, errorCode);
       case "under_min_total_bid":
-        throw new UpbitRestException("(업비트) 최소 매도 금액 미만입니다.", errorCode);
+        throw new UpbitException(UpbitErrorCode.UNDER_MIN_TOTAL_BID, errorCode);
       case "withdraw_address_not_registerd":
-        throw new UpbitRestException("(업비트) 허용 되지 않은 출금 주소입니다.", errorCode);
+        throw new UpbitException(UpbitErrorCode.BAD_REQUEST, errorCode);
       case "validation_error", "invalid_parameter":
-        throw new UpbitRestException("(업비트) 잘못 된 주문 API 요청입니다.", errorCode);
+        throw new UpbitException(UpbitErrorCode.INVALID_PARAMETER, errorCode);
       default:
-        throw new UpbitRestException("(업비트) 알 수 없는 에러가 발생했습니다.", errorCode);
+        throw new UpbitException(UpbitErrorCode.UNKNOWN, errorCode);
     }
   }
 }

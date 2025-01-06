@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.domain.symbol.entity.Symbol;
+import main.arbitrage.domain.symbol.exception.SymbolErrorCode;
+import main.arbitrage.domain.symbol.exception.SymbolException;
 import main.arbitrage.domain.symbol.respository.SymbolRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
@@ -64,6 +66,6 @@ public class SymbolVariableService implements CommandLineRunner {
     return symbols.stream()
         .filter(symbol -> symbol.getName().toUpperCase().equalsIgnoreCase(name.toUpperCase()))
         .findFirst()
-        .orElse(null);
+        .orElseThrow(() -> new SymbolException(SymbolErrorCode.NOT_FOUND_SYMBOL));
   }
 }

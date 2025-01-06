@@ -20,7 +20,7 @@ public class ExchangePrivateRestFactory {
   private final ObjectMapper objectMapper;
   private final SymbolVariableService symbolVariableService;
 
-  public ExchangePrivateRestPair create(UserEnv userEnv) throws Exception {
+  public ExchangePrivateRestPair create(UserEnv userEnv) {
     List<String> symbolNames = symbolVariableService.getSupportedSymbolNames();
 
     UpbitPrivateRestService upbitService =
@@ -46,8 +46,7 @@ public class ExchangePrivateRestFactory {
       String upbitAccessKey,
       String upbitSecretKey,
       String binanceAccessKey,
-      String binanceSecretKey)
-      throws Exception {
+      String binanceSecretKey) {
     List<String> symbolNames = symbolVariableService.getSupportedSymbolNames();
 
     UpbitPrivateRestService upbitService =

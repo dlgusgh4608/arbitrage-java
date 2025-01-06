@@ -2,12 +2,14 @@ package main.arbitrage.infrastructure.exchange.binance.pub.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceExchangeInfoResponse;
-import main.arbitrage.infrastructure.exchange.binance.exception.BinanceRestException;
+import main.arbitrage.infrastructure.exchange.binance.exception.BinanceErrorCode;
+import main.arbitrage.infrastructure.exchange.binance.exception.BinanceException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -38,9 +40,7 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
 
       String responseBody = response.body().string();
 
-      if (!response.isSuccessful()) {
-        validateResponse(responseBody);
-      }
+      if (!response.isSuccessful()) objectMapper.readTree(responseBody);
 
       JsonNode json = objectMapper.readTree(responseBody);
 
@@ -87,8 +87,8 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
       }
 
       return exchangeHashMap;
-    } catch (Exception e) {
-      throw new BinanceRestException("(바이낸스) 알 수 없는 에러가 발생했습니다.", "UNKNOWN_ERROR");
+    } catch (IOException e) {
+      throw new BinanceException(BinanceErrorCode.API_ERROR, e);
     }
   }
 }

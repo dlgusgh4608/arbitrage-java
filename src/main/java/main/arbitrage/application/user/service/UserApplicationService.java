@@ -20,8 +20,7 @@ import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceGetAcc
 import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
 import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetAccountResponse;
-import main.arbitrage.infrastructure.oauthValidator.google.GoogleApiClient;
-import main.arbitrage.infrastructure.oauthValidator.kakao.KakaoApiClient;
+import main.arbitrage.infrastructure.oauthValidator.service.OauthValidatorService;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
 import main.arbitrage.presentation.dto.form.UserEnvForm;
 import main.arbitrage.presentation.dto.form.UserLoginForm;
@@ -29,7 +28,6 @@ import main.arbitrage.presentation.dto.form.UserSignupForm;
 import main.arbitrage.presentation.dto.request.EditUserNicknameRequest;
 import main.arbitrage.presentation.dto.response.UserTokenResponseCookie;
 import main.arbitrage.presentation.dto.view.UserProfileView;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -45,16 +43,13 @@ public class UserApplicationService {
 
   private final JwtUtil jwtUtil;
 
-  private final GoogleApiClient googleApiClient;
-  private final KakaoApiClient kakaoApiClient;
+  private final OauthValidatorService oauthValidatorService;
 
   private final ExchangePrivateRestFactory exchangePrivateRestFactory;
 
   @Transactional
-  public String sendEmail(String email) throws Exception {
-    if (userService.existsByEmail(email)) {
-      throw new DataIntegrityViolationException("This email is already in use: " + email);
-    }
+  public String sendEmail(String email) {
+    userService.existsByEmail(email);
 
     String code =
         emailMessageService.sendMail(
@@ -66,9 +61,9 @@ public class UserApplicationService {
 
   @Transactional
   public UserTokenResponseCookie signup(UserSignupForm req) {
-    if (userService.existsByEmail(req.getEmail())) {
-      throw new IllegalArgumentException("This email is already in use");
-    }
+    String email = req.getEmail();
+
+    userService.existsByEmail(email);
 
     String code = req.getCode();
     String encryptedCode = req.getEncryptedCode();
@@ -76,47 +71,36 @@ public class UserApplicationService {
     String provider = req.getProvider();
     String providerId = req.getProviderId();
 
+    // 일반 회원가입
     if (!code.isEmpty() && !encryptedCode.isEmpty()) {
-      // OAuth login이 아닐시 code와 encryptedCode가 반드시 존재해야함
-      if (!checkCode(code, encryptedCode)) throw new IllegalArgumentException("Invalid value");
 
-      return userTokenResponseBuilder(userService.create(req));
-    } else if (!accessToken.isEmpty() && !provider.isEmpty() && !providerId.isEmpty()) {
-      if (!isCorrectOAuthToken(req)) throw new IllegalArgumentException("Invalid value");
-
-      User user = userService.create(req);
-      oAuthUserService.create(user, req);
-
-      return userTokenResponseBuilder(user);
-    } else {
-      throw new IllegalArgumentException("Invalid value");
-    }
-  }
-
-  @Transactional
-  public UserTokenResponseCookie login(UserLoginForm req) {
-    Optional<User> userOptional = userService.findByEmail(req.getEmail());
-
-    if (userOptional.isEmpty()) {
-      throw new IllegalArgumentException("Invalid info");
+      aesCrypto.check(encryptedCode, code);
+      return userTokenResponseBuilder(userService.create(req.getEmail(), req.getPassword()));
     }
 
-    User user = userOptional.get();
+    // OAuth 회원가입.
+    oauthValidatorService.validate(provider, accessToken, providerId, email);
 
-    if (!userService.matchPassword(req.getPassword(), user.getPassword())) {
-      throw new IllegalArgumentException("Invalid info");
-    }
+    User user = userService.create(req.getEmail(), req.getPassword());
+    oAuthUserService.create(user, req);
 
     return userTokenResponseBuilder(user);
   }
 
   @Transactional
-  public void registerUserEnv(UserEnvForm req) throws Exception {
+  public UserTokenResponseCookie login(UserLoginForm req) {
+    User user = userService.findAndExistByEmail(req.getEmail());
+
+    userService.matchPassword(req.getPassword(), user.getPassword());
+
+    return userTokenResponseBuilder(user);
+  }
+
+  @Transactional
+  public void registerUserEnv(UserEnvForm req) {
     Long userId = SecurityUtil.getUserId();
 
-    Optional<User> optionalUser = userService.findByEmail(SecurityUtil.getEmail());
-
-    if (optionalUser.isEmpty()) throw new IllegalArgumentException("user is not found");
+    User user = userService.findAndExistByEmail(SecurityUtil.getEmail());
 
     // upbit accessKey와 secretKey를 지갑 잔액을 조회함으로써 올바른 키가 맞는지 증명
     ExchangePrivateRestPair upbitExchangePrivateRestPair =
@@ -131,16 +115,19 @@ public class UserApplicationService {
 
     Optional<UserEnv> optionalUserEnv = userEnvService.findByUserId(userId);
 
+    // 새로 등록
     if (optionalUserEnv.isEmpty()) {
-      userEnvService.create(UserEnvForm.toEntity(req, optionalUser.get(), aesCrypto));
-    } else {
-      UserEnv userEnv = optionalUserEnv.get();
-      userEnv.updateEnv(req, aesCrypto);
+      userEnvService.create(UserEnvForm.toEntity(req, user, aesCrypto));
+      return;
     }
+
+    // 업데이트
+    UserEnv userEnv = optionalUserEnv.get();
+    userEnv.updateEnv(req, aesCrypto);
   }
 
   @Transactional
-  public UserProfileView getUserProfile() throws Exception {
+  public UserProfileView getUserProfile() {
     Long userId = SecurityUtil.getUserId();
 
     // userId에 해당하는 env가 있는지 확인
@@ -190,14 +177,9 @@ public class UserApplicationService {
     Long userId = SecurityUtil.getUserId();
     String nickname = req.nickname();
 
-    Optional<User> userOptional = userService.findByUserId(userId);
+    User user = userService.findAndExistByUserId(userId);
 
-    if (userOptional.isEmpty()) throw new IllegalArgumentException("user is not found");
-
-    User user = userOptional.get();
-    if (user.getNickname().equals(nickname)) throw new IllegalArgumentException("Same nickname");
-
-    user.updateUserNickname(nickname);
+    userService.updateNickname(user, nickname);
 
     return jwtUtil.createToken(
         user.getId(), user.getEmail(), user.getNickname(), SecurityUtil.getExpiredAt());
@@ -214,36 +196,5 @@ public class UserApplicationService {
         .refreshToken(refreshToken)
         .refreshTokenTTL(refreshTokenTTL)
         .build();
-  }
-
-  private boolean isCorrectOAuthToken(UserSignupForm req) {
-    String provider = req.getProvider(); // provider is only kakao, google
-
-    switch (provider.toLowerCase()) {
-      case "google" -> {
-        if (!googleApiClient.validateUser(
-            req.getAccessToken(), req.getProviderId(), req.getEmail())) {
-          return false;
-        }
-      }
-      case "kakao" -> {
-        if (!kakaoApiClient.validateUser(
-            req.getAccessToken(), req.getProviderId(), req.getEmail())) {
-          return false;
-        }
-      }
-      default -> {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  public boolean checkCode(String originCode, String encryptedCode) {
-    try {
-      return aesCrypto.decrypt(encryptedCode).equals(originCode);
-    } catch (Exception e) {
-      return false;
-    }
   }
 }

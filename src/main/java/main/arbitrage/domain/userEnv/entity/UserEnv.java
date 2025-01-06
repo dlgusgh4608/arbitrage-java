@@ -53,7 +53,7 @@ public class UserEnv {
   @Column(name = "updated_at", nullable = false)
   private LocalDateTime updatedAt;
 
-  public void updateEnv(UserEnvForm userEnvForm, AESCrypto aesCrypto) throws Exception {
+  public void updateEnv(UserEnvForm userEnvForm, AESCrypto aesCrypto) {
     this.upbitAccessKey = aesCrypto.encrypt(userEnvForm.getUpbitAccessKey().getBytes());
     this.upbitSecretKey = aesCrypto.encrypt(userEnvForm.getUpbitSecretKey().getBytes());
     this.binanceAccessKey = aesCrypto.encrypt(userEnvForm.getBinanceAccessKey().getBytes());

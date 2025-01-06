@@ -124,8 +124,7 @@ public class PublicController {
   public String getChart(
       @RequestParam(name = "symbol", required = true, defaultValue = "btc") String symbol,
       @AuthenticationPrincipal AuthContext authContext,
-      Model model)
-      throws Exception {
+      Model model) {
     String upperCaseSymbol = symbol.toUpperCase();
 
     List<String> supportedSymbols = symbolVariableService.getSupportedSymbolNames();

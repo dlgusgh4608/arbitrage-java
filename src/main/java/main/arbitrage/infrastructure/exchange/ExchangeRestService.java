@@ -1,9 +1,10 @@
 package main.arbitrage.infrastructure.exchange;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Map;
 
 public interface ExchangeRestService {
-  void validateResponse(String responseBody) throws Exception;
+  void validateResponse(JsonNode json);
 
   String convertSymbol(String symbol);
 

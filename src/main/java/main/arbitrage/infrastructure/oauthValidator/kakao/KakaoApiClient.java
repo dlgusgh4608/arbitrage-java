@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.infrastructure.oauthValidator.OAuthApiClient;
 import main.arbitrage.infrastructure.oauthValidator.dto.OAuthValidatorDTO;
+import main.arbitrage.infrastructure.oauthValidator.exception.OauthValidatorErrorCode;
+import main.arbitrage.infrastructure.oauthValidator.exception.OauthValidatorException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -27,11 +29,13 @@ public class KakaoApiClient implements OAuthApiClient {
               .build();
 
       try (Response response = okHttpClient.newCall(request).execute()) {
+        String requestBody = response.body().string();
+
         if (!response.isSuccessful()) {
-          throw new IllegalArgumentException("Failure Kakao API request");
+          throw new OauthValidatorException(OauthValidatorErrorCode.UN_SUCCESS, requestBody);
         }
 
-        JsonNode jsonNode = objectMapper.readTree(response.body().string());
+        JsonNode jsonNode = objectMapper.readTree(requestBody);
 
         return OAuthValidatorDTO.builder()
             .email(jsonNode.get("kakao_account").get("email").asText())
@@ -39,7 +43,7 @@ public class KakaoApiClient implements OAuthApiClient {
             .build();
       }
     } catch (Exception e) {
-      throw new IllegalArgumentException("Failure Kakao API request");
+      throw new OauthValidatorException(OauthValidatorErrorCode.UNKNOWN, e);
     }
   }
 

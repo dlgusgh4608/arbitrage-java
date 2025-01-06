@@ -1,9 +1,15 @@
 package main.arbitrage.domain.sellOrder.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.order.dto.OrderCalcResult;
+import main.arbitrage.domain.buyOrder.entity.BuyOrder;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.sellOrder.entity.SellOrder;
+import main.arbitrage.domain.sellOrder.exception.SellOrderErrorCode;
+import main.arbitrage.domain.sellOrder.exception.SellOrderException;
 import main.arbitrage.domain.sellOrder.repository.SellOrderRepository;
 import main.arbitrage.global.util.math.MathUtil;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
@@ -63,5 +69,55 @@ public class SellOrderService {
             .build();
 
     return sellOrderRepository.save(sellOrder);
+  }
+
+  public void calculateSellQty(
+      List<OrderCalcResult> results, List<BuyOrder> openOrders, BigDecimal qty) {
+    if (qty.equals(BigDecimal.ZERO)) throw new SellOrderException(SellOrderErrorCode.INVALID_QTY);
+
+    BigDecimal upbitTotalQty = BigDecimal.ZERO;
+
+    for (BuyOrder buyOrder : openOrders) {
+      // qty가 0이면 break
+      if (qty.signum() == 0) break;
+
+      BigDecimal restBinanceQty = buyOrder.getRestBinanceQty();
+      BigDecimal restUpbitQty = buyOrder.getRestUpbitQty();
+
+      if (qty.compareTo(restBinanceQty) >= 0) {
+        // 남은 수량이 현재 주문의 잔여 수량보다 크거나 같은 경우
+        OrderCalcResult orderItem =
+            OrderCalcResult.builder()
+                .buyOrder(buyOrder)
+                .binanceQty(restBinanceQty)
+                .upbitQty(restUpbitQty)
+                .isClose(true)
+                .build();
+
+        upbitTotalQty = upbitTotalQty.add(restUpbitQty);
+        results.add(orderItem);
+        qty = qty.subtract(restBinanceQty);
+      } else {
+        // 남은 수량이 현재 주문의 잔여 수량보다 작은 경우
+        // 잔여 수량에 대한 퍼센트를 이용해 upbit에 대한 qty를 구한 후 add
+        BigDecimal percent = qty.divide(restBinanceQty, 8, RoundingMode.HALF_UP);
+        BigDecimal calculatedUpbitQty =
+            restUpbitQty.multiply(percent).setScale(8, RoundingMode.HALF_UP);
+
+        OrderCalcResult orderItem =
+            OrderCalcResult.builder()
+                .buyOrder(buyOrder)
+                .binanceQty(qty)
+                .upbitQty(calculatedUpbitQty)
+                .isClose(false)
+                .build();
+
+        upbitTotalQty = upbitTotalQty.add(calculatedUpbitQty);
+        results.add(orderItem);
+        qty = BigDecimal.ZERO;
+      }
+    }
+
+    if (qty.signum() < 0) throw new SellOrderException(SellOrderErrorCode.QTY_TO_LARGER);
   }
 }

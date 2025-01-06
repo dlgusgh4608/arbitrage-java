@@ -1,4 +1,4 @@
-package main.arbitrage.global.exception;
+package main.arbitrage.global.exception.common;
 
 import org.springframework.http.HttpStatus;
 

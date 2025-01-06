@@ -15,7 +15,7 @@ import main.arbitrage.application.collector.dto.PremiumDTO;
 import main.arbitrage.application.collector.validator.TradeValidation;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.price.entity.Price;
-import main.arbitrage.domain.price.service.PriceDomainService;
+import main.arbitrage.domain.price.service.PriceService;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.global.util.math.MathUtil;
@@ -39,7 +39,7 @@ public class CollectorScheduleService {
   private final SymbolVariableService symbolVariableService;
   private final ExchangePublicWebsocketFactory exchangePublicWebsocketFactory;
   private final TradeValidation tradeValidator;
-  private final PriceDomainService priceDomainService;
+  private final PriceService priceService;
   private final PremiumServerWebSocketHandler premiumServerWebSocketHandler;
   private final ChartServerWebSocketHandler chartServerWebSocketHandler;
   private final BinancePublicRestService binancePublicRestService;
@@ -68,13 +68,13 @@ public class CollectorScheduleService {
   @Scheduled(cron = "* * * * * *") // 1초
   protected void processScheduler() {
     Date now = new Date();
-    priceMap.forEach((s, price) -> priceDomainService.addToBuffer(price.withCreatedAt(now)));
+    priceMap.forEach((s, price) -> priceService.addToBuffer(price.withCreatedAt(now)));
   }
 
   @Scheduled(cron = "59 * * * * *") // 1분
   @Transactional
   protected void saveBufferScheduler() {
-    priceDomainService.saveToPG();
+    priceService.saveToPG();
   }
 
   @Scheduled(cron = "0 0 0 * * *") // 하루

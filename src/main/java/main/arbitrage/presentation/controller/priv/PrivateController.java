@@ -45,7 +45,7 @@ public class PrivateController {
   }
 
   @GetMapping(PrivateControllerUrlConstants.USER_PROFILE)
-  public String profileGet(Model model) throws Exception {
+  public String profileGet(Model model) {
     UserProfileView userProfileView = userApplicationService.getUserProfile();
     model.addAttribute("profile", userProfileView);
 
