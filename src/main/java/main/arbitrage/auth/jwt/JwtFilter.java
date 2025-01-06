@@ -1,5 +1,6 @@
 package main.arbitrage.auth.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -13,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.auth.dto.AuthContext;
 import main.arbitrage.auth.exception.AuthErrorCode;
 import main.arbitrage.auth.exception.AuthException;
+import main.arbitrage.global.exception.ErrorResponse;
 import main.arbitrage.global.util.cookie.CookieUtil;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -51,8 +53,11 @@ public class JwtFilter extends OncePerRequestFilter {
       Optional<Cookie> accessTokenCookie = CookieUtil.getCookie(request, "accessToken");
 
       // AccessToken is empty
-      if (accessTokenCookie.isEmpty())
-        throw new AuthException(AuthErrorCode.TOKEN_NOT_FOUND, "액세스 토큰이 존재하지 않습니다.");
+      if (accessTokenCookie.isEmpty()) {
+        logout(request, response);
+        filterChain.doFilter(request, response);
+        return;
+      }
 
       String accessToken = accessTokenCookie.get().getValue();
 
@@ -116,12 +121,25 @@ public class JwtFilter extends OncePerRequestFilter {
       saveUserAuthContext(newTokenInfo);
       filterChain.doFilter(request, response);
     } catch (AuthException e) {
-      logout(request, response);
-      throw e;
+      handlerAuthException(request, response, e);
     } catch (Exception e) {
-      logout(request, response);
-      throw new AuthException(AuthErrorCode.UNKNOWN, "예상치 못한 에러가 발생했습니다.", e);
+      handlerAuthException(
+          request,
+          response,
+          new AuthException(AuthErrorCode.UNKNOWN, "토큰 처리 중 예상치 못한 오류가 발생했습니다", e));
     }
+  }
+
+  private void handlerAuthException(
+      HttpServletRequest request, HttpServletResponse response, AuthException e)
+      throws IOException {
+    logout(request, response);
+    response.setStatus(e.getErrorCode().getHttpStatus().value());
+    response.setContentType("application/json;charset=UTF-8");
+
+    ErrorResponse errorResponse = ErrorResponse.of(e);
+    String jsonResponse = new ObjectMapper().writeValueAsString(errorResponse);
+    response.getWriter().write(jsonResponse);
   }
 
   private boolean isPublicUrl(String requestURI) {

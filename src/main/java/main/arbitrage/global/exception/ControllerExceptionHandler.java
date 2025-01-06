@@ -1,7 +1,6 @@
 package main.arbitrage.global.exception;
 
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.auth.exception.AuthException;
 import main.arbitrage.domain.symbol.exception.SymbolException;
 import main.arbitrage.domain.user.exception.UserException;
 import main.arbitrage.domain.userEnv.exception.UserEnvException;
@@ -27,7 +26,6 @@ public class ControllerExceptionHandler {
     BinanceException.class,
     UpbitException.class,
     OauthValidatorException.class,
-    AuthException.class,
     GlobalException.class
   })
   public ResponseEntity<ErrorResponse> handleBadCredentialsException(BaseException e) {
