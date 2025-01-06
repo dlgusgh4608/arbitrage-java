@@ -11,6 +11,8 @@ import java.util.Map;
 import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.auth.dto.AuthContext;
+import main.arbitrage.auth.exception.AuthErrorCode;
+import main.arbitrage.auth.exception.AuthException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -83,8 +85,7 @@ public class JwtUtil {
           .expiredAt(jwtClaim.get("exp", Long.class))
           .build();
     } catch (Exception e) {
-      log.info("Invalid JWT, {}", e.getMessage());
-      throw new RuntimeException("invalid Token");
+      throw new AuthException(AuthErrorCode.INVALID_TOKEN, "액세스 토큰이 올바르지 않습니다.", e);
     }
   }
 }

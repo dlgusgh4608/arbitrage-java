@@ -11,6 +11,8 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.auth.dto.AuthContext;
+import main.arbitrage.auth.exception.AuthErrorCode;
+import main.arbitrage.auth.exception.AuthException;
 import main.arbitrage.global.util.cookie.CookieUtil;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -49,11 +51,8 @@ public class JwtFilter extends OncePerRequestFilter {
       Optional<Cookie> accessTokenCookie = CookieUtil.getCookie(request, "accessToken");
 
       // AccessToken is empty
-      if (accessTokenCookie.isEmpty()) {
-        logout(request, response);
-        filterChain.doFilter(request, response);
-        return;
-      }
+      if (accessTokenCookie.isEmpty())
+        throw new AuthException(AuthErrorCode.TOKEN_NOT_FOUND, "액세스 토큰이 존재하지 않습니다.");
 
       String accessToken = accessTokenCookie.get().getValue();
 
@@ -77,10 +76,8 @@ public class JwtFilter extends OncePerRequestFilter {
       Optional<Cookie> refreshTokenCookie = CookieUtil.getCookie(request, "refreshToken");
 
       // refresh token이 존재하지 않을때.
-      if (refreshTokenCookie.isEmpty()) {
-        log.info("refresh token is not found");
-        throw new RuntimeException("invalid token");
-      }
+      if (refreshTokenCookie.isEmpty())
+        throw new AuthException(AuthErrorCode.REFRESH_TOKEN_NOT_FOUND, "리프레시 토큰이 존재하지 않습니다.");
 
       String refreshToken = refreshTokenCookie.get().getValue();
 
@@ -91,20 +88,15 @@ public class JwtFilter extends OncePerRequestFilter {
       // email을 통해 refresh token을 redis에서 받아옴.
       String foundRefreshToken = refreshTokenService.findRefreshToken(email);
 
-      // redis에서 찾아온 refresh token이 없을때. (TTL이 지나 소멸 혹은 공격받음)
-      if (foundRefreshToken == null) {
-        log.info("refresh token expired");
-        throw new RuntimeException("refresh token expired");
-      }
+      // redis에서 찾아온 refresh token이 없을때.
+      if (foundRefreshToken == null)
+        throw new AuthException(AuthErrorCode.EXPIRED_TOKEN, "리프레시 토큰이 만료되었습니다.");
 
       // redis에서 찾아온 refresh token과 header을 통해 받아온 refresh token이 일치하지 않음.
-      if (!refreshToken.equals(foundRefreshToken)) {
-        log.info(
-            "Refresh tokens of front and back do not match\n of client: {}\n of redis: {}",
-            refreshToken,
-            foundRefreshToken);
-        throw new RuntimeException("invalid token");
-      }
+      if (!refreshToken.equals(foundRefreshToken))
+        throw new AuthException(
+            AuthErrorCode.REFRESH_TOKEN_MISMATCH,
+            String.format("리프레시 토큰 불일치 - 클라이언트: %s, Redis: %s", refreshToken, foundRefreshToken));
 
       /*
        * 해당 라인 아래부터는 refresh token의 TTL이 지나지 않았고 access token도 정상적인 key로 만들어졌을때 새로운 access,
@@ -123,10 +115,12 @@ public class JwtFilter extends OncePerRequestFilter {
       AuthContext newTokenInfo = jwtUtil.getTokenInfo(newAccessToken);
       saveUserAuthContext(newTokenInfo);
       filterChain.doFilter(request, response);
+    } catch (AuthException e) {
+      logout(request, response);
+      throw e;
     } catch (Exception e) {
       logout(request, response);
-      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-      response.getWriter().write(e.getMessage());
+      throw new AuthException(AuthErrorCode.UNKNOWN, "예상치 못한 에러가 발생했습니다.", e);
     }
   }
 

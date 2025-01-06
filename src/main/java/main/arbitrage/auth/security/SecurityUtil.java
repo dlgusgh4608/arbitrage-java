@@ -1,7 +1,8 @@
 package main.arbitrage.auth.security;
 
 import main.arbitrage.auth.dto.AuthContext;
-import org.springframework.security.authentication.BadCredentialsException;
+import main.arbitrage.auth.exception.AuthErrorCode;
+import main.arbitrage.auth.exception.AuthException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -39,7 +40,7 @@ public class SecurityUtil {
     AuthContext authContext = (AuthContext) authentication.getPrincipal();
 
     if (!authentication.isAuthenticated()) {
-      throw new BadCredentialsException("Unauthorized");
+      throw new AuthException(AuthErrorCode.UN_AUTHENTICATED, "JwtFilter를 통하지 않고는 접근 할 수 없습니다.");
     }
 
     return authContext;

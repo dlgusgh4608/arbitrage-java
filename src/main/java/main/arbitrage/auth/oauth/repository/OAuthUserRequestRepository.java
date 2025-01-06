@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Base64;
 import java.util.UUID;
+import main.arbitrage.auth.exception.AuthErrorCode;
+import main.arbitrage.auth.exception.AuthException;
 import main.arbitrage.global.util.cookie.CookieUtil;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -56,7 +58,7 @@ public class OAuthUserRequestRepository
     try {
       return Base64.getEncoder().encodeToString(SerializationUtils.serialize(authorizationRequest));
     } catch (Exception e) {
-      throw new RuntimeException("OAuth2 Serialize error", e);
+      throw new AuthException(AuthErrorCode.OAUTH_SERIALIZE, "OAuth2토큰 인코딩 에러", e);
     }
   }
 
@@ -65,7 +67,7 @@ public class OAuthUserRequestRepository
       return (OAuth2AuthorizationRequest)
           SerializationUtils.deserialize(Base64.getDecoder().decode(cookie.getValue()));
     } catch (Exception e) {
-      throw new RuntimeException("OAuth2 Deserialize error", e);
+      throw new AuthException(AuthErrorCode.OAUTH_DESERIALIZE, "OAuth2토큰 디코딩 에러", e);
     }
   }
 }
