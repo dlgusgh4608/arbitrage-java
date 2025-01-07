@@ -136,6 +136,7 @@ public class JwtFilter extends OncePerRequestFilter {
     logout(request, response);
     response.setStatus(e.getErrorCode().getHttpStatus().value());
     response.setContentType("application/json;charset=UTF-8");
+    log.error(e.getMessage());
 
     ErrorResponse errorResponse = ErrorResponse.of(e);
     String jsonResponse = new ObjectMapper().writeValueAsString(errorResponse);

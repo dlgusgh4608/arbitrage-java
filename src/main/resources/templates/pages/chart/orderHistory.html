@@ -53,7 +53,7 @@
                 <div class="history-item">프리미엄</div>
                 <div class="history-item">거래 상태 / 수익률</div>
             </div>
-            <div class="orders" th:each="order: ${userTradeInfo.orders}" th:id="${'order-' + order.id}">
+            <div class="orders" th:each="order: ${userTradeInfo?.orders}" th:id="${'order-' + order.id}">
                 <div class="d-flex align-items-center py-2">
                     <div th:if="${not #lists.isEmpty(order.sellOrders)}" class="order-history-item-chevron-wrap close">
                         <th:block th:replace="~{fragments/svg/chevron :: down}"></th:block>
