@@ -24,7 +24,7 @@
         const userTradeInfo = [[${ userTradeInfo }]]
         const symbolInfo = [[${ symbolInfo }]]
 
-        const principal = [[${ #authentication.getPrincipal() }]]
+        const isAnonymous = /*[[${#authentication.getPrincipal() == 'anonymousUser' ? false : true}]]*/ false;
 
         const isOk =
             symbolInfo?.maxQty != null &&
@@ -37,8 +37,6 @@
             userTradeInfo?.leverage != null &&
             userTradeInfo?.brackets != null &&
             userTradeInfo?.orders != null
-
-        const isAnonymous = principal !== "anonymousUser"
 
         const maxQty = symbolInfo?.maxQty ? symbolInfo.maxQty : 0
         const minQty = symbolInfo?.minQty ? symbolInfo.minQty : 0
