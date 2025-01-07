@@ -1,6 +1,11 @@
 package main.arbitrage.global.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import main.arbitrage.domain.buyOrder.exception.BuyOrderException;
+import main.arbitrage.domain.exchangeRate.exception.ExchangeRateException;
+import main.arbitrage.domain.oauthUser.exception.OAuthUserException;
+import main.arbitrage.domain.price.exception.PriceException;
+import main.arbitrage.domain.sellOrder.exception.SellOrderException;
 import main.arbitrage.domain.symbol.exception.SymbolException;
 import main.arbitrage.domain.user.exception.UserException;
 import main.arbitrage.domain.userEnv.exception.UserEnvException;
@@ -26,20 +31,17 @@ public class ControllerExceptionHandler {
     BinanceException.class,
     UpbitException.class,
     OauthValidatorException.class,
+    PriceException.class,
+    OAuthUserException.class,
+    BuyOrderException.class,
+    SellOrderException.class,
+    ExchangeRateException.class,
     GlobalException.class
   })
   public ResponseEntity<ErrorResponse> handleBadCredentialsException(BaseException e) {
     String logTitle = e.getClass().getSimpleName().replace("Exception", "Error");
-    errorLog(logTitle, e);
+    log.error("({}):\t{}", logTitle, e.getMessage());
     return createResponse(e);
-  }
-
-  private void errorLog(String logTitle, BaseException e) {
-    String code = e.getErrorCode().getCode();
-    String clientMessage = e.getErrorCode().getClientMessage();
-    String serverMessage = e.getServerMessage();
-
-    log.error("[{}({})]: {}\n{}", logTitle, code, clientMessage, serverMessage);
   }
 
   private ResponseEntity<ErrorResponse> createResponse(BaseException e) {

@@ -27,54 +27,79 @@ public class BuyOrderService {
       ExchangeRate exchangeRate,
       BinanceOrderResponse binanceOrderRes,
       UpbitGetOrderResponse upbitOrderRes) {
-    double binanceAvgPrice = binanceOrderRes.avgPrice(); // 바이낸스 평단가
-    double binanceQty = binanceOrderRes.executedQty(); // 바이낸스 체결 개수
-    double binanceTotalPrice = binanceAvgPrice * binanceQty; // 바이낸스 숏에 사용한 총 USDT
-    double binanceCommission = MathUtil.roundTo(binanceTotalPrice * BINANCE_TAKER_COMM, 8); // 바이낸스
-    // 수수료
-    double upbitTotalPrice = upbitOrderRes.price(); // 업비트 구매에 사용한 총 KRW
-    double upbitQty = upbitOrderRes.executedVolume(); // 업비트 구매된 개수
-    double upbitAvgPrice = Math.round(upbitTotalPrice / upbitQty); // 업비트 평단가
-    double upbitCommission = upbitOrderRes.paidFee(); // 업비트 수수료
-    double usdToKrw = exchangeRate.getRate(); // 원달러 환율
+    try {
+      double binanceAvgPrice = binanceOrderRes.avgPrice(); // 바이낸스 평단가
+      double binanceQty = binanceOrderRes.executedQty(); // 바이낸스 체결 개수
+      double binanceTotalPrice = binanceAvgPrice * binanceQty; // 바이낸스 숏에 사용한 총 USDT
+      double binanceCommission =
+          MathUtil.roundTo(binanceTotalPrice * BINANCE_TAKER_COMM, 8); // 바이낸스
+      // 수수료
+      double upbitTotalPrice = upbitOrderRes.price(); // 업비트 구매에 사용한 총 KRW
+      double upbitQty = upbitOrderRes.executedVolume(); // 업비트 구매된 개수
+      double upbitAvgPrice = Math.round(upbitTotalPrice / upbitQty); // 업비트 평단가
+      double upbitCommission = upbitOrderRes.paidFee(); // 업비트 수수료
+      double usdToKrw = exchangeRate.getRate(); // 원달러 환율
 
-    double premium = MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, usdToKrw);
+      double premium = MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, usdToKrw);
 
-    BuyOrder buyOrder =
-        buyOrderRepository.save(
-            BuyOrder.builder()
-                .user(user)
-                .symbol(symbol)
-                .exchangeRate(exchangeRate)
-                .premium(premium)
-                .upbitPrice(upbitAvgPrice)
-                .upbitQuantity(upbitQty)
-                .upbitCommission(upbitCommission)
-                .binancePrice(binanceAvgPrice)
-                .binanceQuantity(binanceQty)
-                .binanceCommission(binanceCommission)
-                .isMaker(false)
-                .isClose(false)
-                .build());
+      BuyOrder buyOrder =
+          buyOrderRepository.save(
+              BuyOrder.builder()
+                  .user(user)
+                  .symbol(symbol)
+                  .exchangeRate(exchangeRate)
+                  .premium(premium)
+                  .upbitPrice(upbitAvgPrice)
+                  .upbitQuantity(upbitQty)
+                  .upbitCommission(upbitCommission)
+                  .binancePrice(binanceAvgPrice)
+                  .binanceQuantity(binanceQty)
+                  .binanceCommission(binanceCommission)
+                  .isMaker(false)
+                  .isClose(false)
+                  .build());
 
-    return BuyOrderResponse.fromEntity(buyOrder);
+      return BuyOrderResponse.fromEntity(buyOrder);
+    } catch (Exception e) {
+      String serverMessage =
+          String.format(
+              "매수 주문 생성 오류\nuserId: %d\nsymbolName: %s\nbinanceResponse: %s\n upbitReseponse: %s",
+              user.getId(), symbol.getName(), binanceOrderRes, upbitOrderRes);
+
+      throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, serverMessage, e);
+    }
   }
 
   public List<BuyOrder> getOpenOrders(User user, Symbol symbol) {
-    return buyOrderRepository.findByUserAndSymbolAndIsCloseFalse(user, symbol);
+    try {
+      return buyOrderRepository.findByUserAndSymbolAndIsCloseFalse(user, symbol);
+    } catch (Exception e) {
+      throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, e);
+    }
   }
 
   public List<BuyOrder> getAndExistOpenOrders(User user, Symbol symbol) {
-    List<BuyOrder> buyOrders = buyOrderRepository.findByUserAndSymbolAndIsCloseFalse(user, symbol);
+    try {
+      List<BuyOrder> buyOrders =
+          buyOrderRepository.findByUserAndSymbolAndIsCloseFalse(user, symbol);
 
-    if (buyOrders.isEmpty()) {
-      throw new BuyOrderException(BuyOrderErrorCode.NOT_FOUND);
+      if (buyOrders.isEmpty()) {
+        throw new BuyOrderException(BuyOrderErrorCode.NOT_FOUND);
+      }
+
+      return buyOrders;
+    } catch (BuyOrderException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, e);
     }
-
-    return buyOrders;
   }
 
   public List<BuyOrder> getOrders(User user, Symbol symbol) {
-    return buyOrderRepository.findByUserAndSymbol(user, symbol);
+    try {
+      return buyOrderRepository.findByUserAndSymbol(user, symbol);
+    } catch (Exception e) {
+      throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, e);
+    }
   }
 }

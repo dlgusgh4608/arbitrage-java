@@ -21,51 +21,101 @@ public class SymbolVariableService implements CommandLineRunner {
 
   @Override
   public void run(String... args) {
-    initializeIfNeeded();
+    try {
+      initializeIfNeeded();
+    } catch (Exception e) {
+      throw new SymbolException(SymbolErrorCode.INITIALIZED_FAILED, "애플리케이션 시작시 심볼 초기화 실패", e);
+    }
   }
 
   private void initializeIfNeeded() {
     if (!initialized) {
       synchronized (SymbolVariableService.class) {
         if (!initialized) {
-          initializeSymbols();
-          initialized = true;
+          try {
+            initializeSymbols();
+            initialized = true;
+          } catch (Exception e) {
+            throw new SymbolException(SymbolErrorCode.INITIALIZED_FAILED, "심볼 초기화 도중 오류", e);
+          }
         }
       }
     }
   }
 
   private void initializeSymbols() {
-    DEFAULT_SYMBOLS.forEach(this::initializeSymbol);
-    symbols.clear();
-    symbols.addAll(symbolRepository.findAll());
+    try {
+      DEFAULT_SYMBOLS.forEach(this::initializeSymbol);
+      symbols.clear();
+      symbols.addAll(symbolRepository.findAll());
+    } catch (Exception e) {
+      throw new SymbolException(SymbolErrorCode.INITIALIZED_FAILED, "심볼 로딩 오류", e);
+    }
   }
 
   private void initializeSymbol(String name) {
-    if (!symbolRepository.existsByName(name)) {
-      symbolRepository.save(Symbol.builder().name(name).use(true).build());
+    try {
+      if (!symbolRepository.existsByName(name)) {
+        symbolRepository.save(Symbol.builder().name(name).use(true).build());
+      }
+    } catch (Exception e) {
+      throw new SymbolException(
+          SymbolErrorCode.INITIALIZED_FAILED, String.format("심볼 '%s' 초기화 중 오류 발생", name), e);
     }
   }
 
   public List<Symbol> getAllSymbol() {
-    initializeIfNeeded();
-    return new ArrayList<>(symbols);
+    try {
+      initializeIfNeeded();
+      return new ArrayList<>(symbols);
+    } catch (SymbolException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new SymbolException(SymbolErrorCode.INITIALIZED_FAILED, "전체 심볼 조회 중 오류 발생", e);
+    }
   }
 
   public List<Symbol> getSupportedSymbols() {
-    initializeIfNeeded();
-    return symbols.stream().filter(Symbol::isUse).toList();
+    try {
+      initializeIfNeeded();
+      return symbols.stream().filter(Symbol::isUse).toList();
+    } catch (SymbolException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new SymbolException(SymbolErrorCode.INITIALIZED_FAILED, "지원 심볼 조회 중 오류 발생", e);
+    }
   }
 
   public List<String> getSupportedSymbolNames() {
-    return getSupportedSymbols().stream().map(symbol -> symbol.getName().toUpperCase()).toList();
+    try {
+      return getSupportedSymbols().stream().map(symbol -> symbol.getName().toUpperCase()).toList();
+    } catch (SymbolException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new SymbolException(SymbolErrorCode.INITIALIZED_FAILED, "지원 심볼 이름 조회 중 오류 발생", e);
+    }
   }
 
   public Symbol findSymbolByName(String name) {
-    initializeIfNeeded();
-    return symbols.stream()
-        .filter(symbol -> symbol.getName().toUpperCase().equalsIgnoreCase(name.toUpperCase()))
-        .findFirst()
-        .orElseThrow(() -> new SymbolException(SymbolErrorCode.NOT_FOUND_SYMBOL));
+    try {
+      if (name == null || name.trim().isEmpty()) {
+        throw new SymbolException(SymbolErrorCode.EMPTY_SYMBOL, "심볼 이름이 비어있습니다");
+      }
+
+      initializeIfNeeded();
+      return symbols.stream()
+          .filter(symbol -> symbol.getName().toUpperCase().equalsIgnoreCase(name.toUpperCase()))
+          .findFirst()
+          .orElseThrow(
+              () ->
+                  new SymbolException(
+                      SymbolErrorCode.NOT_FOUND_SYMBOL, String.format("심볼 '%s'을 찾을 수 없습니다", name)));
+
+    } catch (SymbolException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new SymbolException(
+          SymbolErrorCode.INITIALIZED_FAILED, String.format("심볼 '%s' 검색 중 오류 발생", name), e);
+    }
   }
 }

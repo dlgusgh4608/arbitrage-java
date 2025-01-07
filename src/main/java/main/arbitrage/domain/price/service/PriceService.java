@@ -2,15 +2,15 @@ package main.arbitrage.domain.price.service;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.domain.price.buffer.PriceBuffer;
 import main.arbitrage.domain.price.entity.Price;
+import main.arbitrage.domain.price.exception.PriceErrorCode;
+import main.arbitrage.domain.price.exception.PriceException;
 import main.arbitrage.domain.price.repository.PriceRepository;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -20,30 +20,55 @@ public class PriceService {
   private final PriceRepository priceRepository;
 
   public void saveToPG() {
-    if (priceBuffer.isEmpty()) return;
+    try {
+      if (priceBuffer.isEmpty()) return;
 
-    if (priceBuffer.isReadyToSave()) {
-      var dataToSave = priceBuffer.getBufferedData();
-      priceRepository.saveAll(dataToSave);
-      log.info("Saved {} symbol price records to database", dataToSave.size());
-      priceBuffer.clear();
+      if (priceBuffer.isReadyToSave()) {
+        List<Price> dataToSave = priceBuffer.getBufferedData();
+        priceRepository.saveAll(dataToSave);
+        log.info("Saved {} symbol price records to database", dataToSave.size());
+        priceBuffer.clear();
+      }
+    } catch (Exception e) {
+      throw new PriceException(PriceErrorCode.UNKNOWN, e);
     }
   }
 
   public void addToBuffer(Price price) {
-    priceBuffer.add(price);
+    try {
+      if (price == null) {
+        throw new PriceException(PriceErrorCode.PRICE_NULL, "Price가 null입니다.");
+      }
+
+      priceBuffer.add(price);
+    } catch (PriceException e) {
+      throw e;
+    } catch (Exception e) {
+      String errorMessage =
+          String.format(
+              "Price 버퍼 추가 실패 - 심볼: %s, 프리미엄: %f, 바이낸스: %f, 업비트: %f",
+              price.getSymbol().getName(),
+              price.getPremium(),
+              price.getBinance(),
+              price.getUpbit());
+      throw new PriceException(PriceErrorCode.UNKNOWN, errorMessage, e);
+    }
   }
 
   public List<Price> getInitialPriceOfSymbolName(String symbolName) {
-    List<Price> prices =
-        priceRepository.findBySymbolOfPageable(symbolName, PageRequest.of(0, 3000));
+    try {
+      List<Price> prices =
+          priceRepository.findBySymbolOfPageable(symbolName, PageRequest.of(0, 3000));
 
-    List<Price> restPrices = priceBuffer.getBufferedDataOfSymbol(symbolName);
-    List<Price> allPrices = new ArrayList<>();
+      List<Price> restPrices = priceBuffer.getBufferedDataOfSymbol(symbolName);
+      List<Price> allPrices = new ArrayList<>();
 
-    allPrices.addAll(prices);
-    allPrices.addAll(restPrices);
+      allPrices.addAll(prices);
+      allPrices.addAll(restPrices);
 
-    return allPrices;
+      return allPrices;
+    } catch (Exception e) {
+      throw new PriceException(PriceErrorCode.UNKNOWN, e);
+    }
   }
 }

@@ -1,8 +1,9 @@
 package main.arbitrage.domain.oauthUser.service;
 
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.domain.oauthUser.entity.OAuthUser;
+import main.arbitrage.domain.oauthUser.exception.OAuthUserErrorCode;
+import main.arbitrage.domain.oauthUser.exception.OAuthUserException;
 import main.arbitrage.domain.oauthUser.repository.OAuthUserRepository;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.presentation.dto.form.UserSignupForm;
@@ -14,15 +15,15 @@ public class OAuthUserService {
   private final OAuthUserRepository oAuthUserRepository;
 
   public OAuthUser create(User user, UserSignupForm req) {
-    return oAuthUserRepository.save(
-        OAuthUser.builder()
-            .providerId(req.getProviderId())
-            .provider(req.getProvider())
-            .user(user)
-            .build());
-  }
-
-  public List<OAuthUser> getOAuthUserListByUserId(Long userId) {
-    return oAuthUserRepository.findByUserId(userId);
+    try {
+      return oAuthUserRepository.save(
+          OAuthUser.builder()
+              .providerId(req.getProviderId())
+              .provider(req.getProvider())
+              .user(user)
+              .build());
+    } catch (Exception e) {
+      throw new OAuthUserException(OAuthUserErrorCode.UNKNOWN, "OAuthUser Create Error", e);
+    }
   }
 }
