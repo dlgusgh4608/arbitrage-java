@@ -17,41 +17,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-crosshair"></script>
 </head>
 <main layout:fragment="content">
-    <!-- 전역변수 선언 -->
-    <script th:inline="javascript">
-        const [symbol] = [[${ param.symbol }]]
-        const prices = [[${ prices }]]
-        const userTradeInfo = [[${ userTradeInfo }]]
-        const symbolInfo = [[${ symbolInfo }]]
-
-        const isAnonymous = /*[[${#authentication.getPrincipal() == 'anonymousUser' ? false : true}]]*/ false;
-
-        const isOk =
-            symbolInfo?.maxQty != null &&
-            symbolInfo?.minQty != null &&
-            symbolInfo?.stepSize != null &&
-            symbolInfo?.minUsdt != null &&
-            userTradeInfo?.krw != null &&
-            userTradeInfo?.usdt != null &&
-            userTradeInfo?.marginType != null &&
-            userTradeInfo?.leverage != null &&
-            userTradeInfo?.brackets != null &&
-            userTradeInfo?.orders != null
-
-        const maxQty = symbolInfo?.maxQty ? symbolInfo.maxQty : 0
-        const minQty = symbolInfo?.minQty ? symbolInfo.minQty : 0
-        const stepSize = symbolInfo?.stepSize ? symbolInfo.stepSize : 0
-        const minUsdt = symbolInfo?.minUsdt ? symbolInfo.minUsdt : 0
-
-        const krw = userTradeInfo?.krw ? userTradeInfo.krw : 0
-        const usdt = userTradeInfo?.usdt ? userTradeInfo.usdt : 0
-        const marginType = userTradeInfo?.marginType ? userTradeInfo.marginType : 'CROSSED'
-        const leverage = userTradeInfo?.leverage ? userTradeInfo.leverage : 0
-        const brackets = userTradeInfo?.brackets ? userTradeInfo.brackets : []
-        const orderHistory = userTradeInfo?.orders
-        const upbitPosition = userTradeInfo?.upbitPosition
-        const binancePosition = userTradeInfo?.binancePosition
-    </script>
     <th:block th:replace="~{pages/chart/modal/marginMode}"></th:block>
     <th:block th:replace="~{pages/chart/modal/editLeverage}"></th:block>
     <section class="container-xxl d-flex justify-content-center pt-5 gap-2 main-section">
@@ -65,219 +30,185 @@
         </section>
     </section>
     <th:block th:replace="~{pages/chart/orderHistory}"></th:block>
-    <script type='module' th:src=" @{/js/modules/chart/index.js}">
+    <script type='module' th:src=" @{/js/pages/chart/index.js}">
     </script>
     <script th:inline="javascript">
         $(() => {
+            // 모듈 window.myModule을 통해 가져옴
             const {
                 websocketClient,
-                createCandleOfMinutes,
-                setOrderbook,
-                updateCandleOfMinutes,
-                updatePosition,
-                updateOrderInfo
+                generateOrder,
+                setSocketInitialItems,
+                drawChart
             } = myModule
 
-            const upbitKrwEle = $('#upbit-krw')
-            const upbitUsdEle = $('#upbit-usd')
-            const binanceKrwEle = $('#binance-krw')
-            const binanceUsdEle = $('#binance-usd')
-            const isolatedEle = $('#isolated')
-            const crossedEle = $('#crossed')
+            /**
+             * Websocket으로 update되거나 Order를 통해 update되는 element를 전부 불러옴.
+            */
 
-            // 구매할 수 있는 수량은 leverage와 현재 가격에 따라 변동되기 때문에
-            // 레버리지와 구매 수량에 관련된 ele를 가져옴
-            const buyQtyRange = $('#buy-qty-range') // order.html에 있는 qty range input
-            const sellQtyRange = $('#sell-qty-range') // order.html에 있는 qty range input
-            const maxBuyQty = $('#max-buy-qty') // order.html에 있는 max qty text ele
-            const leverageEle = $('#update-leverage-modal') // order.html에 있는 leverage
-
-            const binanceProfitEle = $('#binance-profit') // orderHistory에 있는 ele
-            const upbitProfitEle = $('#upbit-profit') // orderHistory에 있는 ele
-
-            // wallet update
-            upbitKrwEle.text(Math.floor(krw).toLocaleString())
-            binanceUsdEle.text(usdt.toLocaleString())
-
-            // margin type update
-            if (marginType === 'ISOLATED') isolatedEle.addClass('select')
-            else crossedEle.addClass('select')
-
-            const chartDataSets = createCandleOfMinutes(prices)
-
-            const ctx = document.getElementById('candlestickChart').getContext('2d')
-
-            const chart = new Chart(ctx, {
-                type: 'candlestick',
-                data: {
-                    datasets: [{
-                        label: 'OHLC',
-                        data: chartDataSets,
-                        borderColors: {
-                            up: '#2ebd85',
-                            down: '#f6465d',
-                            unchanged: '#999999'
-                        },
-                        backgroundColors: {
-                            up: '#2ebd85',
-                            down: '#f6465d',
-                            unchanged: '#999999'
-                        },
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: {
-                            type: 'time',
-                            time: {
-                                unit: 'minute',
-                                stepSize: 1,
-                            },
-                            min: new Date(Date.now() - (60 * 1000 * 100)).getTime(),
-                            // max: Date.now(),
-                            ticks: {
-                                source: 'data'
-                            },
-                            offset: true,
-                            grid: {
-                                offset: true
-                            }
-                        },
-                        y: {
-                            position: 'right',
-                            // y축도 데이터를 모두 포함하도록 설정
-                            beginAtZero: false,
-                            grace: '5%'  // 위아래 5% 여백
-                        }
-                    },
-                    interaction: {
-                        intersect: false,
-                        mode: 'index'
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            enabled: true,
-                            mode: 'index',
-                            intersect: false,
-                            callbacks: {
-                                label: function (context) {
-                                    const point = context.raw;
-                                    return [
-                                        `Open: ${point.o}`,
-                                        `High: ${point.h}`,
-                                        `Low: ${point.l}`,
-                                        `Close: ${point.c}`
-                                    ];
-                                }
-                            }
-                        },
-                        zoom: {
-                            limits: {
-                                x: {
-                                    min: 'original',
-                                    max: 'original'
-                                }
-                            },
-                            pan: {
-                                enabled: true,
-                                mode: 'x',
-                                modifierKey: null,
-                                scaleMode: 'x',
-                                threshold: 10,
-                            },
-                            zoom: {
-                                wheel: {
-                                    enabled: true,
-                                    speed: 0.1
-                                },
-                                drag: {
-                                    enabled: false
-                                },
-                                pinch: {
-                                    enabled: true
-                                },
-                                mode: 'x'
-                            }
-                        },
-                        crosshair: {
-                            line: {
-                                color: '#666',
-                                width: 1
-                            },
-                            sync: {
-                                enabled: false,
-                            },
-                            zoom: {
-                                enabled: false,
-                            },
-                            snap: {
-                                enabled: true
-                            }
-                        }
-                    }
-                }
-            })
-
-            const prev = {
-                minQty: Number(buyQtyRange.attr('min')),
-                maxQty: Number(buyQtyRange.attr('max')),
+            // exchangeRate.html
+            const exchangeRateJquery = {
+                usdToKrw: $('#usdToKrw')
             }
 
-            function handleMessage(message) {
-                const { premium, orderbookPair } = JSON.parse(message.data)
-
-                const { upbit, binance } = orderbookPair
-
-                setOrderbook('asks', { upbit: upbit.asks.reverse(), binance: binance.asks.reverse() }, premium)
-                setOrderbook('bids', { upbit: upbit.bids, binance: binance.bids }, premium)
-
-                $('.premium').text(`${premium.premium}%`)
-
-                const usdToKrw = premium.usdToKrw
-                $('#usdToKrw').text(usdToKrw)
-
-                updateCandleOfMinutes(chartDataSets, premium)
-
-                // chart draw
-                chart.update();
-
-                // update order info
-                updateOrderInfo(premium, usdToKrw, leverageEle, maxBuyQty, buyQtyRange, sellQtyRange, upbitUsdEle, binanceKrwEle, prev)
-
-                // update position
-                updatePosition(premium, binanceProfitEle, upbitProfitEle)
+            // orderbook.html
+            const orderbookJquery = {
+                asks: $('#asks'),
+                bids: $('#bids'),
+                premium: $('#premium')
             }
 
+            // chart.html
+            const chartJquery = {
+                candlestickChart: $('#candlestickChart')
+            }
+
+            // order.html
+            const orderJquery = {
+                buyQtyRange: $('#buy-qty-range'),
+                sellQtyRange: $('#sell-qty-range'),
+                maxBuyQty: $('#max-buy-qty'),
+                upbitKrw: $('#upbit-krw'),
+                upbitUsd: $('#upbit-usd'),
+                binanceKrw: $('#binance-krw'),
+                binanceUsd: $('#binance-usd'),
+                orderBtn: $('#order-btn')
+            }
+
+            // modal/editLeverage.html
+            const leverageModalJquery = {
+                input: $('#leverage-input'),
+                modalBtn: $('#update-leverage-modal'),
+            }
+
+            // orderHistory.html
+            const orderHistoryJquery = {
+                binanceProfit: $('#binance-profit'),
+                upbitProfit: $('#upbit-profit'),
+                orders: $('#orders')
+            }
+
+            // modal/marginMode.html
+            const marginModeModalJquery = {
+                isolated: $('#isolated'),
+                crossed: $('#crossed'),
+            }
+
+            const { chart,chartData } = drawChart(chartJquery.candlestickChart, prices)
+
+            const initialItems = {
+                exchangeRateJquery,
+                orderbookJquery,
+                orderJquery,
+                leverageModalJquery,
+                orderHistoryJquery,
+                chart,
+                chartData
+            }
+            
+            const handleMessage = setSocketInitialItems(initialItems)
             websocketClient.setMessageHandler(handleMessage)
             websocketClient.connect()
 
-            // $('.btn').on('click', e => {
-            //     const { id } = e.target
+            let lock = false
 
-            //     const btnIds = ['min', 'min3', 'min5', 'min15']
+            async function buyOrder(payload) {
+                const { orders } = orderHistoryJquery
+                
+                const { success, data } = await myModule.fetch('POST', '/api/buy-order', payload)
 
-            //     const idHash = {
-            //         min: 1,
-            //         min3: 3,
-            //         min5: 5,
-            //         min15: 15,
-            //     }
+                if (success) {
+                    const { orderResponse, upbitPosition, binancePosition, usdt, krw } = data
+                    
+                    const element = myModule.generateOrder(orderResponse).element
+                    orders.prepend(element)
 
-            //     stepSize = idHash[id]
+                } else {
+                    alert(data)
+                }
 
-            //     const restBtnIds = btnIds.filter(btnId => btnId !== id)
+                lock = false
+            }
 
-            //     $(`#${id}`).css('font-weight', 600)
-            //     restBtnIds.forEach(v => $(`#${v}`).css('font-weight', 500))
-            // })
+            async function sellOrder(payload) {
+                const { orders } = orderHistoryJquery
+
+                const { success, data } = await myModule.fetch('POST', '/api/sell-order', payload)
+
+                if (success) {
+                    orders.children().each((i, ele) => {
+                        const stringId = String(ele.id)
+                        const id = Number(stringId.split('-')[1])
+                        const result = data[id]
+                        if(result) $(ele).html(myModule.generateOrder(result).element)
+                    })
+                } else {
+                    alert(data)
+                }
+                lock = false
+            }
+
+            // order
+            orderJquery.orderBtn.click(function() {
+                if(!canTrade) return
+
+                const orderType = $(this).text().trim()
+                if (orderType !== 'BUY' && orderType !== 'SELL') return alert('새로고침 후 다시 시도해주세요.')
+
+                const { buyQtyRange, sellQtyRange } = orderJquery
+                
+                const qty = orderType === 'BUY' ? buyQtyRange.val() : sellQtyRange.val()
+                const minQty = orderType === 'BUY' ? buyQtyRange.attr('min') : sellQtyRange.attr('min')
+                const maxQty = orderType === 'BUY' ? buyQtyRange.attr('max') : sellQtyRange.attr('max')
+
+                if (Number(qty) < Number(minQty)) return alert(`주문 개수는 최소 주문 개수 보다 커야합니다. 최소 주문 개수: ${minQty}`)
+                if (Number(qty) > Number(maxQty)) return alert(`주문 개수는 최대 주문 개수 보다 작아야합니다. 최대 주문 개수: ${minQty}`)
+
+                lock = true
+
+                const payload = {
+                    symbol,
+                    qty
+                }
+                
+                orderType === 'BUY' ? buyOrder(payload) : sellOrder(payload)
+            })
         })
     </script>
-</main>
+    <script th:inline="javascript">
+        const param = /*[[${ param }]]*/ {};
+        const [ symbol ] = param.symbol
+        
+        const isAnonymous = /*[[${#authentication.getPrincipal() == 'anonymousUser' ? false : true}]]*/ false;
+        
+        // 주문을 위한 심볼 정보
+        const symbolInfo = /*[[${symbolInfo}]]*/ {};
+        const {
+            maxQty = 0,
+            minQty = 0,
+            stepSize = 0,
+            minUsdt = 0
+        } = symbolInfo || {};
 
+        // 주문을 위한 사용자 정보
+        const userTradeInfo = /*[[${userTradeInfo}]]*/ {};
+        const {
+            krw = 0,
+            usdt = 0,
+            marginType = 'CROSSED',
+            leverage = 0,
+            brackets = [],
+            orders = [],
+            upbitPosition = null,
+            binancePosition = null
+        } = userTradeInfo || {};
+
+        const hasPosition = [ upbitPosition, binancePosition ].every(v => v !== null)
+        const responseOk = [ symbolInfo, userTradeInfo ].every(v => v !== null)
+        const canTrade = isAnonymous && responseOk
+
+        // 차트 초기 값
+        const prices = /*[[${prices}]]*/ [];
+    </script>
+</main>
 </html>

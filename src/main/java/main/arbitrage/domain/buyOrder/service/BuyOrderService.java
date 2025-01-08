@@ -12,7 +12,6 @@ import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.global.util.math.MathUtil;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
 import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetOrderResponse;
-import main.arbitrage.presentation.dto.response.BuyOrderResponse;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,7 +20,7 @@ public class BuyOrderService {
   private final double BINANCE_TAKER_COMM = 0.0005d;
   private final BuyOrderRepository buyOrderRepository;
 
-  public BuyOrderResponse createMarketBuyOrder(
+  public BuyOrder createMarketBuyOrder(
       User user,
       Symbol symbol,
       ExchangeRate exchangeRate,
@@ -43,24 +42,21 @@ public class BuyOrderService {
       float usdToKrw = exchangeRate.getRate(); // 원달러 환율
       float premium = MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, usdToKrw);
 
-      BuyOrder buyOrder =
-          buyOrderRepository.save(
-              BuyOrder.builder()
-                  .user(user)
-                  .symbol(symbol)
-                  .exchangeRate(exchangeRate)
-                  .premium(premium)
-                  .upbitPrice(upbitAvgPrice)
-                  .upbitQuantity(upbitQty)
-                  .upbitCommission(upbitCommission)
-                  .binancePrice(binanceAvgPrice)
-                  .binanceQuantity(binanceQty)
-                  .binanceCommission(binanceCommission)
-                  .isMaker(false)
-                  .isClose(false)
-                  .build());
-
-      return BuyOrderResponse.fromEntity(buyOrder);
+      return buyOrderRepository.save(
+          BuyOrder.builder()
+              .user(user)
+              .symbol(symbol)
+              .exchangeRate(exchangeRate)
+              .premium(premium)
+              .upbitPrice(upbitAvgPrice)
+              .upbitQuantity(upbitQty)
+              .upbitCommission(upbitCommission)
+              .binancePrice(binanceAvgPrice)
+              .binanceQuantity(binanceQty)
+              .binanceCommission(binanceCommission)
+              .isMaker(false)
+              .isClose(false)
+              .build());
     } catch (Exception e) {
       String serverMessage =
           String.format(
@@ -73,7 +69,8 @@ public class BuyOrderService {
 
   public List<BuyOrder> getOpenOrders(User user, Symbol symbol) {
     try {
-      return buyOrderRepository.findByUserAndSymbolAndIsCloseFalse(user, symbol);
+      return buyOrderRepository.findByUserAndSymbolAndIsCloseFalseOrderByCreatedAtDesc(
+          user, symbol);
     } catch (Exception e) {
       throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, e);
     }
@@ -82,7 +79,7 @@ public class BuyOrderService {
   public List<BuyOrder> getAndExistOpenOrders(User user, Symbol symbol) {
     try {
       List<BuyOrder> buyOrders =
-          buyOrderRepository.findByUserAndSymbolAndIsCloseFalse(user, symbol);
+          buyOrderRepository.findByUserAndSymbolAndIsCloseFalseOrderByCreatedAtDesc(user, symbol);
 
       if (buyOrders.isEmpty()) {
         throw new BuyOrderException(BuyOrderErrorCode.NOT_FOUND);
@@ -98,7 +95,7 @@ public class BuyOrderService {
 
   public List<BuyOrder> getOrders(User user, Symbol symbol) {
     try {
-      return buyOrderRepository.findByUserAndSymbol(user, symbol);
+      return buyOrderRepository.findByUserAndSymbolOrderByCreatedAtDesc(user, symbol);
     } catch (Exception e) {
       throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, e);
     }

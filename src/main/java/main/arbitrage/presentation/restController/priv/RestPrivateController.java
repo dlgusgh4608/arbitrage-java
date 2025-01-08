@@ -35,14 +35,12 @@ public class RestPrivateController {
 
   @PostMapping(PrivateRestControllerUrlConstants.BUY_ORDER)
   public ResponseEntity<?> postBuyOrder(@Valid @RequestBody OrderRequest req) {
-    return ResponseEntity.ok().build();
-    // return ResponseEntity.ok(orderApplicationService.createBuyOrder(req));
+    return ResponseEntity.ok(orderApplicationService.createBuyOrder(req));
   }
 
   @PostMapping(PrivateRestControllerUrlConstants.SELL_ORDER)
   public ResponseEntity<?> postSellOrder(@Valid @RequestBody OrderRequest req) {
-    return ResponseEntity.ok().build();
-    // return ResponseEntity.ok(orderApplicationService.createSellOrder(req));
+    return ResponseEntity.ok(orderApplicationService.createSellOrder(req));
   }
 
   @PatchMapping(PrivateRestControllerUrlConstants.UPDATE_LEVERAGE)

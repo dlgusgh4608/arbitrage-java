@@ -1,48 +1,48 @@
-<article class="w-100 p-3 shadow rounded orderbook ele-bg-color">
+<article class="w-100 p-3 shadow rounded ele-bg-color">
     <div class="d-flex justify-content-between mb-3">
         <div>UPBIT</div>
         <div>BINANCE</div>
     </div>
-    <div class="order-list asks mb-2">
+    <div id="asks" class="mb-2">
         <div th:each="num : ${#numbers.sequence(1, 7)}" class="order-row d-flex justify-content-between">
-            <div id="upbit" class="w-50 d-flex justify-content-between pe-2" style="border: 1px solid transparent">
-                <div id="price" class="text-down-color fw-semibold">
+            <div class="w-50 d-flex justify-content-between pe-2 upbit" style="border: 1px solid transparent">
+                <div class="text-down-color fw-semibold price">
                     -,---
                 </div>
-                <div id="size">
+                <div class="size">
                     -,---
                 </div>
             </div>
-            <div id="binance" class="w-50 d-flex justify-content-between ps-2" style="border: 1px solid transparent">
-                <div id="size">
+            <div class="w-50 d-flex justify-content-between ps-2 binance" style="border: 1px solid transparent">
+                <div class="size">
                     -,---
 
                 </div>
-                <div id="price" class="text-down-color fw-semibold">
+                <div class="text-down-color fw-semibold price">
                     -,---
                 </div>
             </div>
         </div>
     </div>
     <div class="d-flex justify-content-center py-2 border-top border-bottom">
-        <span class="premium h5 mb-0">-,---%</span>
+        <span id="premium" class="h5 mb-0">-,---%</span>
     </div>
-    <div class="order-list bids mt-2">
+    <div id="bids" class="mt-2">
         <div th:each="num : ${#numbers.sequence(1, 7)}" class="order-row d-flex justify-content-between">
-            <div id="upbit" class="w-50 d-flex justify-content-between pe-2" style="border: 1px solid transparent">
-                <div id="price" class="text-up-color fw-semibold">
+            <div class="w-50 d-flex justify-content-between pe-2 upbit" style="border: 1px solid transparent">
+                <div class="text-up-color fw-semibold price">
                     -,---
                 </div>
-                <div id="size">
+                <div class="size">
                     -,---
                 </div>
             </div>
-            <div id="binance" class="w-50 d-flex justify-content-between ps-2" style="border: 1px solid transparent">
-                <div id="size">
+            <div class="w-50 d-flex justify-content-between ps-2 binance" style="border: 1px solid transparent">
+                <div class="size">
                     -,---
 
                 </div>
-                <div id="price" class="text-up-color fw-semibold">
+                <div class="text-up-color fw-semibold price">
                     -,---
                 </div>
             </div>

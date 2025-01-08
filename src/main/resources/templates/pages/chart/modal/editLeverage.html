@@ -16,17 +16,17 @@
                     </div>
                     <div id="plus" class="leverage-btn plus">+</div>
                 </div>
-                <div class="qty-wrap mb-4">
-                    <input type="range" class="qty" min="1" th:step="1" value="1" id="leverage-range">
-                    <div class="value-bubble" id="leverage-tooltip">0</div>
+                <div class="leverage-qty-wrap mb-4">
+                    <input type="range" class="leverage-qty-range-input" min="1" th:step="1" value="1" id="leverage-range">
+                    <div class="leverage-value-bubble" id="leverage-tooltip">0</div>
                 </div>
-                <p class="margin-mode-info">
+                <p class="leverage-info">
                     <span class="text-gray6">*현재 레버리지에서의 최대 포지션:</span>
                     <span class="text-gray6" id="max-leverage-value">230,000,000</span>
                     <span class="text-gray6">USDT</span>
                 </p>
-                <p class="margin-mode-info text-gray6">*레버리지 변경은 포지션 및 미체결 주문에도 적용됩니다.</p>
-                <p class="margin-mode-info text-down-color fw-semibold">
+                <p class="leverage-info text-gray6">*레버리지 변경은 포지션 및 미체결 주문에도 적용됩니다.</p>
+                <p class="leverage-info text-down-color fw-semibold">
                     ※ [10x]와 같은 더 높은 레버리지를 선택하면 청산 위험이 커집니다. 항상 위험 수준을 관리하세요. ※
                 </p>
             </article>
@@ -38,113 +38,112 @@
 </div>
 <script th:inline="javascript">
     $(function () {
-        if (isAnonymous && isOk) {
-            const MAX = brackets[0]?.initialLeverage
-            const MIN = 1
+        if (!canTrade) return
 
-            const inputContainer = $('.leverage-input-container')
-            const inputWrap = $('.leverage-input-wrap')
-            const input = $('#leverage-input')
-            const range = $('#leverage-range')
-            const tooltip = $('#leverage-tooltip')
-            const maxLeverageValue = $('#max-leverage-value')
-            const updateLeverageEle = $('#update-leverage')
+        const MAX = brackets[0].initialLeverage
+        const MIN = 1
 
-            const modalBtn = $('#update-leverage-modal')
+        const inputContainer = $('.leverage-input-container')
+        const inputWrap = $('.leverage-input-wrap')
+        const input = $('#leverage-input')
+        const range = $('#leverage-range')
+        const tooltip = $('#leverage-tooltip')
+        const maxLeverageValue = $('#max-leverage-value')
+        const updateLeverageEle = $('#update-leverage')
 
-            input.attr('max', MAX)
-            range.attr('max', MAX)
+        const modalBtn = $('#update-leverage-modal')
 
-            modalBtn.on('click', () => {
-                const modal = new bootstrap.Modal($('#leverage-modal'));
-                modal.show();
-            })
+        input.attr('max', MAX)
+        range.attr('max', MAX)
 
-            input.focusin(() => {
-                inputContainer.css('border', '1px solid var(--point-color)')
-            })
+        modalBtn.on('click', () => {
+            const modal = new bootstrap.Modal($('#leverage-modal'));
+            modal.show();
+        })
 
-            input.focusout(() => {
-                inputContainer.css('border', '1px solid var(--gray9)').css('opacity', '.7')
-            })
+        input.focusin(() => {
+            inputContainer.css('border', '1px solid var(--point-color)')
+        })
 
-            input.keyup(e => {
-                const value = e.target.value
+        input.focusout(() => {
+            inputContainer.css('border', '1px solid var(--gray9)').css('opacity', '.7')
+        })
 
-                const regex = /\D/g // is not number
-                const replaceValue = value.replace(regex, '')
+        input.keyup(e => {
+            const value = e.target.value
 
-                if (Number(replaceValue) > MAX) {
-                    return input.val(MAX)
-                }
+            const regex = /\D/g // is not number
+            const replaceValue = value.replace(regex, '')
 
-                if (Number(replaceValue) < MIN) {
-                    return input.val(MIN)
-                }
+            if (Number(replaceValue) > MAX) {
+                return input.val(MAX)
+            }
 
-                input.val(replaceValue)
-            })
+            if (Number(replaceValue) < MIN) {
+                return input.val(MIN)
+            }
 
-            input.change(e => range.val(e.target.value).trigger('input'))
+            input.val(replaceValue)
+        })
 
-            range.on('input', function () {
-                const { max, min } = this
-                const val = $(this).val()
-                const percent = ((val - min) / (max - min)) * 100;
+        input.change(e => range.val(e.target.value).trigger('input'))
 
-                const currentBracket = brackets.find(v => v?.initialLeverage <= Number(val))
-                const notionalCap = currentBracket?.notionalCap ? currentBracket.notionalCap : 0
-                maxLeverageValue.text(notionalCap.toLocaleString())
-                tooltip.css('left', `${percent}%`).text(val);
-                input.val(val)
-            })
+        range.on('input', function () {
+            const { max, min } = this
+            const val = $(this).val()
+            const percent = ((val - min) / (max - min)) * 100;
 
-            range.hover(() => {
-                tooltip.show()
-            }, () => {
-                tooltip.hide()
-            })
+            const currentBracket = brackets.find(v => v?.initialLeverage <= Number(val))
+            const notionalCap = currentBracket?.notionalCap ? currentBracket.notionalCap : 0
+            maxLeverageValue.text(notionalCap.toLocaleString())
+            tooltip.css('left', `${percent}%`).text(val);
+            input.val(val)
+        })
 
-            $('#minus').on('click', () => {
-                const leverage = Number(input.val())
-                if (leverage > MIN) input.val(leverage - 1).trigger('change')
-            })
+        range.hover(() => {
+            tooltip.show()
+        }, () => {
+            tooltip.hide()
+        })
 
-            $('#plus').on('click', () => {
-                const leverage = Number(input.val())
-                if (leverage < MAX) input.val(leverage + 1).trigger('change')
-            })
+        $('#minus').on('click', () => {
+            const leverage = Number(input.val())
+            if (leverage > MIN) input.val(leverage - 1).trigger('change')
+        })
 
-            input.val(leverage).trigger('change')
+        $('#plus').on('click', () => {
+            const leverage = Number(input.val())
+            if (leverage < MAX) input.val(leverage + 1).trigger('change')
+        })
 
-            // update-leverage
-            updateLeverageEle.click(async () => {
-                const value = Number(input.val())
-                const maxValue = Number(input.attr('max'))
-                const minValue = Number(input.attr('min'))
+        input.val(leverage).trigger('change')
 
-                if (maxValue < value || minValue > value) return alert('invalid value')
+        // update-leverage
+        updateLeverageEle.click(async () => {
+            const value = Number(input.val())
+            const maxValue = Number(input.attr('max'))
+            const minValue = Number(input.attr('min'))
 
-                const modal = bootstrap.Modal.getInstance($('#leverage-modal'));
+            if (maxValue < value || minValue > value) return alert('값이 올바르지 않습니다.')
 
-                const payload = {
-                    symbol,
-                    leverage: value
-                }
+            const modal = bootstrap.Modal.getInstance($('#leverage-modal'));
 
-                const { success, data } = await fetcher('PATCH', '/api/update-leverage', payload)
+            const payload = {
+                symbol,
+                leverage: value
+            }
 
-                if (success) {
-                    const leverage = data.leverage
-                    input.val(leverage)
-                    modalBtn.text(`x${leverage}`)
-                    modalBtn.val(leverage)
-                    modal.hide()
-                } else {
-                    alert('서버 오류입니다. 다시 시도해주세요.')
-                }
-            })
+            const { success, data } = await myModule.fetch('PATCH', '/api/update-leverage', payload)
 
-        }
+            if (success) {
+                const leverage = data.leverage
+                input.val(leverage)
+                modalBtn.text(`x${leverage}`)
+                modalBtn.val(leverage)
+                modal.hide()
+            } else {
+                alert(data)
+            }
+        })
     })
 </script>

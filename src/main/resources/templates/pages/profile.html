@@ -137,36 +137,32 @@
     </section> -->
 
     <script th:inline="javascript">
-        const defaultNickname = /*[[${profile.nickname}]]*/ ''
-
         $('#editNicknameBtn').on('click', () => {
-            $('#nicknameInput').val(defaultNickname)
             const modal = new bootstrap.Modal($('#nicknameModal'));
             modal.show();
         })
 
         $("#saveNicknameBtn").on('click', async () => {
-            const newNickname = $('#nicknameInput').val().trim();
+            const nicknameInput = $('#nicknameInput')
+            const prevNickname = nicknameInput.attr('placeholder')
+            const newNickname = nicknameInput.val().trim();
 
             if (!newNickname) return alert('변경할 닉네임을 입력해주세요.')
-            if (defaultNickname === newNickname) return alert('변경할 닉네임을 입력해주세요.')
+            if (prevNickname === newNickname) return alert('변경할 닉네임을 입력해주세요.')
             if (newNickname.length > 60) return alert('닉네임은 3 - 60자 사이로 해주세요.')
 
             const modal = bootstrap.Modal.getInstance($('#nicknameModal'));
 
             const payload = { nickname: newNickname }
 
-            const { success, data } = await fetcher('PATCH', '/api/edit-nickname', payload)
+            const { success, data } = await myModule.fetch('PATCH', '/api/edit-nickname', payload)
 
             if (success) {
                 $('#nickname').text(newNickname)
+                nicknameInput.val(newNickname).attr('placeholder', newNickname)
                 modal.hide()
             } else {
-                if (data.status === 400) {
-                    alert('중복된 닉네임입니다.')
-                } else {
-                    alert('알 수 없는 에러입니다. 다시 시도해주세요.')
-                }
+                alert(data)
             }
         })
 

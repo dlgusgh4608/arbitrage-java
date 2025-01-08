@@ -41,7 +41,8 @@ public class SellOrderService {
               .mapToDouble(UpbitGetOrderResponse.Trade::funds)
               .sum();
       double upbitQtyFromAPI = upbitGetOrderResponse.executedVolume();
-      double upbitAvgPrice = Math.round(upbitTotalPriceFromAPI / upbitQtyFromAPI);
+      double upbitAvgPrice =
+          MathUtil.roundTo(upbitTotalPriceFromAPI / upbitQtyFromAPI, 8).doubleValue();
 
       /** 계산된 qty와 평단가를 합쳐 개수에 알맞은 수수료를 구함 */
       double upbitQty = orderCalcResult.getUpbitQty().doubleValue();
@@ -86,7 +87,7 @@ public class SellOrderService {
     }
   }
 
-  public void calculateSellQty(
+  public double calculateSellQty(
       List<OrderCalcResult> results, List<BuyOrder> openOrders, BigDecimal qty) {
     try {
       if (qty.equals(BigDecimal.ZERO)) throw new SellOrderException(SellOrderErrorCode.INVALID_QTY);
@@ -135,6 +136,8 @@ public class SellOrderService {
       }
 
       if (qty.signum() < 0) throw new SellOrderException(SellOrderErrorCode.QTY_TO_LARGER);
+
+      return upbitTotalQty.doubleValue();
     } catch (SellOrderException e) {
       throw e;
     } catch (Exception e) {

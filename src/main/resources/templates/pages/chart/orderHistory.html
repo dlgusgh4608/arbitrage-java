@@ -13,27 +13,26 @@
             </li>
         </ul>
         <!-- position -->
-        <div id="position-wrap" class="d-block"
-            th:with="hasPosition=${userTradeInfo?.upbitPosition != null && userTradeInfo?.binancePosition != null ? true : false}">
+        <div id="position-wrap" class="d-block">
             <div class="d-flex align-items-center py-2">
-                <div class="history-item">심볼</div>
-                <div class="history-item">바이낸스 평단가</div>
-                <div class="history-item">바이낸스 수량</div>
-                <div class="history-item">바이낸스 청산가</div>
-                <div class="history-item">바이낸스 수익률</div>
-                <div class="history-item">업비트 평단가</div>
-                <div class="history-item">업비트 수량</div>
-                <div class="history-item">업비트 수익률</div>
+                <div class="position-item">심볼</div>
+                <div class="position-item">바이낸스 평단가</div>
+                <div class="position-item">바이낸스 수량</div>
+                <div class="position-item">바이낸스 청산가</div>
+                <div class="position-item">바이낸스 수익률</div>
+                <div class="position-item">업비트 평단가</div>
+                <div class="position-item">업비트 수량</div>
+                <div class="position-item">업비트 수익률</div>
             </div>
-            <div class="d-flex align-items-center py-2" th:if="${hasPosition}">
-                <div class="history-item" th:text="${#strings.toUpperCase(param.symbol)}"></div>
-                <div class="history-item" id="binance-avg-price"></div>
-                <div class="history-item" id="binance-qty"></div>
-                <div class="history-item" id="binance-liquidation-price"></div>
-                <div class="history-item" id="binance-profit"></div>
-                <div class="history-item" id="upbit-avg-price"></div>
-                <div class="history-item" id="upbit-qty"></div>
-                <div class="history-item" id="upbit-profit"></div>
+            <div class="d-flex align-items-center py-2">
+                <div class="position-item" id="position-symbol"></div>
+                <div class="position-item" id="binance-avg-price"></div>
+                <div class="position-item" id="binance-qty"></div>
+                <div class="position-item" id="binance-liquidation-price"></div>
+                <div class="position-item" id="binance-profit"></div>
+                <div class="position-item" id="upbit-avg-price"></div>
+                <div class="position-item" id="upbit-qty"></div>
+                <div class="position-item" id="upbit-profit"></div>
             </div>
         </div>
         <!-- order history -->
@@ -42,6 +41,7 @@
                 <div class="order-history-item-empty"></div>
                 <div class="history-item">심볼</div>
                 <div class="history-item">타입</div>
+                <div class="history-item">거래시각</div>
                 <div class="history-item">바이낸스 평단가</div>
                 <div class="history-item">바이낸스 수량</div>
                 <div class="history-item">바이낸스 수수료</div>
@@ -53,49 +53,14 @@
                 <div class="history-item">프리미엄</div>
                 <div class="history-item">거래 상태 / 수익률</div>
             </div>
-            <div class="orders" th:each="order: ${userTradeInfo?.orders}" th:id="${'order-' + order.id}">
-                <div class="d-flex align-items-center py-2">
-                    <div th:if="${not #lists.isEmpty(order.sellOrders)}" class="order-history-item-chevron-wrap close">
-                        <th:block th:replace="~{fragments/svg/chevron :: down}"></th:block>
-                    </div>
-                    <div th:unless="${not #lists.isEmpty(order.sellOrders)}" class="order-history-item-empty"></div>
-                    <div class="history-item" th:text="${order.symbol}"></div>
-                    <div class="history-item text-up-color" th:text="BUY"></div>
-                    <div class="history-item" th:text="${order.binanceAvgPrice}"></div>
-                    <div class="history-item" th:text="${order.binanceQty}"></div>
-                    <div class="history-item" th:text="${order.binanceCommission}"></div>
-                    <div class="history-item" th:text="${order.upbitAvgPrice}"></div>
-                    <div class="history-item" th:text="${order.upbitQty}"></div>
-                    <div class="history-item" th:text="${order.upbitCommission}"></div>
-                    <div class="history-item" th:text="${order.usdToKrw}"></div>
-                    <div class="history-item" th:text="${order.isMaker ? 'MAKER' : 'TAKER'}"></div>
-                    <div class="history-item" th:text="${order.premium}"></div>
-                    <div class="history-item" th:text="${order.close ? 'CLOSE' : 'RUN'}"></div>
-                </div>
-                <div class="d-none py-2" th:each="sellOrder: ${order.sellOrders}">
-                    <div class="order-history-item-chevron-wrap"></div>
-                    <div class="history-item">
-                        <th:block th:replace="~{fragments/svg/chevron :: right-down}"></th:block>
-                    </div>
-                    <div class="history-item text-down-color" th:text="SELL"></div>
-                    <div class="history-item" th:text="${sellOrder.binanceAvgPrice}"></div>
-                    <div class="history-item" th:text="${sellOrder.binanceQty}"></div>
-                    <div class="history-item" th:text="${sellOrder.binanceCommission}"></div>
-                    <div class="history-item" th:text="${sellOrder.upbitAvgPrice}"></div>
-                    <div class="history-item" th:text="${sellOrder.upbitQty}"></div>
-                    <div class="history-item" th:text="${sellOrder.upbitCommission}"></div>
-                    <div class="history-item" th:text="${sellOrder.usdToKrw}"></div>
-                    <div class="history-item" th:text="${sellOrder.isMaker ? 'MAKER' : 'TAKER'}"></div>
-                    <div class="history-item" th:text="${sellOrder.premium}"></div>
-                    <div class="history-item" th:text="${sellOrder.profitRate + '%'}"></div>
-                </div>
-            </div>
+            <div id="orders"></div>
         </div>
     </article>
 </section>
 <script th:inline="javascript">
     $(() => {
-        if (upbitPosition && binancePosition) {
+        if (hasPosition) {
+            const positionSymbolEle = $('#position-symbol')
             const binanceAvgPrice = $("#binance-avg-price")
             const binanceQty = $("#binance-qty")
             const binanceLiquidationPrice = $('#binance-liquidation-price')
@@ -105,6 +70,7 @@
             const { entryPrice, liquidationPrice, positionAmt } = binancePosition
             const { avg_buy_price, balance } = upbitPosition
 
+            positionSymbolEle.text(symbol)
             binanceAvgPrice.text(Number(entryPrice).toLocaleString())
             binanceQty.text(Math.abs(Number(positionAmt)))
             binanceLiquidationPrice.text(liquidationPrice)
@@ -131,20 +97,10 @@
             noneToBlock($('#order-history-wrap'))
         })
 
-        $('.order-history-item-chevron-wrap').each(function () {
-            $(this).click(function () {
-                const ele = $(this)
-
-                const nextAll = $(this).parent().nextAll()
-
-                if (ele.hasClass('close')) {
-                    ele.removeClass('close').addClass('open')
-                    nextAll.each(function () { noneToFlex($(this)) })
-                } else {
-                    ele.removeClass('open').addClass('close')
-                    nextAll.each(function () { flexToNone($(this)) })
-                }
-            })
-        })
+        if(orders.length > 0) {
+            const wrapEle = $('#orders')
+            const element = orders.map(myModule.generateOrder).map(v => v.element).join('')
+            wrapEle.append(element)
+        }
     })
 </script>

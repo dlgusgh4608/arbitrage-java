@@ -4,7 +4,9 @@ import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.order.dto.OrderCalcResult;
 import main.arbitrage.auth.security.SecurityUtil;
@@ -34,6 +36,7 @@ import main.arbitrage.presentation.dto.request.OrderRequest;
 import main.arbitrage.presentation.dto.request.UpdateLeverageRequest;
 import main.arbitrage.presentation.dto.request.UpdateMarginTypeRequest;
 import main.arbitrage.presentation.dto.response.BuyOrderResponse;
+import main.arbitrage.presentation.dto.response.OrderResponse;
 import main.arbitrage.presentation.dto.view.UserTradeInfo;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +51,7 @@ public class OrderApplicationService {
   private final ExchangeRateService exchangeRateService;
 
   @Transactional
-  public void createSellOrder(OrderRequest req) {
+  public Map<Long, OrderResponse> createSellOrder(OrderRequest req) {
     ExchangeRate exchangeRate = exchangeRateService.getNonNullUsdToKrw();
     Symbol symbol = symbolVariableService.findSymbolByName(req.symbol());
 
@@ -66,9 +69,8 @@ public class OrderApplicationService {
 
     List<OrderCalcResult> results = new ArrayList<>();
     BigDecimal qty = BigDecimal.valueOf(req.qty());
-    BigDecimal upbitTotalQty = BigDecimal.ZERO;
 
-    sellOrderService.calculateSellQty(results, openOrders, qty);
+    double upbitTotalQty = sellOrderService.calculateSellQty(results, openOrders, qty);
 
     BinanceOrderResponse binanceOrderRes =
         binanceService.order( // 시장가 롱 ( 판매 )
@@ -80,10 +82,11 @@ public class OrderApplicationService {
             UpbitOrderEnums.Side.ask,
             UpbitOrderEnums.OrdType.market,
             null,
-            upbitTotalQty.doubleValue());
+            upbitTotalQty);
 
     UpbitGetOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
 
+    // buy order update와 sell order create
     for (OrderCalcResult orderCalcResult : results) {
       if (orderCalcResult.isClose()) {
         orderCalcResult.getBuyOrder().close();
@@ -93,13 +96,9 @@ public class OrderApplicationService {
           orderCalcResult, binanceOrderRes, upbitOrderRes, exchangeRate);
     }
 
-    List<BuyOrderResponse> z =
-        results.stream().map(r -> BuyOrderResponse.fromEntity(r.getBuyOrder())).toList();
-
-    // 여기서부터 이어 작성해야함.
-    for (BuyOrderResponse r : z) {
-      System.out.println(r);
-    }
+    return results.stream()
+        .map(result -> OrderResponse.fromEntity(result.getBuyOrder()))
+        .collect(Collectors.toMap(OrderResponse::getId, order -> order));
   }
 
   @Transactional
@@ -107,6 +106,7 @@ public class OrderApplicationService {
     ExchangeRate exchangeRate = exchangeRateService.getNonNullUsdToKrw();
 
     Symbol symbol = symbolVariableService.findSymbolByName(req.symbol());
+    String symbolName = symbol.getName();
 
     Long userId = SecurityUtil.getUserId();
 
@@ -121,11 +121,11 @@ public class OrderApplicationService {
 
     BinanceOrderResponse binanceOrderRes =
         binanceService.order( // 시장가 숏
-            symbol.getName(), BinanceEnums.Side.SELL, BinanceEnums.Type.MARKET, req.qty(), null);
+            symbolName, BinanceEnums.Side.SELL, BinanceEnums.Type.MARKET, req.qty(), null);
 
     String uuid =
         upbitService.order(
-            symbol.getName(),
+            symbolName,
             UpbitOrderEnums.Side.bid,
             UpbitOrderEnums.OrdType.price,
             Math.round(binanceOrderRes.cumQuote() * exchangeRate.getRate()),
@@ -133,8 +133,33 @@ public class OrderApplicationService {
 
     UpbitGetOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
 
-    return buyOrderService.createMarketBuyOrder(
-        user, symbol, exchangeRate, binanceOrderRes, upbitOrderRes);
+    // 주문 완료.
+    OrderResponse orderResponse =
+        OrderResponse.fromEntity(
+            buyOrderService.createMarketBuyOrder(
+                user, symbol, exchangeRate, binanceOrderRes, upbitOrderRes));
+
+    // 지갑 조회 및 포지션 조회 시작
+    List<UpbitGetAccountResponse> upbitAccount = upbitService.getAccount();
+
+    // 업비트 전부 구매시 krw는 0.000...소수점 단위로 남아있기 때문에 반환값이 나옴.
+    // 바이낸스는 0원이어도 반환값을 줌.
+    double krw = Double.valueOf(upbitService.getKRW(upbitAccount).get().balance());
+    double usdt = Double.valueOf(binanceService.getUSDT().get().balance());
+
+    // 구매 성공시 포지션이 반드시 있으므로 그대로 반환
+    Optional<UpbitGetAccountResponse> upbitOptionalCurrentSymbolInfo =
+        upbitService.getCurrentSymbol(upbitAccount, symbolName);
+
+    BinancePositionInfoResponse binancePositionInfo = binanceService.getPositionInfo(symbolName);
+
+    return BuyOrderResponse.builder()
+        .orderResponse(orderResponse)
+        .upbitPosition(upbitOptionalCurrentSymbolInfo.get())
+        .binancePosition(binancePositionInfo)
+        .usdt(usdt)
+        .krw(krw)
+        .build();
   }
 
   @Transactional
@@ -185,12 +210,12 @@ public class OrderApplicationService {
     tradeInfoBuilder.brackets(binanceService.getLeverageBrackets(symbolName).brackets());
 
     // 주문 history
-    List<BuyOrderResponse> orders = new ArrayList<>();
+    List<OrderResponse> orders = new ArrayList<>();
     List<BuyOrder> buyOrders =
         buyOrderService.getOrders(
             userEnv.getUser(), symbolVariableService.findSymbolByName(symbolName));
     for (BuyOrder buyOrder : buyOrders) {
-      orders.add(BuyOrderResponse.fromEntity(buyOrder));
+      orders.add(OrderResponse.fromEntity(buyOrder));
     }
     tradeInfoBuilder.orders(orders);
 

@@ -7,8 +7,8 @@
             </div>
             <div class="modal-body">
                 <div class="d-flex justify-content-center mb-3">
-                    <button id="isolated" class="w-50 modal-btn p-2">ISOLATED</button>
-                    <button id="crossed" class="w-50 modal-btn p-2">CROSSED</button>
+                    <button id="isolated" class="w-50 margin-mode-modal-btn p-2">ISOLATED</button>
+                    <button id="crossed" class="w-50 margin-mode-modal-btn p-2">CROSSED</button>
                 </div>
                 <p class="margin-mode-info fw-semibold text-up-color">※마진 모드를 전환하면 연동된 Binance의 MarginMode가 변경됩니다.※
                 </p>
@@ -31,48 +31,50 @@
 </div>
 <script th:inline="javascript">
     $(function () {
-        if (isAnonymous && isOk) {
+        if (!canTrade) return 
 
-            const updateMarginModeEle = $('#update-margin-mode')
-            const isolatedBtn = $('#isolated')
-            const crossedBtn = $('#crossed')
-            const modalBtn = $('#edit-margin-mode')
+        const updateMarginModeEle = $('#update-margin-mode')
+        const isolatedBtn = $('#isolated')
+        const crossedBtn = $('#crossed')
+        const modalBtn = $('#edit-margin-mode')
 
-            isolatedBtn.click(() => {
-                isolatedBtn.addClass('select')
-                crossedBtn.removeClass('select')
-            })
+        $(`#${marginType.toLocaleLowerCase()}`).addClass('select')
 
-            crossedBtn.click(() => {
-                crossedBtn.addClass('select')
-                isolatedBtn.removeClass('select')
-            })
+        isolatedBtn.click(() => {
+            isolatedBtn.addClass('select')
+            crossedBtn.removeClass('select')
+        })
 
-            $('#edit-margin-mode').on('click', () => {
-                const modal = new bootstrap.Modal($('#margin-mode-modal'));
-                modal.show();
-            })
+        crossedBtn.click(() => {
+            crossedBtn.addClass('select')
+            isolatedBtn.removeClass('select')
+        })
 
-            updateMarginModeEle.click(async () => {
-                const selectMarginModeText = $(".select").text()
+        $('#edit-margin-mode').on('click', () => {
+            const modal = new bootstrap.Modal($('#margin-mode-modal'));
+            modal.show();
+        })
 
-                const modal = bootstrap.Modal.getInstance($('#margin-mode-modal'));
+        updateMarginModeEle.click(async () => {
+            const selectMarginModeText = $(".select").text()
 
-                const payload = {
-                    symbol,
-                    marginType: selectMarginModeText
-                }
+            const modal = bootstrap.Modal.getInstance($('#margin-mode-modal'));
+
+            const payload = {
+                symbol,
+                marginType: selectMarginModeText
+            }
 
 
-                const { success, data } = await fetcher('PATCH', '/api/update-margin-mode', payload)
+            const { success, data } = await myModule.fetch('PATCH', '/api/update-margin-mode', payload)
 
-                if (success) {
-                    modalBtn.text(selectMarginModeText)
-                    modal.hide()
-                } else {
-                    alert('서버 오류입니다. 다시 시도해주세요.')
-                }
-            })
-        }
+            if (success) {
+                modalBtn.text(selectMarginModeText)
+                modal.hide()
+            } else {
+                alert(data)
+            }
+        })
+
     })
 </script>

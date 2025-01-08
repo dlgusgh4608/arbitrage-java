@@ -7,7 +7,7 @@ import main.arbitrage.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BuyOrderRepository extends JpaRepository<BuyOrder, Long> {
-  List<BuyOrder> findByUserAndSymbolAndIsCloseFalse(User user, Symbol symbol);
+  List<BuyOrder> findByUserAndSymbolAndIsCloseFalseOrderByCreatedAtDesc(User user, Symbol symbol);
 
-  List<BuyOrder> findByUserAndSymbol(User user, Symbol symbol);
+  List<BuyOrder> findByUserAndSymbolOrderByCreatedAtDesc(User user, Symbol symbol);
 }

@@ -21,10 +21,10 @@
     <link rel="stylesheet" th:href="@{/css/header.css}">
     <!--  jQuery  -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <!-- getCookie -->
-    <!-- customFetch -->
-    <script th:src="@{/js/customFetch.js}"></script>
-    <script th:src="@{/js/convertTheme.js}"></script>
+    <!-- 모듈 사용을 위한 myModule 초기화 -->
+    <script>window.myModule = {}</script>
+    <!-- init module (fetch, darkMode) -->
+    <script type='module' th:src="@{/js/init.js}"></script>
     <title layout:title-pattern="$CONTENT_TITLE">Default</title>
 </head>
 

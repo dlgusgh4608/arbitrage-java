@@ -5,7 +5,7 @@
                 th:text="${#strings.toUpperCase(param.symbol)}"></div>
             <ul class="dropdown-menu">
                 <li th:each="symbol : ${supportedSymbols}">
-                    <a class="dropdown-item" th:href="@{/chart(symbol=${symbol})}" th:text="${symbol}">symbolName</a>
+                    <a class="dropdown-item" th:href="@{/chart(symbol=${symbol})}" th:text="${symbol}">-</a>
                 </li>
             </ul>
         </div>
