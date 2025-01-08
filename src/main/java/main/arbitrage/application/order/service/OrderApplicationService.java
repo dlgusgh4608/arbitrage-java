@@ -11,14 +11,13 @@ import main.arbitrage.auth.security.SecurityUtil;
 import main.arbitrage.domain.buyOrder.entity.BuyOrder;
 import main.arbitrage.domain.buyOrder.service.BuyOrderService;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
+import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
 import main.arbitrage.domain.sellOrder.service.SellOrderService;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
-import main.arbitrage.global.exception.GlobalErrorCode;
-import main.arbitrage.global.exception.GlobalException;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceChangeLeverageResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
@@ -36,7 +35,6 @@ import main.arbitrage.presentation.dto.request.UpdateLeverageRequest;
 import main.arbitrage.presentation.dto.request.UpdateMarginTypeRequest;
 import main.arbitrage.presentation.dto.response.BuyOrderResponse;
 import main.arbitrage.presentation.dto.view.UserTradeInfo;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -47,23 +45,12 @@ public class OrderApplicationService {
   private final ExchangePrivateRestFactory exchangePrivateRestFactory;
   private final UserEnvService userEnvService;
   private final SymbolVariableService symbolVariableService;
-
-  private ExchangeRate exchangeRate;
-
-  @EventListener
-  public void customExchangeRate(ExchangeRate rate) {
-    exchangeRate = rate;
-  }
+  private final ExchangeRateService exchangeRateService;
 
   @Transactional
   public void createSellOrder(OrderRequest req) {
-    if (exchangeRate == null)
-      throw new GlobalException(
-          GlobalErrorCode.EXCHANGE_RATE_NULL, "exchange_rate is null in order application service");
-
+    ExchangeRate exchangeRate = exchangeRateService.getNonNullUsdToKrw();
     Symbol symbol = symbolVariableService.findSymbolByName(req.symbol());
-
-    ExchangeRate fixedExchangeRate = exchangeRate;
 
     Long userId = SecurityUtil.getUserId();
     UserEnv userEnv = userEnvService.findAndExistByUserId(userId);
@@ -103,7 +90,7 @@ public class OrderApplicationService {
       }
 
       sellOrderService.createMarketOrder(
-          orderCalcResult, binanceOrderRes, upbitOrderRes, fixedExchangeRate);
+          orderCalcResult, binanceOrderRes, upbitOrderRes, exchangeRate);
     }
 
     List<BuyOrderResponse> z =
@@ -116,16 +103,13 @@ public class OrderApplicationService {
   }
 
   @Transactional
-  public void createBuyOrder(OrderRequest req) {
-    if (exchangeRate == null)
-      throw new GlobalException(
-          GlobalErrorCode.EXCHANGE_RATE_NULL, "exchange_rate is null in order application service");
+  public BuyOrderResponse createBuyOrder(OrderRequest req) {
+    ExchangeRate exchangeRate = exchangeRateService.getNonNullUsdToKrw();
 
     Symbol symbol = symbolVariableService.findSymbolByName(req.symbol());
 
-    ExchangeRate fixedExchangeRate = exchangeRate;
-
     Long userId = SecurityUtil.getUserId();
+
     UserEnv userEnv = userEnvService.findAndExistByUserId(userId);
 
     User user = userEnv.getUser();
@@ -144,13 +128,13 @@ public class OrderApplicationService {
             symbol.getName(),
             UpbitOrderEnums.Side.bid,
             UpbitOrderEnums.OrdType.price,
-            (double) Math.round(binanceOrderRes.cumQuote() * fixedExchangeRate.getRate()),
+            Math.round(binanceOrderRes.cumQuote() * exchangeRate.getRate()),
             null);
 
     UpbitGetOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
 
-    // return buyOrderService.createMarketBuyOrder(
-    //     user, symbol, fixedExchangeRate, binanceOrderRes, upbitOrderRes);
+    return buyOrderService.createMarketBuyOrder(
+        user, symbol, exchangeRate, binanceOrderRes, upbitOrderRes);
   }
 
   @Transactional

@@ -32,27 +32,34 @@ public class SellOrderService {
       double binanceAvgPrice = binanceOrderResponse.avgPrice(); // 바이낸스 평단가
       double binanceQty = orderCalcResult.getBinanceQty().doubleValue(); // 바이낸스 체결 개수
       double binanceTotalPrice = binanceAvgPrice * binanceQty; // 바이낸스에 사용한 USDT
-      double binanceCommission = MathUtil.roundTo(binanceTotalPrice * BINANCE_TAKER_COMM_RATE, 8);
+      float binanceCommission =
+          MathUtil.roundTo(binanceTotalPrice * BINANCE_TAKER_COMM_RATE, 8).floatValue(); // 바이낸스 수수료
 
-      double upbitTotalPriceFromOutside =
+      /** 업비트 API Response의 데이터를 이용해 평단가를 구함. */
+      double upbitTotalPriceFromAPI =
           upbitGetOrderResponse.trades().stream()
               .mapToDouble(UpbitGetOrderResponse.Trade::funds)
               .sum();
-      double upbitQtyFromOutside = upbitGetOrderResponse.executedVolume();
-      double upbitAvgPrice = Math.round(upbitTotalPriceFromOutside / upbitQtyFromOutside);
+      double upbitQtyFromAPI = upbitGetOrderResponse.executedVolume();
+      double upbitAvgPrice = Math.round(upbitTotalPriceFromAPI / upbitQtyFromAPI);
 
+      /** 계산된 qty와 평단가를 합쳐 개수에 알맞은 수수료를 구함 */
       double upbitQty = orderCalcResult.getUpbitQty().doubleValue();
       double upbitTotalPrice = upbitAvgPrice * upbitQty;
-      double upbitCommission = MathUtil.roundTo(upbitTotalPrice * UPBIT_COMM_RATE, 8);
-      double usdToKrw = exchangeRate.getRate(); // 원달러 환율
+      float upbitCommission =
+          MathUtil.roundTo(upbitTotalPrice * UPBIT_COMM_RATE, 8).floatValue(); // 업비트 수수료
 
-      double premium = MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, usdToKrw);
-      double exchangeRateAtBuy = orderCalcResult.getBuyOrder().getExchangeRate().getRate();
+      /** 현재 환율과 평단가를 통해 프리미엄 구함 */
+      float usdToKrw = exchangeRate.getRate();
+      float premium = MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, usdToKrw);
+
+      /** 구매 당시 환율을 이용하여 환율이 고정된 상태, 즉 실제 수익률을 구함. */
+      float exchangeRateAtBuy = orderCalcResult.getBuyOrder().getExchangeRate().getRate();
       double premiumInBuyOrder = orderCalcResult.getBuyOrder().getPremium();
-      double premiumWithBuyExchangeRate =
+      float premiumWithBuyExchangeRate =
           MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, exchangeRateAtBuy);
-
-      double profitRate = MathUtil.roundTo(premiumInBuyOrder - premiumWithBuyExchangeRate, 4);
+      float profitRate =
+          MathUtil.roundTo(premiumInBuyOrder - premiumWithBuyExchangeRate, 4).floatValue();
 
       SellOrder sellOrder =
           SellOrder.builder()

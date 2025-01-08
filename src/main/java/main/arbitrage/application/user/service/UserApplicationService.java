@@ -4,9 +4,9 @@ import jakarta.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.application.exchangeRate.dto.ExchangeRateDTO;
 import main.arbitrage.auth.jwt.JwtUtil;
 import main.arbitrage.auth.security.SecurityUtil;
+import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
 import main.arbitrage.domain.oauthUser.service.OAuthUserService;
 import main.arbitrage.domain.user.entity.User;
@@ -164,10 +164,10 @@ public class UserApplicationService {
       }
     }
 
-    ExchangeRateDTO exchangeRateDto = exchangeRateService.getExchangeRate("USD", "KRW");
+    ExchangeRate exchangeRate = exchangeRateService.getNonNullUsdToKrw();
 
     userProfileDtoBuilder.nickname(SecurityUtil.getNickname());
-    userProfileDtoBuilder.exchangeRate(exchangeRateDto.getRate());
+    userProfileDtoBuilder.exchangeRate(exchangeRate.getRate());
 
     return userProfileDtoBuilder.build();
   }

@@ -76,7 +76,7 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
     String paramString =
         String.format(
-            "market=%s,side=%s,type=%s,volume=%.2f,price=%.2f", market, side, type, volume, price);
+            "market=%s,side=%s,type=%s,price=%s,volume=%s", market, side, type, price, volume);
 
     try {
       if (market == null || side == null || type == null || volume == null) {

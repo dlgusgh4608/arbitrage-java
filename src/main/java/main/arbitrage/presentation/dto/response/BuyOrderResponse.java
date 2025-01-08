@@ -12,16 +12,16 @@ import main.arbitrage.domain.buyOrder.entity.BuyOrder;
 public class BuyOrderResponse {
   private final Long id;
   private final String symbol;
-  private final double premium;
+  private final float premium;
   private final double binanceAvgPrice;
   private final double binanceQty;
   private final double binanceTotalPrice;
-  private final double binanceCommission;
+  private final float binanceCommission;
   private final double upbitTotalPrice;
   private final double upbitQty;
   private final double upbitAvgPrice;
-  private final double upbitCommission;
-  private final double usdToKrw;
+  private final float upbitCommission;
+  private final float usdToKrw;
   private final boolean isMaker;
   private final boolean isClose;
   private final List<SellOrderResponse> sellOrders;
@@ -30,18 +30,18 @@ public class BuyOrderResponse {
   @Builder
   @ToString
   public static class SellOrderResponse {
-    private final double premium;
+    private final float premium;
     private final double binanceAvgPrice;
     private final double binanceQty;
     private final double binanceTotalPrice;
-    private final double binanceCommission;
+    private final float binanceCommission;
     private final double upbitTotalPrice;
     private final double upbitQty;
     private final double upbitAvgPrice;
-    private final double upbitCommission;
-    private final double usdToKrw;
+    private final float upbitCommission;
+    private final float usdToKrw;
     private final boolean isMaker;
-    private final double profitRate;
+    private final float profitRate;
   }
 
   public static BuyOrderResponse fromEntity(BuyOrder buyOrder) {

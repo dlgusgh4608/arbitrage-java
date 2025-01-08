@@ -7,10 +7,10 @@ import lombok.Getter;
 @Getter
 public class PremiumDTO {
   private final String symbol;
-  private final double premium;
+  private final float premium;
   private final double upbit;
   private final double binance;
-  private final double usdToKrw;
+  private final float usdToKrw;
   private final Long upbitTradeAt;
   private final Long binanceTradeAt;
 }

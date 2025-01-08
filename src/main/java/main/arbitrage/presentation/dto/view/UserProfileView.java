@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 public class UserProfileView {
   private final String nickname;
-  private final double exchangeRate;
+  private final float exchangeRate;
   private final Double binanceBalance;
   private final Double upbitBalance;
 }

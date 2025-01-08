@@ -38,12 +38,12 @@ public class Price {
   private ExchangeRate exchangeRate;
 
   @Column(name = "premium", nullable = false, columnDefinition = "REAL")
-  private double premium;
+  private float premium;
 
   @Column(name = "upbit", nullable = false, columnDefinition = "DOUBLE PRECISION")
   private double upbit;
 
-  @Column(name = "binance", nullable = false, columnDefinition = "REAL")
+  @Column(name = "binance", nullable = false, columnDefinition = "DOUBLE PRECISION")
   private double binance;
 
   @Column(
@@ -72,7 +72,7 @@ public class Price {
   public Price(
       Symbol symbol,
       ExchangeRate exchangeRate,
-      double premium,
+      float premium,
       double upbit,
       double binance,
       Long upbitTradeAt,

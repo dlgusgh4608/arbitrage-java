@@ -46,7 +46,7 @@ public class PriceService {
     } catch (Exception e) {
       String errorMessage =
           String.format(
-              "Price 버퍼 추가 실패 - 심볼: %s, 프리미엄: %f, 바이낸스: %f, 업비트: %f",
+              "Price 버퍼 추가 실패 - 심볼: %s, 프리미엄: %s, 바이낸스: %s, 업비트: %s",
               price.getSymbol().getName(),
               price.getPremium(),
               price.getBinance(),

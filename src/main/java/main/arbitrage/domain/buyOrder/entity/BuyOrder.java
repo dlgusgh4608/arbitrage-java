@@ -49,25 +49,25 @@ public class BuyOrder {
   private ExchangeRate exchangeRate;
 
   @Column(name = "premium", nullable = false, columnDefinition = "REAL")
-  private double premium;
+  private float premium;
 
   @Column(name = "upbit_price", nullable = false, columnDefinition = "DOUBLE PRECISION")
   private double upbitPrice;
 
-  @Column(name = "upbit_quantity", nullable = false, columnDefinition = "REAL")
+  @Column(name = "upbit_quantity", nullable = false, columnDefinition = "DOUBLE PRECISION")
   private double upbitQuantity;
 
   @Column(name = "upbit_commission", nullable = false, columnDefinition = "REAL")
-  private double upbitCommission;
+  private float upbitCommission;
 
-  @Column(name = "binance_price", nullable = false, columnDefinition = "REAL")
+  @Column(name = "binance_price", nullable = false, columnDefinition = "DOUBLE PRECISION")
   private double binancePrice;
 
-  @Column(name = "binance_quantity", nullable = false, columnDefinition = "REAL")
+  @Column(name = "binance_quantity", nullable = false, columnDefinition = "DOUBLE PRECISION")
   private double binanceQuantity;
 
   @Column(name = "binance_commission", nullable = false, columnDefinition = "REAL")
-  private double binanceCommission;
+  private float binanceCommission;
 
   @Column(name = "is_maker", columnDefinition = "BOOLEAN DEFAULT FALSE")
   private boolean isMaker;
@@ -91,13 +91,13 @@ public class BuyOrder {
       User user,
       Symbol symbol,
       ExchangeRate exchangeRate,
-      double premium,
+      float premium,
       double upbitPrice,
       double upbitQuantity,
-      double upbitCommission,
+      float upbitCommission,
       double binancePrice,
       double binanceQuantity,
-      double binanceCommission,
+      float binanceCommission,
       boolean isMaker,
       boolean isClose) {
     this.user = user;

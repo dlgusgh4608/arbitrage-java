@@ -13,7 +13,7 @@ public class UsdToKrwCrawler {
       "https://www.google.com/finance/quote/USD-KRW";
   private static final String CURRENT_SELECTOR = "div.YMlKec.fxKbKc"; // 환율 셀렉터
 
-  public double craw() {
+  public float craw() {
     try {
       Document doc = Jsoup.connect(GOOGLE_FINANCE_USD_TO_KRW_URL).get();
 
@@ -21,7 +21,7 @@ public class UsdToKrwCrawler {
 
       if (rateToString.isEmpty()) return 0;
 
-      return Double.parseDouble(rateToString.replace(",", ""));
+      return Float.parseFloat(rateToString.replace(",", ""));
     } catch (IOException e) {
       if (e.getMessage().contains("Underlying input stream returned zero bytes")) {
         throw new CrawlerException(CrawlerErrorCode.ZERO_BYTE, e);

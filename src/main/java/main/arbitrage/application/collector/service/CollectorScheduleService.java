@@ -14,6 +14,7 @@ import main.arbitrage.application.collector.dto.ChartBySymbolDTO;
 import main.arbitrage.application.collector.dto.PremiumDTO;
 import main.arbitrage.application.collector.validator.TradeValidation;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
+import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
 import main.arbitrage.domain.price.entity.Price;
 import main.arbitrage.domain.price.service.PriceService;
 import main.arbitrage.domain.symbol.entity.Symbol;
@@ -27,7 +28,6 @@ import main.arbitrage.infrastructure.exchange.dto.TradePair;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePublicWebsocketFactory;
 import main.arbitrage.infrastructure.websocket.server.handler.ChartServerWebSocketHandler;
 import main.arbitrage.infrastructure.websocket.server.handler.PremiumServerWebSocketHandler;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -43,15 +43,16 @@ public class CollectorScheduleService {
   private final PremiumServerWebSocketHandler premiumServerWebSocketHandler;
   private final ChartServerWebSocketHandler chartServerWebSocketHandler;
   private final BinancePublicRestService binancePublicRestService;
+  private final ExchangeRateService exchangeRateService;
   private final Map<String, Price> priceMap = new ConcurrentHashMap<>();
   private Map<String, BinanceExchangeInfoResponse> binanceExchangeInfoMap = new HashMap<>();
 
-  private ExchangeRate exchangeRate;
+  // private ExchangeRate exchangeRate;
 
-  @EventListener
-  public void customExchangeRate(ExchangeRate rate) {
-    exchangeRate = rate;
-  }
+  // @EventListener
+  // public void customExchangeRate(ExchangeRate rate) {
+  //   exchangeRate = rate;
+  // }
 
   @PostConstruct
   private void initialize() {
@@ -61,6 +62,7 @@ public class CollectorScheduleService {
 
   @Scheduled(fixedRate = 300) // .3초
   protected void calculatePremium() {
+    ExchangeRate exchangeRate = exchangeRateService.getUsdToKrw();
     if (exchangeRate == null) return;
     processAllSymbols(exchangeRate);
   }
@@ -111,14 +113,13 @@ public class CollectorScheduleService {
               return;
             }
 
-            double exchangeRateValue = exchangeRate.getRate();
+            float exchangeRateValue = exchangeRate.getRate();
             double upbitPrc = upbitTrade.getPrice();
             double binancePrc = binanceTrade.getPrice();
             long upbitTradeAt = upbitTrade.getTimestamp();
             long binanceTradeAt = binanceTrade.getTimestamp();
 
-            double premiumValue =
-                MathUtil.calculatePremium(upbitPrc, binancePrc, exchangeRateValue);
+            float premiumValue = MathUtil.calculatePremium(upbitPrc, binancePrc, exchangeRateValue);
 
             PremiumDTO premium =
                 PremiumDTO.builder()

@@ -16,7 +16,7 @@ public record UpbitGetOrderResponse(
     UpbitOrderEnums.State state,
     String createdAt,
     double volume,
-    double paidFee,
+    float paidFee,
     double executedVolume,
     List<Trade> trades) {
 

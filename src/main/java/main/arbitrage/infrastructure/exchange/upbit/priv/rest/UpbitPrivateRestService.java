@@ -76,12 +76,11 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
     return getCurrentSymbol(originArray, "KRW");
   }
 
-  public String order(String market, Side side, OrdType ordType, Double price, Double volume) {
-
+  public String order(String market, Side side, OrdType ordType, Long price, Double volume) {
     String paramString =
         String.format(
-            "market=%s,side=%s,type=%s,volume=%.2f,price=%.2f",
-            market, side, ordType, volume, price);
+            "market=%s,side=%s,type=%s,price=%s,volume=%s",
+            market, side.name(), ordType.name(), price, volume);
 
     try {
       if (market == null || side == null || ordType == null)
@@ -149,6 +148,8 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
       return json.get("uuid").asText();
     } catch (IOException e) {
       throw new UpbitException(UpbitErrorCode.API_ERROR, paramString, e);
+    } catch (Exception e) {
+      throw new UpbitException(UpbitErrorCode.UNKNOWN, paramString, e);
     }
   }
 

@@ -31,16 +31,17 @@ public class BuyOrderService {
       double binanceAvgPrice = binanceOrderRes.avgPrice(); // 바이낸스 평단가
       double binanceQty = binanceOrderRes.executedQty(); // 바이낸스 체결 개수
       double binanceTotalPrice = binanceAvgPrice * binanceQty; // 바이낸스 숏에 사용한 총 USDT
-      double binanceCommission =
-          MathUtil.roundTo(binanceTotalPrice * BINANCE_TAKER_COMM, 8); // 바이낸스
+      float binanceCommission =
+          MathUtil.roundTo(binanceTotalPrice * BINANCE_TAKER_COMM, 8).floatValue(); // 바이낸스 수수료
       // 수수료
       double upbitTotalPrice = upbitOrderRes.price(); // 업비트 구매에 사용한 총 KRW
       double upbitQty = upbitOrderRes.executedVolume(); // 업비트 구매된 개수
-      double upbitAvgPrice = Math.round(upbitTotalPrice / upbitQty); // 업비트 평단가
-      double upbitCommission = upbitOrderRes.paidFee(); // 업비트 수수료
-      double usdToKrw = exchangeRate.getRate(); // 원달러 환율
+      double upbitAvgPrice =
+          MathUtil.roundTo(upbitTotalPrice / upbitQty, 8).doubleValue(); // 업비트 평단가
+      float upbitCommission = upbitOrderRes.paidFee(); // 업비트 수수료
 
-      double premium = MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, usdToKrw);
+      float usdToKrw = exchangeRate.getRate(); // 원달러 환율
+      float premium = MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, usdToKrw);
 
       BuyOrder buyOrder =
           buyOrderRepository.save(
@@ -63,7 +64,7 @@ public class BuyOrderService {
     } catch (Exception e) {
       String serverMessage =
           String.format(
-              "매수 주문 생성 오류\nuserId: %d\nsymbolName: %s\nbinanceResponse: %s\n upbitReseponse: %s",
+              "매수 주문 생성 오류\nuserId: %s\nsymbolName: %s\nbinanceResponse: %s\n upbitReseponse: %s",
               user.getId(), symbol.getName(), binanceOrderRes, upbitOrderRes);
 
       throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, serverMessage, e);

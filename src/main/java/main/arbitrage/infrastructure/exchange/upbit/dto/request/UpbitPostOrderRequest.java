@@ -20,8 +20,7 @@ public class UpbitPostOrderRequest {
   private final UpbitOrderEnums.Side side;
   private final UpbitOrderEnums.OrdType ordType;
 
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "0")
-  private final Double price;
+  private final Long price;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING)
   private final Double volume;
