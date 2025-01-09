@@ -40,7 +40,7 @@ public class ControllerExceptionHandler {
   })
   public ResponseEntity<ErrorResponse> handleBadCredentialsException(BaseException e) {
     String logTitle = e.getClass().getSimpleName().replace("Exception", "Error");
-    log.error("({}):\t{}", logTitle, e.getMessage());
+    log.error("({}):\t{}", logTitle, e.getMessage(), e);
     return createResponse(e);
   }
 
