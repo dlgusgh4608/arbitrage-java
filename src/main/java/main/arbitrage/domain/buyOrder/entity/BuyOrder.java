@@ -22,6 +22,7 @@ import lombok.NoArgsConstructor;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.sellOrder.entity.SellOrder;
 import main.arbitrage.domain.symbol.entity.Symbol;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -82,6 +83,7 @@ public class BuyOrder {
   private LocalDateTime updatedAt;
 
   @OneToMany(mappedBy = "buyOrder", fetch = FetchType.LAZY)
+  @BatchSize(size = 100)
   private List<SellOrder> sellOrders = new ArrayList<>();
 
   @Builder

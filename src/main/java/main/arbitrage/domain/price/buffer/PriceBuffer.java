@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class PriceBuffer {
   private final List<Price> buffer = new CopyOnWriteArrayList<>();
-  private static final int BUFFER_SIZE = 60;
 
   public void add(Price price) {
     buffer.add(price);
@@ -23,10 +22,6 @@ public class PriceBuffer {
 
   public void clear() {
     buffer.clear();
-  }
-
-  public boolean isReadyToSave() {
-    return buffer.size() >= BUFFER_SIZE;
   }
 
   public boolean isEmpty() {
