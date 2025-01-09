@@ -156,7 +156,7 @@
         buyRange.attr('size', stepSize).attr('step', stepSize)
         sellRange.attr('size', stepSize).attr('step', stepSize)
 
-        if (upbitPosition && binancePosition) {
+        if (hasPosition) {
             const binanceQty = Math.abs(binancePosition.positionAmt)
             sellRange.attr('max', binanceQty)
             maxSellQty.text(binanceQty)

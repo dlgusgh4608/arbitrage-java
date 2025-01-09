@@ -9,7 +9,7 @@ import main.arbitrage.domain.buyOrder.entity.BuyOrder;
 @Getter
 @Builder
 @ToString
-public class OrderCalcResult {
+public class OrderCalcResultDTO {
   private final BuyOrder buyOrder;
   private final BigDecimal binanceQty;
   private final BigDecimal upbitQty;

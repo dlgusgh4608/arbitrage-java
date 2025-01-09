@@ -28,11 +28,11 @@ public class OrderResponse {
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
   private final LocalDateTime createdAt;
 
-  private final List<SellOrderResponse> sellOrders;
+  private final List<SellOrders> sellOrders;
 
   @Getter
   @Builder
-  public static class SellOrderResponse {
+  public static class SellOrders {
     private final float premium;
     private final double binanceAvgPrice;
     private final double binanceQty;
@@ -71,7 +71,7 @@ public class OrderResponse {
             buyOrder.getSellOrders().stream()
                 .map(
                     sellOrder ->
-                        SellOrderResponse.builder()
+                        SellOrders.builder()
                             .premium(sellOrder.getPremium())
                             .binanceAvgPrice(sellOrder.getBinancePrice())
                             .binanceQty(sellOrder.getBinanceQuantity())

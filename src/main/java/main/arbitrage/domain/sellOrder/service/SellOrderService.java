@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.application.order.dto.OrderCalcResult;
+import main.arbitrage.application.order.dto.OrderCalcResultDTO;
 import main.arbitrage.domain.buyOrder.entity.BuyOrder;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.sellOrder.entity.SellOrder;
@@ -24,7 +24,7 @@ public class SellOrderService {
   private final SellOrderRepository sellOrderRepository;
 
   public SellOrder createMarketOrder(
-      OrderCalcResult orderCalcResult,
+      OrderCalcResultDTO orderCalcResult,
       BinanceOrderResponse binanceOrderResponse,
       UpbitOrderResponse upbitGetOrderResponse,
       ExchangeRate exchangeRate) {
@@ -88,7 +88,7 @@ public class SellOrderService {
   }
 
   public double calculateSellQty(
-      List<OrderCalcResult> results, List<BuyOrder> openOrders, BigDecimal qty) {
+      List<OrderCalcResultDTO> results, List<BuyOrder> openOrders, BigDecimal qty) {
     try {
       if (qty.equals(BigDecimal.ZERO)) throw new SellOrderException(SellOrderErrorCode.INVALID_QTY);
 
@@ -103,8 +103,8 @@ public class SellOrderService {
 
         if (qty.compareTo(restBinanceQty) >= 0) {
           // 남은 수량이 현재 주문의 잔여 수량보다 크거나 같은 경우
-          OrderCalcResult orderItem =
-              OrderCalcResult.builder()
+          OrderCalcResultDTO orderItem =
+              OrderCalcResultDTO.builder()
                   .buyOrder(buyOrder)
                   .binanceQty(restBinanceQty)
                   .upbitQty(restUpbitQty)
@@ -121,8 +121,8 @@ public class SellOrderService {
           BigDecimal calculatedUpbitQty =
               restUpbitQty.multiply(percent).setScale(8, RoundingMode.HALF_UP);
 
-          OrderCalcResult orderItem =
-              OrderCalcResult.builder()
+          OrderCalcResultDTO orderItem =
+              OrderCalcResultDTO.builder()
                   .buyOrder(buyOrder)
                   .binanceQty(qty)
                   .upbitQty(calculatedUpbitQty)

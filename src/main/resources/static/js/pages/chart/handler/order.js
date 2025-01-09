@@ -11,7 +11,6 @@ function calculateQty(
     krw,
     usdt,
     currentLeverage = 0,
-    defaultSymbolInfo = { maxQty: 0, minQty: 0, stepSize: 0, minUsdt: 0 }
 ) {
     if (!krw) return { min: 0, max: 0 }
     if (!usdt) return { min: 0, max: 0 }
@@ -19,7 +18,6 @@ function calculateQty(
     if (!premium?.usdToKrw) return { min: 0, max: 0 }
 
     const { upbit, binance } = premium
-    const { maxQty, minQty, minUsdt, stepSize } = defaultSymbolInfo
 
     const decimalPlaces = countDecimals(stepSize)
 
@@ -67,7 +65,7 @@ const update = (
 
     const leverage = Number(leverageModalBtn.text().replaceAll('x', ''))
 
-    const { max, min } = calculateQty(premium, krw, usdt, leverage, symbolInfo)
+    const { max, min } = calculateQty(premium, krw, usdt, leverage)
     const { maxQty, minQty } = prev
 
     if (max !== maxQty) {

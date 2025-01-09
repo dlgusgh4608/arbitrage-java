@@ -45,7 +45,7 @@ export const generateOrder = (order) => {
         ${
             order.sellOrders.map(sellOrder => (
                 `
-                <div class="d-none align-items-center py-2 order">
+                <div class="d-none align-items-center py-2" style="border-bottom: 1px solid var(--gray3);">
                     <div class="order-history-item-empty"></div>
                     <div class="history-item">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"

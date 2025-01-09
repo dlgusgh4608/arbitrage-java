@@ -4,11 +4,11 @@ import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.application.order.dto.OrderCalcResult;
+import main.arbitrage.application.order.dto.ExchangeMarketPositionDTO;
+import main.arbitrage.application.order.dto.OrderCalcResultDTO;
 import main.arbitrage.auth.security.SecurityUtil;
 import main.arbitrage.domain.buyOrder.entity.BuyOrder;
 import main.arbitrage.domain.buyOrder.service.BuyOrderService;
@@ -37,6 +37,7 @@ import main.arbitrage.presentation.dto.request.UpdateLeverageRequest;
 import main.arbitrage.presentation.dto.request.UpdateMarginTypeRequest;
 import main.arbitrage.presentation.dto.response.BuyOrderResponse;
 import main.arbitrage.presentation.dto.response.OrderResponse;
+import main.arbitrage.presentation.dto.response.SellOrderResponse;
 import main.arbitrage.presentation.dto.view.UserTradeInfo;
 import org.springframework.stereotype.Service;
 
@@ -51,9 +52,10 @@ public class OrderApplicationService {
   private final ExchangeRateService exchangeRateService;
 
   @Transactional
-  public Map<Long, OrderResponse> createSellOrder(OrderRequest req) {
+  public SellOrderResponse createSellOrder(OrderRequest req) {
     ExchangeRate exchangeRate = exchangeRateService.getNonNullUsdToKrw();
     Symbol symbol = symbolVariableService.findSymbolByName(req.symbol());
+    String symbolName = symbol.getName();
 
     Long userId = SecurityUtil.getUserId();
     UserEnv userEnv = userEnvService.findAndExistByUserId(userId);
@@ -67,14 +69,14 @@ public class OrderApplicationService {
 
     List<BuyOrder> openOrders = buyOrderService.getAndExistOpenOrders(user, symbol);
 
-    List<OrderCalcResult> results = new ArrayList<>();
+    List<OrderCalcResultDTO> results = new ArrayList<>();
     BigDecimal qty = BigDecimal.valueOf(req.qty());
 
     double upbitTotalQty = sellOrderService.calculateSellQty(results, openOrders, qty);
 
     BinanceOrderResponse binanceOrderRes =
-        binanceService.order( // 시장가 롱 ( 판매 )
-            symbol.getName(), BinanceEnums.Side.BUY, BinanceEnums.Type.MARKET, req.qty(), null);
+        binanceService.order(
+            symbolName, BinanceEnums.Side.BUY, BinanceEnums.Type.MARKET, req.qty(), null);
 
     String uuid =
         upbitService.order(
@@ -87,7 +89,7 @@ public class OrderApplicationService {
     UpbitOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
 
     // buy order update와 sell order create
-    for (OrderCalcResult orderCalcResult : results) {
+    for (OrderCalcResultDTO orderCalcResult : results) {
       if (orderCalcResult.isClose()) {
         orderCalcResult.getBuyOrder().close();
       }
@@ -96,9 +98,20 @@ public class OrderApplicationService {
           orderCalcResult, binanceOrderRes, upbitOrderRes, exchangeRate);
     }
 
-    return results.stream()
-        .map(result -> OrderResponse.fromEntity(result.getBuyOrder()))
-        .collect(Collectors.toMap(OrderResponse::getId, order -> order));
+    // 지갑, 포지션 정보 가져옴
+    ExchangeMarketPositionDTO exchangeMarketPosition =
+        getExchangeMarketPosition(binanceService, upbitService, symbolName);
+
+    return SellOrderResponse.builder()
+        .orderResponse(
+            results.stream()
+                .map(result -> OrderResponse.fromEntity(result.getBuyOrder()))
+                .collect(Collectors.toMap(OrderResponse::getId, order -> order)))
+        .krw(exchangeMarketPosition.getKrw())
+        .usdt(exchangeMarketPosition.getUsdt())
+        .upbitPosition(exchangeMarketPosition.getUpbitPosition())
+        .binancePosition(exchangeMarketPosition.getBinancePosition())
+        .build();
   }
 
   @Transactional
@@ -139,26 +152,16 @@ public class OrderApplicationService {
             buyOrderService.createMarketBuyOrder(
                 user, symbol, exchangeRate, binanceOrderRes, upbitOrderRes));
 
-    // 지갑 조회 및 포지션 조회 시작
-    List<UpbitAccountResponse> upbitAccount = upbitService.getAccount();
-
-    // 업비트 전부 구매시 krw는 0.000...소수점 단위로 남아있기 때문에 반환값이 나옴.
-    // 바이낸스는 0원이어도 반환값을 줌.
-    double krw = Double.valueOf(upbitService.getKRW(upbitAccount).get().balance());
-    double usdt = Double.valueOf(binanceService.getUSDT().get().balance());
-
-    // 구매 성공시 포지션이 반드시 있으므로 그대로 반환
-    Optional<UpbitAccountResponse> upbitOptionalCurrentSymbolInfo =
-        upbitService.getCurrentSymbol(upbitAccount, symbolName);
-
-    BinancePositionInfoResponse binancePositionInfo = binanceService.getPositionInfo(symbolName);
+    // 지갑, 포지션 정보 가져옴
+    ExchangeMarketPositionDTO exchangeMarketPosition =
+        getExchangeMarketPosition(binanceService, upbitService, symbolName);
 
     return BuyOrderResponse.builder()
         .orderResponse(orderResponse)
-        .upbitPosition(upbitOptionalCurrentSymbolInfo.get())
-        .binancePosition(binancePositionInfo)
-        .usdt(usdt)
-        .krw(krw)
+        .krw(exchangeMarketPosition.getKrw())
+        .usdt(exchangeMarketPosition.getUsdt())
+        .upbitPosition(exchangeMarketPosition.getUpbitPosition())
+        .binancePosition(exchangeMarketPosition.getBinancePosition())
         .build();
   }
 
@@ -178,29 +181,15 @@ public class OrderApplicationService {
     BinancePrivateRestService binanceService = upbitExchangePrivateRestPair.getBinance();
     UpbitPrivateRestService upbitService = upbitExchangePrivateRestPair.getUpbit();
 
-    // 업비트 account가져와 KRW가 존재하는지 검사
-    List<UpbitAccountResponse> upbitAccount = upbitService.getAccount();
-    Optional<UpbitAccountResponse> optionalKRW = upbitService.getKRW(upbitAccount);
+    // 지갑 및 포지션 정보
+    ExchangeMarketPositionDTO exchangeMarketPosition =
+        getExchangeMarketPosition(binanceService, upbitService, symbolName);
 
-    // 지갑정보 section
-    if (optionalKRW.isPresent()) {
-      // krw가 존재할 시 krw와 usdt를 build. USDT는 바이낸스측에서 값이 0이더라도 항상 줌.
-      tradeInfoBuilder
-          .krw(Double.valueOf(optionalKRW.get().balance()))
-          .usdt(Double.valueOf(binanceService.getUSDT().get().balance()));
-    }
-
-    // 포지션 section
-    Optional<UpbitAccountResponse> upbitOptionalCurrentSymbolInfo =
-        upbitService.getCurrentSymbol(upbitAccount, symbolName);
-
-    BinancePositionInfoResponse binancePositionInfo = binanceService.getPositionInfo(symbolName);
-
-    if (upbitOptionalCurrentSymbolInfo.isPresent() && binancePositionInfo != null) {
-      tradeInfoBuilder
-          .upbitPosition(upbitOptionalCurrentSymbolInfo.get())
-          .binancePosition(binancePositionInfo);
-    }
+    tradeInfoBuilder
+        .krw(exchangeMarketPosition.getKrw())
+        .usdt(exchangeMarketPosition.getUsdt())
+        .upbitPosition(exchangeMarketPosition.getUpbitPosition())
+        .binancePosition(exchangeMarketPosition.getBinancePosition());
 
     // 심볼 정보 (현재 마진 타입, 레버리지)
     BinanceSymbolInfoResponse symbolInfo = binanceService.symbolInfo(symbolName);
@@ -251,5 +240,44 @@ public class OrderApplicationService {
     boolean response = binanceService.updateMarginType(req.symbol(), req.marginType());
 
     return response;
+  }
+
+  private ExchangeMarketPositionDTO getExchangeMarketPosition(
+      BinancePrivateRestService binanceService,
+      UpbitPrivateRestService upbitService,
+      String symbolName) {
+
+    // 빌더 선언
+    ExchangeMarketPositionDTO.ExchangeMarketPositionDTOBuilder builder =
+        ExchangeMarketPositionDTO.builder();
+
+    // 지갑정보
+    List<UpbitAccountResponse> upbitAccount = upbitService.getAccount();
+    Optional<UpbitAccountResponse> optionalKRW = upbitService.getKRW(upbitAccount);
+
+    // krw를 기준으로 조건 USDT는 바이낸스측에서 값이 0이더라도 항상 줌.
+    if (optionalKRW.isPresent()) {
+      builder
+          .krw(Double.valueOf(optionalKRW.get().balance()))
+          .usdt(Double.valueOf(binanceService.getUSDT().get().balance()));
+    } else {
+      builder.krw(0.0d).usdt(Double.valueOf(binanceService.getUSDT().get().balance()));
+    }
+
+    // 포지션 정보
+    Optional<UpbitAccountResponse> upbitOptionalCurrentSymbolInfo =
+        upbitService.getCurrentSymbol(upbitAccount, symbolName);
+
+    BinancePositionInfoResponse binancePositionInfo = binanceService.getPositionInfo(symbolName);
+
+    if (upbitOptionalCurrentSymbolInfo.isPresent()) {
+      builder
+          .upbitPosition(upbitOptionalCurrentSymbolInfo.get())
+          .binancePosition(binancePositionInfo);
+    } else {
+      builder.upbitPosition(null).binancePosition(binancePositionInfo);
+    }
+
+    return builder.build();
   }
 }

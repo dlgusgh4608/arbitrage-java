@@ -67,7 +67,10 @@
             const orderJquery = {
                 buyQtyRange: $('#buy-qty-range'),
                 sellQtyRange: $('#sell-qty-range'),
+                buyQtyText: $('#current-buy-qty'),
+                sellQtyText: $('#current-sell-qty'),
                 maxBuyQty: $('#max-buy-qty'),
+                maxSellQty: $('#max-sell-qty'),
                 upbitKrw: $('#upbit-krw'),
                 upbitUsd: $('#upbit-usd'),
                 binanceKrw: $('#binance-krw'),
@@ -85,7 +88,13 @@
             const orderHistoryJquery = {
                 binanceProfit: $('#binance-profit'),
                 upbitProfit: $('#upbit-profit'),
-                orders: $('#orders')
+                orders: $('#orders'),
+                positionSymbol: $('#position-symbol'),
+                binanceAvgPrice: $("#binance-avg-price"),
+                binanceQty: $("#binance-qty"),
+                binanceLiquidationPrice: $('#binance-liquidation-price'),
+                upbitAvgPrice: $("#upbit-avg-price"),
+                upbitQty: $("#upbit-qty"),
             }
 
             // modal/marginMode.html
@@ -112,17 +121,93 @@
 
             let lock = false
 
-            async function buyOrder(payload) {
-                const { orders } = orderHistoryJquery
+            const updatePosition = (upbitPosition, binancePosition) => {
+                const {
+                    positionSymbol,
+                    binanceAvgPrice,
+                    binanceQty,
+                    binanceLiquidationPrice,
+                    upbitAvgPrice,
+                    upbitQty,
+                    binanceProfit,
+                    upbitProfit
+                } = orderHistoryJquery
+
+                if(!upbitPosition && !binancePosition) {
+                    positionSymbol.text('')
+                    upbitAvgPrice.text('')
+                    upbitQty.text('')
+                    upbitProfit.text('')
+                    binanceAvgPrice.text('')
+                    binanceQty.text('')
+                    binanceLiquidationPrice.text('')
+                    binanceProfit.text('')
+                    return
+                }
                 
+                positionSymbol.text(symbol)
+
+                const { avg_buy_price = 0, balance = 0 } = upbitPosition || {}
+                if(!balance) {
+                    upbitAvgPrice.text('')
+                    upbitQty.text('')
+                    upbitProfit.text('')
+                }else {
+                    upbitAvgPrice.text(Number(avg_buy_price).toLocaleString())
+                    upbitQty.text(balance)
+                }
+                
+                const { entryPrice = 0, liquidationPrice = 0, positionAmt = 0 } = binancePosition  || {}
+
+                if(!positionAmt) {
+                    binanceAvgPrice.text('')
+                    binanceQty.text('')
+                    binanceLiquidationPrice.text('')
+                    binanceProfit.text('')
+                }else {
+                    binanceAvgPrice.text(Number(entryPrice).toLocaleString())
+                    binanceQty.text(Math.abs(Number(positionAmt)))
+                    binanceLiquidationPrice.text(liquidationPrice)
+                }
+                
+            }
+
+            const updateWallet = (krw, usdt) => {
+                const { upbitKrw, binanceUsd } = orderJquery
+                upbitKrw.text(Math.round(krw).toLocaleString())
+                binanceUsd.text(usdt.toLocaleString())
+            }
+
+            const updateSellQty = (binancePosition) => {
+                const { sellQtyRange, buyQtyRange, maxSellQty, buyQtyText, sellQtyText } = orderJquery
+                if(!binancePosition) {
+                    sellQtyRange.attr('max', 0)
+                    maxSellQty.text(0)
+                }else {
+                    const binanceQty = Math.abs(Number(binancePosition.positionAmt))
+                    sellQtyRange.attr('max', binanceQty)
+                    maxSellQty.text(binanceQty)
+                }
+                buyQtyText.text(0)
+                sellQtyText.text(0)
+                buyQtyRange.val(0)
+                sellQtyRange.val(0)
+            }
+
+            async function buyOrder(payload) {
                 const { success, data } = await myModule.fetch('POST', '/api/buy-order', payload)
 
                 if (success) {
+                    const { orders } = orderHistoryJquery
                     const { orderResponse, upbitPosition, binancePosition, usdt, krw } = data
                     
+                    // 오더 히스토리 업데이트
                     const element = myModule.generateOrder(orderResponse).element
                     orders.prepend(element)
 
+                    updatePosition(upbitPosition, binancePosition)
+                    updateWallet(krw, usdt)
+                    updateSellQty(binancePosition)
                 } else {
                     alert(data)
                 }
@@ -131,17 +216,23 @@
             }
 
             async function sellOrder(payload) {
-                const { orders } = orderHistoryJquery
-
                 const { success, data } = await myModule.fetch('POST', '/api/sell-order', payload)
 
                 if (success) {
+                    const { orders } = orderHistoryJquery
+                    const { orderResponse, upbitPosition, binancePosition, usdt, krw } = data
+
+                    // 오더 히스토리 업데이트
                     orders.children().each((i, ele) => {
                         const stringId = String(ele.id)
                         const id = Number(stringId.split('-')[1])
-                        const result = data[id]
+                        const result = orderResponse[id]
                         if(result) $(ele).html(myModule.generateOrder(result).element)
                     })
+
+                    updatePosition(upbitPosition, binancePosition)
+                    updateWallet(krw, usdt)
+                    updateSellQty(binancePosition)
                 } else {
                     alert(data)
                 }
@@ -178,20 +269,18 @@
     <script th:inline="javascript">
         const param = /*[[${ param }]]*/ {};
         const [ symbol ] = param.symbol
-        
+
         const isAnonymous = /*[[${#authentication.getPrincipal() == 'anonymousUser' ? false : true}]]*/ false;
         
         // 주문을 위한 심볼 정보
-        const symbolInfo = /*[[${symbolInfo}]]*/ {};
         const {
             maxQty = 0,
             minQty = 0,
             stepSize = 0,
             minUsdt = 0
-        } = symbolInfo || {};
+        } = /*[[${symbolInfo}]]*/ {};
 
         // 주문을 위한 사용자 정보
-        const userTradeInfo = /*[[${userTradeInfo}]]*/ {};
         const {
             krw = 0,
             usdt = 0,
@@ -201,10 +290,10 @@
             orders = [],
             upbitPosition = null,
             binancePosition = null
-        } = userTradeInfo || {};
+        } = /*[[${userTradeInfo}]]*/ {};
 
         const hasPosition = [ upbitPosition, binancePosition ].every(v => v !== null)
-        const responseOk = [ symbolInfo, userTradeInfo ].every(v => v !== null)
+        const responseOk = maxQty !== 0 && leverage !== 0
         const canTrade = isAnonymous && responseOk
 
         // 차트 초기 값

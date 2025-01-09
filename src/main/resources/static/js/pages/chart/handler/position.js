@@ -7,30 +7,30 @@ const calculateShortProfitRate = (entryPrice, markPrice) => {
 }
 
 const update = (premium, orderHistoryJquery) => {
-    if (!hasPosition) return
-
-    const { binanceProfit, upbitProfit } = orderHistoryJquery
+    const { binanceProfit, upbitProfit, upbitAvgPrice, binanceAvgPrice, positionSymbol } = orderHistoryJquery
+    
+    if(!positionSymbol.text()) return
 
     const { binance, upbit } = premium
-    const { avg_buy_price } = upbitPosition
-    const { entryPrice } = binancePosition
+    const upbitEntryPrice = Number(upbitAvgPrice.text().replaceAll(',', ''))
+    const binanceEntryPrice = Number(binanceAvgPrice.text().replaceAll(',', ''))
 
-    const binanceProfitRate = calculateShortProfitRate(entryPrice, binance)
-    const upbitProfitRate = calculateLongProfitRate(avg_buy_price, upbit)
+    const binanceProfitRate = calculateShortProfitRate(binanceEntryPrice, binance)
+    const upbitProfitRate = calculateLongProfitRate(upbitEntryPrice, upbit)
 
     if (binanceProfitRate > 0) {
-        binanceProfit.addClass('text-up-color')
+        binanceProfit.removeClass('text-down-color').addClass('text-up-color')
     } else {
-        binanceProfit.addClass('text-down-color')
+        binanceProfit.removeClass('text-up-color').addClass('text-down-color')
     }
     if (upbitProfitRate > 0) {
-        upbitProfit.addClass('text-up-color')
+        upbitProfit.removeClass('text-down-color').addClass('text-up-color')
     } else {
-        upbitProfit.addClass('text-down-color')
+        upbitProfit.removeClass('text-up-color').addClass('text-down-color')
     }
 
-    binanceProfit.text(binanceProfitRate.toFixed(2).concat('%'))
-    upbitProfit.text(upbitProfitRate.toFixed(2).concat('%'))
+    binanceProfit.text(binanceProfitRate.toFixed(4).concat('%'))
+    upbitProfit.text(upbitProfitRate.toFixed(4).concat('%'))
 }
 
 export default {
