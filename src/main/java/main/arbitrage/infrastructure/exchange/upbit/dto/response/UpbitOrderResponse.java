@@ -8,7 +8,7 @@ import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record UpbitGetOrderResponse(
+public record UpbitOrderResponse(
     String uuid,
     String side,
     String ordType,

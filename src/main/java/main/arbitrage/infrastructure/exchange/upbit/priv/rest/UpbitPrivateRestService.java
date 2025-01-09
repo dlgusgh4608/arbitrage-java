@@ -11,8 +11,8 @@ import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums.Or
 import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums.Side;
 import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums.State;
 import main.arbitrage.infrastructure.exchange.upbit.dto.request.UpbitPostOrderRequest;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetAccountResponse;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetOrderResponse;
+import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitAccountResponse;
+import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitOrderResponse;
 import main.arbitrage.infrastructure.exchange.upbit.exception.UpbitErrorCode;
 import main.arbitrage.infrastructure.exchange.upbit.exception.UpbitException;
 import okhttp3.MediaType;
@@ -31,7 +31,7 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
     super(accessKey, secretKey, okHttpClient, objectMapper, symbolNames);
   }
 
-  public List<UpbitGetAccountResponse> getAccount() {
+  public List<UpbitAccountResponse> getAccount() {
     try {
       String token = generateToken();
       Request request =
@@ -52,27 +52,27 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
           responseBody,
           objectMapper
               .getTypeFactory()
-              .constructCollectionType(List.class, UpbitGetAccountResponse.class));
+              .constructCollectionType(List.class, UpbitAccountResponse.class));
     } catch (IOException e) {
       throw new UpbitException(UpbitErrorCode.API_ERROR, e);
     }
   }
 
-  public Optional<UpbitGetAccountResponse> getKRW() {
-    List<UpbitGetAccountResponse> account = getAccount();
+  public Optional<UpbitAccountResponse> getKRW() {
+    List<UpbitAccountResponse> account = getAccount();
     return account.stream()
         .filter(upbitAccount -> upbitAccount.currency().equals("KRW"))
         .findFirst();
   }
 
-  public Optional<UpbitGetAccountResponse> getCurrentSymbol(
-      List<UpbitGetAccountResponse> originArray, String symbolName) {
+  public Optional<UpbitAccountResponse> getCurrentSymbol(
+      List<UpbitAccountResponse> originArray, String symbolName) {
     return originArray.stream()
         .filter(upbitAccount -> upbitAccount.currency().equals(symbolName.toUpperCase()))
         .findFirst();
   }
 
-  public Optional<UpbitGetAccountResponse> getKRW(List<UpbitGetAccountResponse> originArray) {
+  public Optional<UpbitAccountResponse> getKRW(List<UpbitAccountResponse> originArray) {
     return getCurrentSymbol(originArray, "KRW");
   }
 
@@ -153,7 +153,7 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
     }
   }
 
-  public UpbitGetOrderResponse order(String uuid, int repeat) {
+  public UpbitOrderResponse order(String uuid, int repeat) {
     try {
       if (repeat < 2) return null;
 
@@ -174,7 +174,7 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
 
       if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
 
-      UpbitGetOrderResponse dto = objectMapper.readValue(responseBody, UpbitGetOrderResponse.class);
+      UpbitOrderResponse dto = objectMapper.readValue(responseBody, UpbitOrderResponse.class);
 
       if (dto.state().equals(State.wait) || dto.state().equals(State.watch)) {
         Thread.sleep(1000);

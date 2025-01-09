@@ -13,7 +13,7 @@ import main.arbitrage.domain.sellOrder.exception.SellOrderException;
 import main.arbitrage.domain.sellOrder.repository.SellOrderRepository;
 import main.arbitrage.global.util.math.MathUtil;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetOrderResponse;
+import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitOrderResponse;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -26,7 +26,7 @@ public class SellOrderService {
   public SellOrder createMarketOrder(
       OrderCalcResult orderCalcResult,
       BinanceOrderResponse binanceOrderResponse,
-      UpbitGetOrderResponse upbitGetOrderResponse,
+      UpbitOrderResponse upbitGetOrderResponse,
       ExchangeRate exchangeRate) {
     try {
       double binanceAvgPrice = binanceOrderResponse.avgPrice(); // 바이낸스 평단가
@@ -38,7 +38,7 @@ public class SellOrderService {
       /** 업비트 API Response의 데이터를 이용해 평단가를 구함. */
       double upbitTotalPriceFromAPI =
           upbitGetOrderResponse.trades().stream()
-              .mapToDouble(UpbitGetOrderResponse.Trade::funds)
+              .mapToDouble(UpbitOrderResponse.Trade::funds)
               .sum();
       double upbitQtyFromAPI = upbitGetOrderResponse.executedVolume();
       double upbitAvgPrice =

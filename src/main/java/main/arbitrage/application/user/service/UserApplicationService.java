@@ -19,7 +19,7 @@ import main.arbitrage.infrastructure.email.service.EmailMessageService;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceGetAccountResponse;
 import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetAccountResponse;
+import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitAccountResponse;
 import main.arbitrage.infrastructure.oauthValidator.service.OauthValidatorService;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
 import main.arbitrage.presentation.dto.form.UserEnvForm;
@@ -146,7 +146,7 @@ public class UserApplicationService {
           exchangePrivateRestFactory.create(userEnv);
 
       // 각각 거래소의 지갑정보를 받아옴
-      Optional<UpbitGetAccountResponse> upbitKRW = upbitExchangePrivateRestPair.getUpbit().getKRW();
+      Optional<UpbitAccountResponse> upbitKRW = upbitExchangePrivateRestPair.getUpbit().getKRW();
       Optional<BinanceGetAccountResponse> binanceUSDT =
           upbitExchangePrivateRestPair.getBinance().getUSDT();
 

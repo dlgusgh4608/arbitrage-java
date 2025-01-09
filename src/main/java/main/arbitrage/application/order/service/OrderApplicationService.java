@@ -29,8 +29,8 @@ import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRe
 import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
 import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetAccountResponse;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetOrderResponse;
+import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitAccountResponse;
+import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitOrderResponse;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
 import main.arbitrage.presentation.dto.request.OrderRequest;
 import main.arbitrage.presentation.dto.request.UpdateLeverageRequest;
@@ -84,7 +84,7 @@ public class OrderApplicationService {
             null,
             upbitTotalQty);
 
-    UpbitGetOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
+    UpbitOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
 
     // buy order update와 sell order create
     for (OrderCalcResult orderCalcResult : results) {
@@ -131,7 +131,7 @@ public class OrderApplicationService {
             Math.round(binanceOrderRes.cumQuote() * exchangeRate.getRate()),
             null);
 
-    UpbitGetOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
+    UpbitOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
 
     // 주문 완료.
     OrderResponse orderResponse =
@@ -140,7 +140,7 @@ public class OrderApplicationService {
                 user, symbol, exchangeRate, binanceOrderRes, upbitOrderRes));
 
     // 지갑 조회 및 포지션 조회 시작
-    List<UpbitGetAccountResponse> upbitAccount = upbitService.getAccount();
+    List<UpbitAccountResponse> upbitAccount = upbitService.getAccount();
 
     // 업비트 전부 구매시 krw는 0.000...소수점 단위로 남아있기 때문에 반환값이 나옴.
     // 바이낸스는 0원이어도 반환값을 줌.
@@ -148,7 +148,7 @@ public class OrderApplicationService {
     double usdt = Double.valueOf(binanceService.getUSDT().get().balance());
 
     // 구매 성공시 포지션이 반드시 있으므로 그대로 반환
-    Optional<UpbitGetAccountResponse> upbitOptionalCurrentSymbolInfo =
+    Optional<UpbitAccountResponse> upbitOptionalCurrentSymbolInfo =
         upbitService.getCurrentSymbol(upbitAccount, symbolName);
 
     BinancePositionInfoResponse binancePositionInfo = binanceService.getPositionInfo(symbolName);
@@ -179,8 +179,8 @@ public class OrderApplicationService {
     UpbitPrivateRestService upbitService = upbitExchangePrivateRestPair.getUpbit();
 
     // 업비트 account가져와 KRW가 존재하는지 검사
-    List<UpbitGetAccountResponse> upbitAccount = upbitService.getAccount();
-    Optional<UpbitGetAccountResponse> optionalKRW = upbitService.getKRW(upbitAccount);
+    List<UpbitAccountResponse> upbitAccount = upbitService.getAccount();
+    Optional<UpbitAccountResponse> optionalKRW = upbitService.getKRW(upbitAccount);
 
     // 지갑정보 section
     if (optionalKRW.isPresent()) {
@@ -191,7 +191,7 @@ public class OrderApplicationService {
     }
 
     // 포지션 section
-    Optional<UpbitGetAccountResponse> upbitOptionalCurrentSymbolInfo =
+    Optional<UpbitAccountResponse> upbitOptionalCurrentSymbolInfo =
         upbitService.getCurrentSymbol(upbitAccount, symbolName);
 
     BinancePositionInfoResponse binancePositionInfo = binanceService.getPositionInfo(symbolName);

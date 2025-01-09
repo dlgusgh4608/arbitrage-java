@@ -11,7 +11,7 @@ import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.global.util.math.MathUtil;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitGetOrderResponse;
+import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitOrderResponse;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,7 +25,7 @@ public class BuyOrderService {
       Symbol symbol,
       ExchangeRate exchangeRate,
       BinanceOrderResponse binanceOrderRes,
-      UpbitGetOrderResponse upbitOrderRes) {
+      UpbitOrderResponse upbitOrderRes) {
     try {
       double binanceAvgPrice = binanceOrderRes.avgPrice(); // 바이낸스 평단가
       double binanceQty = binanceOrderRes.executedQty(); // 바이낸스 체결 개수
