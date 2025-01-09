@@ -22,7 +22,6 @@ import lombok.NoArgsConstructor;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.sellOrder.entity.SellOrder;
 import main.arbitrage.domain.symbol.entity.Symbol;
-import main.arbitrage.domain.user.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -36,9 +35,8 @@ public class BuyOrder {
   @Column(name = "id")
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "user_id", nullable = false)
-  private User user;
+  @Column(name = "user_id", nullable = false)
+  private Long userId;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "symbol_id", nullable = false)
@@ -88,7 +86,7 @@ public class BuyOrder {
 
   @Builder
   public BuyOrder(
-      User user,
+      Long userId,
       Symbol symbol,
       ExchangeRate exchangeRate,
       float premium,
@@ -100,7 +98,7 @@ public class BuyOrder {
       float binanceCommission,
       boolean isMaker,
       boolean isClose) {
-    this.user = user;
+    this.userId = userId;
     this.symbol = symbol;
     this.exchangeRate = exchangeRate;
     this.premium = premium;

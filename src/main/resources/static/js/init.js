@@ -54,14 +54,17 @@ async function fetcher(method = 'GET', url = '', data = {}) {
         'Content-Type': 'application/json',
     }
 
+    const payload = {
+        method: method.toLocaleUpperCase(),
+        headers,
+        body: JSON.stringify(data),
+        credentials: 'include'
+    }
+
+    if(method.toLocaleUpperCase() === 'GET') delete payload.body
+
     try {
-        const response = await fetch(
-            url, {
-            method,
-            headers,
-            body: JSON.stringify(data),
-            credentials: 'include'
-        })
+        const response = await fetch(url, payload)
 
         if (response.redirected) {
             window.location.href = response.url;

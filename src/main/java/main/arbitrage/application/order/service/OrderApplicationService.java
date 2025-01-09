@@ -17,7 +17,6 @@ import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
 import main.arbitrage.domain.sellOrder.service.SellOrderService;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
-import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums;
@@ -60,14 +59,12 @@ public class OrderApplicationService {
     Long userId = SecurityUtil.getUserId();
     UserEnv userEnv = userEnvService.findAndExistByUserId(userId);
 
-    User user = userEnv.getUser();
-
     ExchangePrivateRestPair upbitExchangePrivateRestPair =
         exchangePrivateRestFactory.create(userEnv);
     BinancePrivateRestService binanceService = upbitExchangePrivateRestPair.getBinance();
     UpbitPrivateRestService upbitService = upbitExchangePrivateRestPair.getUpbit();
 
-    List<BuyOrder> openOrders = buyOrderService.getAndExistOpenOrders(user, symbol);
+    List<BuyOrder> openOrders = buyOrderService.getAndExistOpenOrders(userId, symbol);
 
     List<OrderCalcResultDTO> results = new ArrayList<>();
     BigDecimal qty = BigDecimal.valueOf(req.qty());
@@ -125,8 +122,6 @@ public class OrderApplicationService {
 
     UserEnv userEnv = userEnvService.findAndExistByUserId(userId);
 
-    User user = userEnv.getUser();
-
     ExchangePrivateRestPair upbitExchangePrivateRestPair =
         exchangePrivateRestFactory.create(userEnv);
     BinancePrivateRestService binanceService = upbitExchangePrivateRestPair.getBinance();
@@ -150,7 +145,7 @@ public class OrderApplicationService {
     OrderResponse orderResponse =
         OrderResponse.fromEntity(
             buyOrderService.createMarketBuyOrder(
-                user, symbol, exchangeRate, binanceOrderRes, upbitOrderRes));
+                userId, symbol, exchangeRate, binanceOrderRes, upbitOrderRes));
 
     // 지갑, 포지션 정보 가져옴
     ExchangeMarketPositionDTO exchangeMarketPosition =
@@ -201,8 +196,8 @@ public class OrderApplicationService {
     // 주문 history
     List<OrderResponse> orders = new ArrayList<>();
     List<BuyOrder> buyOrders =
-        buyOrderService.getOrders(
-            userEnv.getUser(), symbolVariableService.findSymbolByName(symbolName));
+        buyOrderService.getOrders(userId, symbolVariableService.findSymbolByName(symbolName), 0);
+
     for (BuyOrder buyOrder : buyOrders) {
       orders.add(OrderResponse.fromEntity(buyOrder));
     }
@@ -240,6 +235,15 @@ public class OrderApplicationService {
     boolean response = binanceService.updateMarginType(req.symbol(), req.marginType());
 
     return response;
+  }
+
+  @Transactional
+  public List<OrderResponse> getOrders(String symbolName, int page) {
+    Long userId = SecurityUtil.getUserId();
+    Symbol symbol = symbolVariableService.findSymbolByName(symbolName);
+    return buyOrderService.getOrders(userId, symbol, page).stream()
+        .map(OrderResponse::fromEntity)
+        .toList();
   }
 
   private ExchangeMarketPositionDTO getExchangeMarketPosition(

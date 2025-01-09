@@ -8,10 +8,10 @@ import main.arbitrage.domain.buyOrder.exception.BuyOrderException;
 import main.arbitrage.domain.buyOrder.repository.BuyOrderRepository;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.symbol.entity.Symbol;
-import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.global.util.math.MathUtil;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
 import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitOrderResponse;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,7 +21,7 @@ public class BuyOrderService {
   private final BuyOrderRepository buyOrderRepository;
 
   public BuyOrder createMarketBuyOrder(
-      User user,
+      Long userId,
       Symbol symbol,
       ExchangeRate exchangeRate,
       BinanceOrderResponse binanceOrderRes,
@@ -44,7 +44,7 @@ public class BuyOrderService {
 
       return buyOrderRepository.save(
           BuyOrder.builder()
-              .user(user)
+              .userId(userId)
               .symbol(symbol)
               .exchangeRate(exchangeRate)
               .premium(premium)
@@ -61,25 +61,26 @@ public class BuyOrderService {
       String serverMessage =
           String.format(
               "매수 주문 생성 오류\nuserId: %s\nsymbolName: %s\nbinanceResponse: %s\n upbitReseponse: %s",
-              user.getId(), symbol.getName(), binanceOrderRes, upbitOrderRes);
+              userId, symbol.getName(), binanceOrderRes, upbitOrderRes);
 
       throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, serverMessage, e);
     }
   }
 
-  public List<BuyOrder> getOpenOrders(User user, Symbol symbol) {
+  public List<BuyOrder> getOpenOrders(Long userId, Symbol symbol) {
     try {
-      return buyOrderRepository.findByUserAndSymbolAndIsCloseFalseOrderByCreatedAtDesc(
-          user, symbol);
+      return buyOrderRepository.findByUserIdAndSymbolAndIsCloseFalseOrderByCreatedAtDesc(
+          userId, symbol);
     } catch (Exception e) {
       throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, e);
     }
   }
 
-  public List<BuyOrder> getAndExistOpenOrders(User user, Symbol symbol) {
+  public List<BuyOrder> getAndExistOpenOrders(Long userId, Symbol symbol) {
     try {
       List<BuyOrder> buyOrders =
-          buyOrderRepository.findByUserAndSymbolAndIsCloseFalseOrderByCreatedAtDesc(user, symbol);
+          buyOrderRepository.findByUserIdAndSymbolAndIsCloseFalseOrderByCreatedAtDesc(
+              userId, symbol);
 
       if (buyOrders.isEmpty()) {
         throw new BuyOrderException(BuyOrderErrorCode.NOT_FOUND);
@@ -93,9 +94,10 @@ public class BuyOrderService {
     }
   }
 
-  public List<BuyOrder> getOrders(User user, Symbol symbol) {
+  public List<BuyOrder> getOrders(Long userId, Symbol symbol, int page) {
     try {
-      return buyOrderRepository.findByUserAndSymbolOrderByCreatedAtDesc(user, symbol);
+      return buyOrderRepository.findByUserIdAndSymbolOrderByCreatedAtDesc(
+          userId, symbol, PageRequest.of(page, 20));
     } catch (Exception e) {
       throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, e);
     }

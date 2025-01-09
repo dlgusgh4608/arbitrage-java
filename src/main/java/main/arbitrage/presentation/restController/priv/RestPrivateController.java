@@ -12,10 +12,12 @@ import main.arbitrage.presentation.dto.request.UpdateLeverageRequest;
 import main.arbitrage.presentation.dto.request.UpdateMarginTypeRequest;
 import main.arbitrage.presentation.restController.priv.constant.PrivateRestControllerUrlConstants;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -51,5 +53,12 @@ public class RestPrivateController {
   @PatchMapping(PrivateRestControllerUrlConstants.MARGIN_MODE)
   public ResponseEntity<?> patchLeverage(@Valid @RequestBody UpdateMarginTypeRequest req) {
     return ResponseEntity.ok(orderApplicationService.updateMarginType(req));
+  }
+
+  @GetMapping(PrivateRestControllerUrlConstants.ORDERS)
+  public ResponseEntity<?> getOrders(
+      @RequestParam(name = "symbol", required = true) String symbol,
+      @RequestParam(name = "page", required = true) int page) {
+    return ResponseEntity.ok(orderApplicationService.getOrders(symbol, page));
   }
 }
