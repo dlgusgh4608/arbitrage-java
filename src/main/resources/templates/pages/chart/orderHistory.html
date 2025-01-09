@@ -117,7 +117,6 @@
 
                 if(data.length < LOAD_ORDER_NUM) {
                     done = true
-                    page++
                 }
             }else {
                 done = true
@@ -125,6 +124,7 @@
             }
             
             loading = false
+            page++
         }
         
         $('#orders').scroll(function() {
