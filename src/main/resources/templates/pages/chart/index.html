@@ -278,7 +278,7 @@
             minQty = 0,
             stepSize = 0,
             minUsdt = 0
-        } = /*[[${symbolInfo}]]*/ {};
+        } = /*[[${symbolInfo}]] ?: {}*/ {};
 
         // 주문을 위한 사용자 정보
         const {
@@ -290,7 +290,7 @@
             orders = [],
             upbitPosition = null,
             binancePosition = null
-        } = /*[[${userTradeInfo}]]*/ {};
+        } = /*[[${userTradeInfo}]] ?: {}*/ {};
 
         const hasPosition = [ upbitPosition, binancePosition ].every(v => v !== null)
         const responseOk = maxQty !== 0 && leverage !== 0

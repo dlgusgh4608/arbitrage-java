@@ -67,7 +67,7 @@ public class CollectorScheduleService {
     processAllSymbols(exchangeRate);
   }
 
-  @Scheduled(cron = "* * * * * *") // 1초
+  @Scheduled(cron = "*/5 * * * * *") // 5초
   protected void processScheduler() {
     Date now = new Date();
     priceMap.forEach((s, price) -> priceService.addToBuffer(price.withCreatedAt(now)));
