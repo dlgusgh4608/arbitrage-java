@@ -2,6 +2,7 @@ package main.arbitrage.presentation.controller.pub;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.collector.service.CollectorScheduleService;
@@ -146,10 +147,14 @@ public class PublicController {
             ? orderApplicationService.getTradeInfo(symbol, authContext.getUserId())
             : null;
 
+    if (userTradeInfo != null) model.addAttribute("userTradeInfo", userTradeInfo);
+    else model.addAttribute("userTradeInfo", Collections.emptyMap());
+
+    if (symbolInfo != null) model.addAttribute("symbolInfo", symbolInfo);
+    else model.addAttribute("symbolInfo", Collections.emptyMap());
+
     model.addAttribute("supportedSymbols", supportedSymbols);
     model.addAttribute("prices", priceViewList);
-    model.addAttribute("symbolInfo", symbolInfo);
-    model.addAttribute("userTradeInfo", userTradeInfo);
 
     return "pages/chart/index";
   }
