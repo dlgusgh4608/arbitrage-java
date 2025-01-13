@@ -11,8 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.exchange.dto.OrderbookDto;
 import main.arbitrage.infrastructure.exchange.dto.TradeDto;
-import main.arbitrage.infrastructure.websocket.client.BaseWebSocketClient;
-import main.arbitrage.infrastructure.websocket.client.handler.ExchangeWebSocketHandler;
+import main.arbitrage.infrastructure.websocket.client.ExchangeWebsocketClient;
+import main.arbitrage.infrastructure.websocket.handler.UpbitPublicWebsocketHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -21,8 +21,9 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class UpbitWebSocket extends BaseWebSocketClient {
+public class UpbitWebSocket extends ExchangeWebsocketClient {
   private final SymbolVariableService symbolVariableService;
+  private final UpbitPublicWebsocketHandler upbitPublicWebsocketHandler;
   private static final String WS_URL = "wss://api.upbit.com/websocket/v1";
   private List<String> symbols;
   private static boolean isRunning = false;
@@ -43,9 +44,10 @@ public class UpbitWebSocket extends BaseWebSocketClient {
 
     try {
       StandardWebSocketClient client = new StandardWebSocketClient();
-      ExchangeWebSocketHandler handler =
-          new ExchangeWebSocketHandler("Upbit", this::handleMessage, objectMapper);
-      session = client.execute(handler, WS_URL).get();
+      session =
+          client
+              .execute(upbitPublicWebsocketHandler.setMessageHandler(this::handleMessage), WS_URL)
+              .get();
       isRunning = true;
 
       sendSubscribeMessage(symbols);

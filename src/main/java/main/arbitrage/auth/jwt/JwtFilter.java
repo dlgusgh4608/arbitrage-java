@@ -28,6 +28,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtFilter extends OncePerRequestFilter {
   private final JwtUtil jwtUtil;
   private final RefreshTokenService refreshTokenService;
+  private final ObjectMapper objectMapper;
 
   @Override
   protected void doFilterInternal(
@@ -139,7 +140,7 @@ public class JwtFilter extends OncePerRequestFilter {
     log.error(e.getMessage());
 
     ErrorResponse errorResponse = ErrorResponse.of(e);
-    String jsonResponse = new ObjectMapper().writeValueAsString(errorResponse);
+    String jsonResponse = objectMapper.writeValueAsString(errorResponse);
     response.getWriter().write(jsonResponse);
   }
 

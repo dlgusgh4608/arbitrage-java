@@ -26,8 +26,8 @@ import main.arbitrage.infrastructure.exchange.dto.OrderbookPair;
 import main.arbitrage.infrastructure.exchange.dto.TradeDto;
 import main.arbitrage.infrastructure.exchange.dto.TradePair;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePublicWebsocketFactory;
-import main.arbitrage.infrastructure.websocket.server.handler.ChartServerWebSocketHandler;
-import main.arbitrage.infrastructure.websocket.server.handler.PremiumServerWebSocketHandler;
+import main.arbitrage.infrastructure.websocket.handler.ChartWebsocketHandler;
+import main.arbitrage.infrastructure.websocket.handler.PremiumWebsocketHandler;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -40,8 +40,8 @@ public class CollectorScheduleService {
   private final ExchangePublicWebsocketFactory exchangePublicWebsocketFactory;
   private final TradeValidation tradeValidator;
   private final PriceService priceService;
-  private final PremiumServerWebSocketHandler premiumServerWebSocketHandler;
-  private final ChartServerWebSocketHandler chartServerWebSocketHandler;
+  private final PremiumWebsocketHandler premiumWebsocketHandler;
+  private final ChartWebsocketHandler chartWebsocketHandler;
   private final BinancePublicRestService binancePublicRestService;
   private final ExchangeRateService exchangeRateService;
   private final Map<String, Price> priceMap = new ConcurrentHashMap<>();
@@ -162,11 +162,11 @@ public class CollectorScheduleService {
   }
 
   private void emitChartBySymbol(ChartBySymbolDTO chartBySymbolDto) {
-    chartServerWebSocketHandler.sendMessage(chartBySymbolDto);
+    chartWebsocketHandler.sendMessage(chartBySymbolDto);
   }
 
   private void emitPremium(PremiumDTO premium) {
-    premiumServerWebSocketHandler.sendMessage(premium);
+    premiumWebsocketHandler.sendMessage(premium);
   }
 
   public BinanceExchangeInfoResponse getExchangeInfo(String symbol) {

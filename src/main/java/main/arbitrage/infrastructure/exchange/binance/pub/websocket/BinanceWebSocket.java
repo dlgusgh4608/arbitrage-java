@@ -1,7 +1,6 @@
 package main.arbitrage.infrastructure.exchange.binance.pub.websocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.List;
@@ -13,8 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.exchange.dto.OrderbookDto;
 import main.arbitrage.infrastructure.exchange.dto.TradeDto;
-import main.arbitrage.infrastructure.websocket.client.BaseWebSocketClient;
-import main.arbitrage.infrastructure.websocket.client.handler.ExchangeWebSocketHandler;
+import main.arbitrage.infrastructure.websocket.client.ExchangeWebsocketClient;
+import main.arbitrage.infrastructure.websocket.handler.BinancePublicWebsocketHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
@@ -22,9 +21,9 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class BinanceWebSocket extends BaseWebSocketClient {
+public class BinanceWebSocket extends ExchangeWebsocketClient {
   private final SymbolVariableService symbolVariableService;
-  private final ObjectMapper objectMapper;
+  private final BinancePublicWebsocketHandler binancePublicWebsocketHandler;
   private List<String> symbols;
   private static String WS_URL = "wss://fstream.binance.com/stream?streams=";
   private static boolean isRunning = false;
@@ -45,9 +44,12 @@ public class BinanceWebSocket extends BaseWebSocketClient {
       StandardWebSocketClient client = new StandardWebSocketClient();
       String params = createStreamParams();
       WS_URL = WS_URL.concat(params);
-      ExchangeWebSocketHandler handler =
-          new ExchangeWebSocketHandler("Binance", this::handleMessage, objectMapper);
-      session = client.execute(handler, WS_URL).get();
+      // ExchangeWebSocketHandler handler =
+      //     new ExchangeWebSocketHandler("Binance", this::handleMessage, objectMapper);
+      session =
+          client
+              .execute(binancePublicWebsocketHandler.setMessageHandler(this::handleMessage), WS_URL)
+              .get();
       isRunning = true;
     } catch (InterruptedException | ExecutionException e) {
       log.error("Binance WebSocket Connect Error {}", WS_URL, e);

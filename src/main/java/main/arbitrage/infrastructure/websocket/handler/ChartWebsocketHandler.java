@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.websocket.server.handler;
+package main.arbitrage.infrastructure.websocket.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -7,16 +7,16 @@ import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.application.collector.dto.ChartBySymbolDTO;
-import main.arbitrage.infrastructure.websocket.server.BaseServerSocketHandler;
+import main.arbitrage.infrastructure.websocket.common.BaseWebsocketHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 @Component
 @Slf4j
-public class ChartServerWebSocketHandler extends BaseServerSocketHandler<ChartBySymbolDTO> {
-  public ChartServerWebSocketHandler(ObjectMapper objectMapper) {
-    super(objectMapper);
+public class ChartWebsocketHandler extends BaseWebsocketHandler<ChartBySymbolDTO> {
+  public ChartWebsocketHandler(ObjectMapper objectMapper) {
+    super("Chart to Client", objectMapper);
   }
 
   private String extractSymbol(WebSocketSession session) {
@@ -48,12 +48,16 @@ public class ChartServerWebSocketHandler extends BaseServerSocketHandler<ChartBy
         try {
           session.sendMessage(message);
         } catch (IOException e) {
-          log.error("Failed to send message to session {}: {}", sessionId, e.getMessage());
+          log.error(
+              "[{}]Failed to send message to session\tid: {}\n{}",
+              socketName,
+              sessionId,
+              e.getMessage());
           sessionsToRemove.add(sessionId);
           try {
             session.close();
           } catch (IOException ex) {
-            log.error("Error closing session {}: {}", sessionId, ex.getMessage());
+            log.error("[{}]Error closing session\tid: {}\n{}", socketName, sessionId, ex);
           }
         }
       }

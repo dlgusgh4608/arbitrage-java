@@ -1,5 +1,6 @@
 package main.arbitrage.infrastructure.exchange.binance.priv.rest;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -300,6 +301,61 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
       if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
 
       return true;
+    } catch (IOException e) {
+      throw new BinanceException(BinanceErrorCode.API_ERROR, e);
+    }
+  }
+
+  public String createListenKey() {
+    try {
+      Map<String, Object> params = new LinkedHashMap<>();
+      String queryString = generateToken(params);
+
+      RequestBody body = RequestBody.create(new byte[0], null);
+
+      Request request =
+          new Request.Builder()
+              .url(DEFAULT_URL + "/v1/listenKey" + "?" + queryString)
+              .addHeader("Content-Type", "application/json")
+              .addHeader("X-MBX-APIKEY", accessKey)
+              .post(body)
+              .build();
+
+      Response response = okHttpClient.newCall(request).execute();
+
+      String responseBody = response.body().string();
+
+      JsonNode json = objectMapper.readTree(responseBody);
+      if (!response.isSuccessful()) validateResponse(json);
+
+      return json.get("listenKey").asText();
+    } catch (IOException e) {
+      throw new BinanceException(BinanceErrorCode.API_ERROR, e);
+    }
+  }
+
+  public String updateListenKey() {
+    try {
+      Map<String, Object> params = new LinkedHashMap<>();
+      String queryString = generateToken(params);
+
+      RequestBody body = RequestBody.create(new byte[0], null);
+
+      Request request =
+          new Request.Builder()
+              .url(DEFAULT_URL + "/v1/listenKey" + "?" + queryString)
+              .addHeader("Content-Type", "application/json")
+              .addHeader("X-MBX-APIKEY", accessKey)
+              .put(body)
+              .build();
+
+      Response response = okHttpClient.newCall(request).execute();
+
+      String responseBody = response.body().string();
+      JsonNode json = objectMapper.readTree(responseBody);
+      if (!response.isSuccessful()) validateResponse(json);
+
+      return json.get("listenKey").asText();
     } catch (IOException e) {
       throw new BinanceException(BinanceErrorCode.API_ERROR, e);
     }
