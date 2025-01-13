@@ -20,4 +20,12 @@ public class UserTradeInfo {
   private final UpbitAccountResponse upbitPosition;
   private final BinancePositionInfoResponse binancePosition;
   private final List<OrderResponse> orders;
+
+  public boolean isEmpty() {
+    return usdt == null
+        || krw == null
+        || marginType == null
+        || leverage == null
+        || brackets == null;
+  }
 }

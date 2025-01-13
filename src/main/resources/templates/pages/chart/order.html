@@ -1,15 +1,9 @@
 <!-- 거래 가능 -->
-<article sec:authorize="isAuthenticated()" th:if="${
-    symbolInfo?.maxQty != null && 
-    symbolInfo?.minQty != null && 
-    symbolInfo?.stepSize != null && 
-    symbolInfo?.minUsdt != null &&
-    userTradeInfo?.krw != null && 
-    userTradeInfo?.usdt != null && 
-    userTradeInfo?.marginType != null && 
-    userTradeInfo?.leverage != null && 
-    userTradeInfo?.brackets != null
-}" class="w-100 p-3 shadow rounded order-form ele-bg-color">
+<article
+    sec:authorize="isAuthenticated()"
+    th:if="${!symbolInfo.isEmpty() && !userTradeInfo.isEmpty()}"
+    class="w-100 p-3 shadow rounded order-form ele-bg-color"
+>
     <div class="d-flex mb-3">
         <button class="order-modal-btn" id="edit-margin-mode">
             CROSSED
@@ -95,17 +89,11 @@
 </article>
 
 <!-- 거래 불가 env를 다시 등록 -->
-<article sec:authorize="isAuthenticated()" th:unless="${
-    symbolInfo?.maxQty != null && 
-    symbolInfo?.minQty != null && 
-    symbolInfo?.stepSize != null && 
-    symbolInfo?.minUsdt != null &&
-    userTradeInfo?.krw != null && 
-    userTradeInfo?.usdt != null && 
-    userTradeInfo?.marginType != null && 
-    userTradeInfo?.leverage != null && 
-    userTradeInfo?.brackets != null
-}" class="d-flex align-items-center w-100 p-3 shadow rounded order-form ele-bg-color order-disabled">
+<article
+    sec:authorize="isAuthenticated()"
+    th:unless="${!symbolInfo.isEmpty() && !userTradeInfo.isEmpty()}"
+    class="d-flex align-items-center w-100 p-3 shadow rounded order-form ele-bg-color order-disabled"
+>
     <div class="w-100 text-center">
         <a th:href="@{/user/env-register}" class="text-point-color">ENV</a>
         <span class="text-color">를 먼저 등록해주세요.</span>
