@@ -25,7 +25,6 @@ public class BaseWebsocketHandler<T> extends AbstractWebSocketHandler {
   protected Consumer<JsonNode> messageHandler;
 
   public BaseWebsocketHandler(String socketName, ObjectMapper objectMapper) {
-    System.out.println(socketName);
     this.socketName = socketName;
     this.objectMapper = objectMapper;
   }
@@ -44,6 +43,7 @@ public class BaseWebsocketHandler<T> extends AbstractWebSocketHandler {
 
   @Override
   public void afterConnectionEstablished(WebSocketSession session) {
+    sessionMap.put(session.getId(), session);
     log.info("[{}]WebSocket connected\tid: {}", socketName, session.getId());
   }
 
