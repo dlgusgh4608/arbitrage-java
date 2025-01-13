@@ -68,7 +68,7 @@ export const generateOrder = (order) => {
                     <div class="history-item ${sellOrder.profitRate <= 0 ? 'text-down-color' : 'text-up-color'}">${String(sellOrder.profitRate).concat('%')}</div>
                 </div>
                 `
-            ))
+            )).join('')
         }
     </div>
     `.trim()

@@ -96,8 +96,8 @@ public class BuyOrderService {
 
   public List<BuyOrder> getOrders(Long userId, Symbol symbol, int page) {
     try {
-      return buyOrderRepository.findByUserIdAndSymbolOrderByCreatedAtDesc(
-          userId, symbol, PageRequest.of(page, 20));
+      return buyOrderRepository.findBuyOrdersByUserIdAndSymbolId(
+          userId, symbol.getId(), PageRequest.of(page, 20));
     } catch (Exception e) {
       throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, e);
     }

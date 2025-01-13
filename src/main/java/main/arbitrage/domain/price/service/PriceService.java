@@ -8,7 +8,6 @@ import main.arbitrage.domain.price.buffer.PriceBuffer;
 import main.arbitrage.domain.price.entity.Price;
 import main.arbitrage.domain.price.exception.PriceErrorCode;
 import main.arbitrage.domain.price.exception.PriceException;
-import main.arbitrage.domain.price.repository.PriceCustomRepository;
 import main.arbitrage.domain.price.repository.PriceRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -19,14 +18,13 @@ import org.springframework.stereotype.Service;
 public class PriceService {
   private final PriceBuffer priceBuffer;
   private final PriceRepository priceRepository;
-  private final PriceCustomRepository priceCustomRepository;
 
   public void saveToPG() {
     try {
       if (priceBuffer.isEmpty()) return;
 
       List<Price> dataToSave = priceBuffer.getBufferedData();
-      priceCustomRepository.bulkInsert(dataToSave);
+      priceRepository.bulkInsert(dataToSave);
       log.info("Saved {} symbol price records to database", dataToSave.size());
       priceBuffer.clear();
     } catch (Exception e) {
@@ -57,8 +55,7 @@ public class PriceService {
 
   public List<Price> getInitialPriceOfSymbolName(String symbolName) {
     try {
-      List<Price> prices =
-          priceRepository.findBySymbolOfPageable(symbolName, PageRequest.of(0, 3000));
+      List<Price> prices = priceRepository.findBySymbolName(symbolName, PageRequest.of(0, 3000));
 
       List<Price> restPrices = priceBuffer.getBufferedDataOfSymbol(symbolName);
       List<Price> allPrices = new ArrayList<>();
