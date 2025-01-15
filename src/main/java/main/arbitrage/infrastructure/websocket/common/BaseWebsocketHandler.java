@@ -18,7 +18,7 @@ import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
 @Slf4j
 public class BaseWebsocketHandler<T> extends AbstractWebSocketHandler {
-  protected final String socketName;
+  protected String socketName;
   protected final ObjectMapper objectMapper;
   protected final ConcurrentHashMap<String, WebSocketSession> sessionMap =
       new ConcurrentHashMap<>();

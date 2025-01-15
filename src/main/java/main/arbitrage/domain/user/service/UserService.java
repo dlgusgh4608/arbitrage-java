@@ -1,5 +1,6 @@
 package main.arbitrage.domain.user.service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -103,5 +104,9 @@ public class UserService {
     } catch (Exception e) {
       throw new UserException(UserErrorCode.UNKNOWN, e);
     }
+  }
+
+  public List<User> findAll() {
+    return userRepository.findAll();
   }
 }

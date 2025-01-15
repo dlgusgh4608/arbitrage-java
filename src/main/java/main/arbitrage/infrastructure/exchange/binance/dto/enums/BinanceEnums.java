@@ -29,4 +29,10 @@ public class BinanceEnums {
     ISOLATED,
     CROSSED
   }
+
+  public enum EventType {
+    ACCOUNT_UPDATE,
+    ORDER_TRADE_UPDATE,
+    listenKeyExpired,
+  }
 }

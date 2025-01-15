@@ -37,7 +37,6 @@ public class UpbitSubscribeMessage {
             .codes(formatSymbols(orderbookSymbols))
             .build());
 
-    log.info("subscribe message: {}", messages);
     return messages;
   }
 

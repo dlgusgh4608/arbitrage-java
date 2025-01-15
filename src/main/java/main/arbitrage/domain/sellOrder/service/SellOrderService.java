@@ -12,6 +12,7 @@ import main.arbitrage.domain.sellOrder.exception.SellOrderErrorCode;
 import main.arbitrage.domain.sellOrder.exception.SellOrderException;
 import main.arbitrage.domain.sellOrder.repository.SellOrderRepository;
 import main.arbitrage.global.util.math.MathUtil;
+import main.arbitrage.infrastructure.exchange.binance.dto.event.BinanceOrderTradeUpdateEvent;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
 import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitOrderResponse;
 import org.springframework.stereotype.Service;
@@ -81,7 +82,75 @@ public class SellOrderService {
     } catch (Exception e) {
       String errorMessage =
           String.format(
-              "매도 주문 생성 오류\ncalcResult: %s\nbinanceResponse: %s\nupbitResponse: %s",
+              "매도 주문 생성 오류(시장가)\ncalcResult: %s\nbinanceResponse: %s\nupbitResponse: %s",
+              orderCalcResult, binanceOrderResponse, upbitGetOrderResponse);
+      throw new SellOrderException(SellOrderErrorCode.UNKNOWN, errorMessage, e);
+    }
+  }
+
+  public SellOrder createLimitOrder(
+      OrderCalcResultDTO orderCalcResult,
+      BinanceOrderTradeUpdateEvent binanceOrderResponse,
+      UpbitOrderResponse upbitGetOrderResponse,
+      ExchangeRate exchangeRate) {
+    try {
+      double binanceAvgPrice = binanceOrderResponse.getPrice(); // 바이낸스 평단가
+      double binanceQty = orderCalcResult.getBinanceQty().doubleValue(); // 바이낸스 체결 개수
+      double binanceTotalQty = binanceOrderResponse.getQuantity();
+      float binanceTotalCommission = binanceOrderResponse.getCommission();
+
+      // sellOrder에대한 개수 / 총 개수 * 총 수수료
+      // 바이낸스 수수료
+      float binanceCommission =
+          MathUtil.roundTo(binanceQty / binanceTotalQty * binanceTotalCommission, 8).floatValue();
+
+      /** 업비트 API Response의 데이터를 이용해 평단가를 구함. */
+      double upbitTotalPriceFromAPI =
+          upbitGetOrderResponse.trades().stream()
+              .mapToDouble(UpbitOrderResponse.Trade::funds)
+              .sum();
+      double upbitQtyFromAPI = upbitGetOrderResponse.executedVolume();
+      double upbitAvgPrice =
+          MathUtil.roundTo(upbitTotalPriceFromAPI / upbitQtyFromAPI, 8).doubleValue();
+
+      /** 계산된 qty와 평단가를 합쳐 개수에 알맞은 수수료를 구함 */
+      double upbitQty = orderCalcResult.getUpbitQty().doubleValue();
+      double upbitTotalPrice = upbitAvgPrice * upbitQty;
+      float upbitCommission =
+          MathUtil.roundTo(upbitTotalPrice * UPBIT_COMM_RATE, 8).floatValue(); // 업비트 수수료
+
+      /** 현재 환율과 평단가를 통해 프리미엄 구함 */
+      float usdToKrw = exchangeRate.getRate();
+      float premium = MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, usdToKrw);
+
+      /** 구매 당시 환율을 이용하여 환율이 고정된 상태, 즉 실제 수익률을 구함. */
+      float exchangeRateAtBuy = orderCalcResult.getBuyOrder().getExchangeRate().getRate();
+      double premiumInBuyOrder = orderCalcResult.getBuyOrder().getPremium();
+      float premiumWithBuyExchangeRate =
+          MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, exchangeRateAtBuy);
+      float profitRate =
+          MathUtil.roundTo(premiumInBuyOrder - premiumWithBuyExchangeRate, 4).floatValue();
+
+      SellOrder sellOrder =
+          SellOrder.builder()
+              .buyOrder(orderCalcResult.getBuyOrder())
+              .exchangeRate(exchangeRate)
+              .premium(premium)
+              .upbitPrice(upbitAvgPrice)
+              .upbitQuantity(upbitQty)
+              .upbitCommission(upbitCommission)
+              .binancePrice(binanceAvgPrice)
+              .binanceQuantity(binanceQty)
+              .binanceCommission(binanceCommission)
+              .isMaker(binanceOrderResponse.getIsMaker())
+              .profitRate(profitRate)
+              .build();
+
+      return sellOrderRepository.save(sellOrder);
+    } catch (Exception e) {
+      String errorMessage =
+          String.format(
+              "매도 주문 생성 오류(지정가)\ncalcResult: %s\nbinanceResponse: %s\nupbitResponse: %s",
               orderCalcResult, binanceOrderResponse, upbitGetOrderResponse);
       throw new SellOrderException(SellOrderErrorCode.UNKNOWN, errorMessage, e);
     }

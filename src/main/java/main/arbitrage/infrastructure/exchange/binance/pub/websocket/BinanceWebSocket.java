@@ -44,8 +44,6 @@ public class BinanceWebSocket extends ExchangeWebsocketClient {
       StandardWebSocketClient client = new StandardWebSocketClient();
       String params = createStreamParams();
       WS_URL = WS_URL.concat(params);
-      // ExchangeWebSocketHandler handler =
-      //     new ExchangeWebSocketHandler("Binance", this::handleMessage, objectMapper);
       session =
           client
               .execute(binancePublicWebsocketHandler.setMessageHandler(this::handleMessage), WS_URL)

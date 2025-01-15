@@ -9,6 +9,7 @@ import main.arbitrage.domain.buyOrder.repository.BuyOrderRepository;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.global.util.math.MathUtil;
+import main.arbitrage.infrastructure.exchange.binance.dto.event.BinanceOrderTradeUpdateEvent;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
 import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitOrderResponse;
 import org.springframework.data.domain.PageRequest;
@@ -64,6 +65,46 @@ public class BuyOrderService {
               userId, symbol.getName(), binanceOrderRes, upbitOrderRes);
 
       throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, serverMessage, e);
+    }
+  }
+
+  public BuyOrder createLimitOrder(
+      Long userId,
+      Symbol symbol,
+      ExchangeRate exchangeRate,
+      BinanceOrderTradeUpdateEvent binanceOrderRes,
+      UpbitOrderResponse upbitOrderRes) {
+    try {
+      double binanceAvgPrice = binanceOrderRes.getPrice(); // 바이낸스 평단가
+      double binanceQty = binanceOrderRes.getQuantity(); // 바이낸스 체결 개수
+      float binanceCommission = binanceOrderRes.getCommission();
+      // 수수료
+      double upbitTotalPrice = upbitOrderRes.price(); // 업비트 구매에 사용한 총 KRW
+      double upbitQty = upbitOrderRes.executedVolume(); // 업비트 구매된 개수
+      double upbitAvgPrice =
+          MathUtil.roundTo(upbitTotalPrice / upbitQty, 8).doubleValue(); // 업비트 평단가
+      float upbitCommission = upbitOrderRes.paidFee(); // 업비트 수수료
+
+      float usdToKrw = exchangeRate.getRate(); // 원달러 환율
+      float premium = MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, usdToKrw);
+
+      return buyOrderRepository.save(
+          BuyOrder.builder()
+              .userId(userId)
+              .symbol(symbol)
+              .exchangeRate(exchangeRate)
+              .premium(premium)
+              .upbitPrice(upbitAvgPrice)
+              .upbitQuantity(upbitQty)
+              .upbitCommission(upbitCommission)
+              .binancePrice(binanceAvgPrice)
+              .binanceQuantity(binanceQty)
+              .binanceCommission(binanceCommission)
+              .isMaker(binanceOrderRes.getIsMaker())
+              .isClose(false)
+              .build());
+    } catch (Exception e) {
+      throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, e);
     }
   }
 

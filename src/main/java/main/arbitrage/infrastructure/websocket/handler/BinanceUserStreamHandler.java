@@ -9,4 +9,9 @@ public class BinanceUserStreamHandler extends BaseWebsocketHandler<Object> {
   public BinanceUserStreamHandler(ObjectMapper objectMapper) {
     super("Binance UserStream", objectMapper);
   }
+
+  public BinanceUserStreamHandler setSocketName(String socketName) {
+    this.socketName = socketName;
+    return this;
+  }
 }
