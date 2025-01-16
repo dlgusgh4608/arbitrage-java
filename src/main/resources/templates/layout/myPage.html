@@ -1,0 +1,15 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/default}">
+
+<head>
+    <link rel="stylesheet" th:href="@{/css/sidebar.css}">
+</head>
+
+<main layout:fragment="content">
+    <div class="sidebar-wrap container-xxl">
+        <th:block th:replace="~{fragments/sidebar}"></th:block>
+        <div class="content-section rounded shadow p-2" layout:fragment="myPage"></div>
+    </div>
+</main>
+
+</html>

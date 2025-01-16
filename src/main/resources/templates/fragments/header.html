@@ -13,20 +13,40 @@
                 <div class="header-icon-wrap" data-bs-toggle="dropdown" th:insert="~{fragments/svg/user :: line}">
                 </div>
                 <!-- 로그인 되었을때 -->
-                <ul class="dropdown-menu dropdown-menu-end" sec:authorize="isAuthenticated()">
+                <ul class="dropdown-menu dropdown-menu-end py-0" sec:authorize="isAuthenticated()">
                     <li class="navbar-item">
                         <a class="text-color header-dropdown-item" th:href="@{/user/profile}">
-                            마이페이지
+                            <th:block th:replace="~{fragments/svg/user :: fill}"></th:block>
+                            <span>내 정보</span>
                         </a>
                     </li>
                     <li class="navbar-item">
-                        <div class="text-color header-dropdown-item pointer" id="logoutBtn">
-                            로그아웃
+                        <a class="text-color header-dropdown-item" th:href="@{/user/order-history}">
+                            <th:block th:replace="~{fragments/svg/history :: fill}"></th:block>
+                            <span>주문내역</span>
+                        </a>
+                    </li>
+                    <li class="navbar-item">
+                        <a class="text-color header-dropdown-item" th:href="@{/user/env-register}">
+                            <th:block th:replace="~{fragments/svg/setting :: hamburger-line}"></th:block>
+                            <span>ENV등록</span>
+                        </a>
+                    </li>
+                    <li class="navbar-item">
+                        <a class="text-color header-dropdown-item" th:href="@{/user/order-setting}">
+                            <th:block th:replace="~{fragments/svg/setting :: fill}"></th:block>
+                            <span>거래설정</span>
+                        </a>
+                    </li>
+                    <li class="navbar-item">
+                        <div class="text-color header-dropdown-item pointer logoutBtn header-logout-svg-wrap">
+                            <th:block th:replace="~{fragments/svg/user :: logout-fill}"></th:block>
+                            <span>로그아웃</span>
                         </div>
                     </li>
                 </ul>
                 <!-- 로그인 되지 않았을때 -->
-                <ul class="dropdown-menu dropdown-menu-end" sec:authorize="isAnonymous()">
+                <ul class="dropdown-menu dropdown-menu-end py-0" sec:authorize="isAnonymous()">
                     <li class="navbar-item">
                         <a class="text-color header-dropdown-item" th:href="@{/login}">
                             로그인
@@ -43,7 +63,9 @@
     </nav>
 </header>
 <script th:inline="javascript">
-    $('#logoutBtn').on('click', async () => {
-        const { success, data } = await myModule.fetch('post', '/api/users/logout', {})
+    $(() => {
+        $('.logoutBtn').on('click', async () => {
+            const { success, data } = await myModule.fetch('post', '/api/users/logout', {})
+        })
     })
 </script>

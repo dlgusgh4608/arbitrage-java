@@ -12,7 +12,6 @@
 
 .navbar-list>li.navbar-item {
     list-style: none;
-
 }
 
 .header-icon-wrap {
@@ -25,18 +24,32 @@
     cursor: pointer;
 }
 
+.dropdown-menu>li.navbar-item {
+    list-style: none;
+    margin: .25rem;
+}
+
 .header-icon-wrap.show {
     border-radius: 50%;
     background-color: var(--bg-color);
 }
 
 .header-dropdown-item {
-    display: block;
+    display: flex;
+    align-items: center;
     width: 100%;
     list-style: none;
     padding: .5rem .25rem;
 }
 
+.header-dropdown-item>svg {
+    margin-right: .5rem;
+}
+
 .header-dropdown-item:hover {
     background-color: var(--ele-bg-color);
+}
+
+.header-logout-svg-wrap>span {
+    margin-left: -5px;
 }

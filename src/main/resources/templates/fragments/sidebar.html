@@ -1,0 +1,37 @@
+<section class="sidebar-section rounded shadow p-2">
+    <ul class="sidebar-list">
+        <li>
+            <a th:href="@{/user/profile}" class="sidebar-link rounded">
+                <th:block th:replace="~{fragments/svg/user :: fill}"></th:block>
+                <span>내 정보</span>
+            </a>
+        </li>
+        <li>
+            <a th:href="@{/user/order-history}" class="sidebar-link rounded">
+                <th:block th:replace="~{fragments/svg/history :: fill}"></th:block>
+                <span>주문내역</span>
+            </a>
+        </li>
+        <li>
+            <a th:href="@{/user/env-register}" class="sidebar-link rounded">
+                <th:block th:replace="~{fragments/svg/setting :: hamburger-line}"></th:block>
+                <span>ENV등록</span>
+            </a>
+        </li>
+        <li>
+            <a th:href="@{/user/order-setting}" class="sidebar-link rounded">
+                <th:block th:replace="~{fragments/svg/setting :: fill}"></th:block>
+                <span>거래설정</span>
+            </a>
+        </li>
+        <li>
+            <div class="sidebar-link pointer logoutBtn rounded logout-svg-wrap">
+                <th:block th:replace="~{fragments/svg/user :: logout-fill}"></th:block>
+                <span>로그아웃</span>
+            </div>
+        </li>
+    </ul>
+</section>
+<section class="m-sidebar-section rounded shadow p-2">
+    <div>나는 모바일 입니다.</div>
+</section>
