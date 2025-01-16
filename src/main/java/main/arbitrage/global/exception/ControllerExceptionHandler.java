@@ -9,6 +9,7 @@ import main.arbitrage.domain.oauthUser.exception.OAuthUserException;
 import main.arbitrage.domain.price.exception.PriceException;
 import main.arbitrage.domain.sellOrder.exception.SellOrderException;
 import main.arbitrage.domain.symbol.exception.SymbolException;
+import main.arbitrage.domain.tier.exception.TierException;
 import main.arbitrage.domain.user.exception.UserException;
 import main.arbitrage.domain.userEnv.exception.UserEnvException;
 import main.arbitrage.global.exception.common.BaseException;
@@ -39,7 +40,8 @@ public class ControllerExceptionHandler {
     SellOrderException.class,
     ExchangeRateException.class,
     AutoTradingStrategyException.class,
-    GradeException.class
+    GradeException.class,
+    TierException.class
   })
   public ResponseEntity<ErrorResponse> handleBadCredentialsException(BaseException e) {
     String logTitle = e.getClass().getSimpleName().replace("Exception", "Error");
