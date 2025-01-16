@@ -65,7 +65,7 @@ public class BinanceUserStream implements WebSocketClient {
   private final Map<String, List<BinanceOrderTradeUpdateEvent>> orderMap =
       new ConcurrentHashMap<>();
   private final Map<String, ScheduledFuture<?>> orderTickerMap = new ConcurrentHashMap<>();
-  private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+  private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
   private static final long ORDER_TICKER_TIMEOUT = 1500; // 1.5sec
 
   private boolean isRunning = false;
