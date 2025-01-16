@@ -14,6 +14,10 @@ a {
     text-decoration: none;
 }
 
+.pointer {
+    cursor: pointer;
+}
+
 .valid-warning {
     width: 100%;
     margin-top: .25rem;

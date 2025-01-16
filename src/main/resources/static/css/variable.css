@@ -52,7 +52,7 @@
     border: none;
 }
 
-.txt-white {
+.text-white {
     color: var(--text-white)
 }
 
@@ -64,7 +64,7 @@
     border: 1px solid var(--white)
 }
 
-.txt-black {
+.text-black {
     color: var(--text-black)
 }
 

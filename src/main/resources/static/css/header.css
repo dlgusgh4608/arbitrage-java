@@ -12,9 +12,31 @@
 
 .navbar-list>li.navbar-item {
     list-style: none;
-    padding: 0 8px;
+
 }
 
-.theme-icon {
+.header-icon-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 8px;
     cursor: pointer;
+}
+
+.header-icon-wrap.show {
+    border-radius: 50%;
+    background-color: var(--bg-color);
+}
+
+.header-dropdown-item {
+    display: block;
+    width: 100%;
+    list-style: none;
+    padding: .5rem .25rem;
+}
+
+.header-dropdown-item:hover {
+    background-color: var(--ele-bg-color);
 }

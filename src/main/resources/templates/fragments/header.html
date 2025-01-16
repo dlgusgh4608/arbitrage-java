@@ -4,35 +4,40 @@
             <img id="header-logo" class="h-logo" th:src="@{/images/logo-black.png}" alt="logo" />
         </a>
         <ul class="navbar-list">
-            <li class="navbar-item" sec:authorize="isAuthenticated()">
-                <a class="text-black" th:href="@{/user/profile}">
-                    <button class="btn-point">
-                        마이페이지
-                    </button>
-                </a>
-            </li>
-            <li class="navbar-item" sec:authorize="isAuthenticated()">
-                <button class="custom-btn text-black bg-point-color text-black border-none" id="logoutBtn">
-                    로그아웃
-                </button>
+            <!-- 다크모드 -->
+            <li class="navbar-item" onclick="myModule.toggleDarkMode()">
+                <i id="themeIcon" class="header-icon-wrap"></i>
             </li>
 
-            <li class="navbar-item" sec:authorize="isAnonymous()">
-                <a class="text-black" th:href="@{/login}">
-                    <button class="btn-point">
-                        로그인
-                    </button>
-                </a>
-            </li>
-            <li class="navbar-item" sec:authorize="isAnonymous()">
-                <a class="text-black" th:href="@{/signup}">
-                    <button class="btn-point">
-                        회원가입
-                    </button>
-                </a>
-            </li>
-            <li class="navbar-item theme-icon" onclick="myModule.toggleDarkMode()">
-                <i id="themeIcon"></i>
+            <li class="navbar-item dropdown">
+                <div class="header-icon-wrap" data-bs-toggle="dropdown" th:insert="~{fragments/svg/user :: line}">
+                </div>
+                <!-- 로그인 되었을때 -->
+                <ul class="dropdown-menu dropdown-menu-end" sec:authorize="isAuthenticated()">
+                    <li class="navbar-item">
+                        <a class="text-color header-dropdown-item" th:href="@{/user/profile}">
+                            마이페이지
+                        </a>
+                    </li>
+                    <li class="navbar-item">
+                        <div class="text-color header-dropdown-item pointer" id="logoutBtn">
+                            로그아웃
+                        </div>
+                    </li>
+                </ul>
+                <!-- 로그인 되지 않았을때 -->
+                <ul class="dropdown-menu dropdown-menu-end" sec:authorize="isAnonymous()">
+                    <li class="navbar-item">
+                        <a class="text-color header-dropdown-item" th:href="@{/login}">
+                            로그인
+                        </a>
+                    </li>
+                    <li class="navbar-item">
+                        <a class="text-color header-dropdown-item" th:href="@{/signup}">
+                            회원가입
+                        </a>
+                    </li>
+                </ul>
             </li>
         </ul>
     </nav>
