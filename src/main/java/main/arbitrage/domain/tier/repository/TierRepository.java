@@ -1,4 +1,4 @@
-package main.arbitrage.domain.tier.respository;
+package main.arbitrage.domain.tier.repository;
 
 import main.arbitrage.domain.tier.entity.Tier;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,4 +1,4 @@
-package main.arbitrage.domain.grade.respository;
+package main.arbitrage.domain.grade.repository;
 
 import main.arbitrage.domain.grade.entity.Grade;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,4 +1,4 @@
-package main.arbitrage.domain.symbol.respository;
+package main.arbitrage.domain.symbol.repository;
 
 import main.arbitrage.domain.symbol.entity.Symbol;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import main.arbitrage.domain.tier.entity.Tier;
 import main.arbitrage.domain.tier.exception.TierErrorCode;
 import main.arbitrage.domain.tier.exception.TierException;
-import main.arbitrage.domain.tier.respository.TierRepository;
+import main.arbitrage.domain.tier.repository.TierRepository;
 import org.springframework.stereotype.Service;
 
 @Service

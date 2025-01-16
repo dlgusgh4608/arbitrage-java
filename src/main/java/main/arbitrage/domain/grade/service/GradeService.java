@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import main.arbitrage.domain.grade.entity.Grade;
 import main.arbitrage.domain.grade.exception.GradeErrorCode;
 import main.arbitrage.domain.grade.exception.GradeException;
-import main.arbitrage.domain.grade.respository.GradeRepository;
+import main.arbitrage.domain.grade.repository.GradeRepository;
 import org.springframework.stereotype.Service;
 
 @Service

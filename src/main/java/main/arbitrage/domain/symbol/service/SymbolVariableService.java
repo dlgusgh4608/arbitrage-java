@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.exception.SymbolErrorCode;
 import main.arbitrage.domain.symbol.exception.SymbolException;
-import main.arbitrage.domain.symbol.respository.SymbolRepository;
+import main.arbitrage.domain.symbol.repository.SymbolRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
