@@ -3,6 +3,7 @@
     box-sizing: border-box;
     color: var(--text-color);
     user-select: none;
+    font-family: "Noto Sans KR", "Noto Sans", sans-serif;
 }
 
 body {
