@@ -1,11 +1,13 @@
-package main.arbitrage.application.auto;
+package main.arbitrage.application.auto.service;
 
 import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import main.arbitrage.application.collector.dto.PremiumDTO;
 import main.arbitrage.domain.buyOrder.service.BuyOrderService;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
 import main.arbitrage.domain.sellOrder.service.SellOrderService;
@@ -19,6 +21,7 @@ import main.arbitrage.infrastructure.exchange.binance.priv.websocket.BinanceUser
 import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
 import main.arbitrage.infrastructure.websocket.handler.BinanceUserStreamHandler;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -33,6 +36,14 @@ public class AutoApplicationService {
   private final BuyOrderService buyOrderService;
   private final SellOrderService sellOrderService;
   private final Map<Long, BinanceUserStream> userStreams = new HashMap<>();
+  private final List<AutomaticOrder> autoMaticOrders = new ArrayList<>();
+
+  @EventListener
+  public void helloworld(PremiumDTO dto) {
+    for (AutomaticOrder autoMaticOrder : autoMaticOrders) {
+      autoMaticOrder.run();
+    }
+  }
 
   @PostConstruct
   public void init() {
@@ -40,6 +51,8 @@ public class AutoApplicationService {
     List<User> users = userService.findAll();
 
     for (User user : users) {
+      autoMaticOrders.add(new AutomaticOrder(user.getEmail()));
+
       Optional<UserEnv> userEnv = userEnvService.findByUserId(user.getId());
 
       if (userEnv.isPresent()) {

@@ -28,6 +28,7 @@ import main.arbitrage.infrastructure.exchange.dto.TradePair;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePublicWebsocketFactory;
 import main.arbitrage.infrastructure.websocket.handler.ChartWebsocketHandler;
 import main.arbitrage.infrastructure.websocket.handler.PremiumWebsocketHandler;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,7 @@ public class CollectorScheduleService {
   private final BinancePublicRestService binancePublicRestService;
   private final ExchangeRateService exchangeRateService;
   private final Map<String, Price> priceMap = new ConcurrentHashMap<>();
+  private final ApplicationEventPublisher applicationEventPublisher;
   private Map<String, BinanceExchangeInfoResponse> binanceExchangeInfoMap = new HashMap<>();
 
   // private ExchangeRate exchangeRate;
@@ -167,6 +169,7 @@ public class CollectorScheduleService {
 
   private void emitPremium(PremiumDTO premium) {
     premiumWebsocketHandler.sendMessage(premium);
+    applicationEventPublisher.publishEvent(premium);
   }
 
   public BinanceExchangeInfoResponse getExchangeInfo(String symbol) {
