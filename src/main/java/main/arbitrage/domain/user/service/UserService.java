@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import main.arbitrage.domain.grade.entity.Grade;
+import main.arbitrage.domain.tier.entity.Tier;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.user.exception.UserErrorCode;
 import main.arbitrage.domain.user.exception.UserException;
@@ -17,13 +19,15 @@ public class UserService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
 
-  public User create(String email, String password) {
+  public User create(String email, String password, Grade grade, Tier tier) {
     try {
       User Encodeuser =
           User.builder()
               .email(email)
               .nickname(UUID.randomUUID().toString())
               .password(passwordEncoder.encode(password))
+              .grade(grade)
+              .tier(tier)
               .build();
 
       return userRepository.save(Encodeuser);

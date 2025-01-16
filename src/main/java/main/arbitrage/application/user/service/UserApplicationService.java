@@ -8,7 +8,9 @@ import main.arbitrage.auth.jwt.JwtUtil;
 import main.arbitrage.auth.security.SecurityUtil;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
+import main.arbitrage.domain.grade.service.GradeService;
 import main.arbitrage.domain.oauthUser.service.OAuthUserService;
+import main.arbitrage.domain.tier.service.TierService;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.user.service.UserService;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
@@ -39,6 +41,8 @@ public class UserApplicationService {
   private final ExchangeRateService exchangeRateService;
   private final RefreshTokenService refreshTokenService;
   private final UserEnvService userEnvService;
+  private final GradeService gradeService;
+  private final TierService tierService;
   private final AESCrypto aesCrypto;
 
   private final JwtUtil jwtUtil;
@@ -75,13 +79,23 @@ public class UserApplicationService {
     if (!code.isEmpty() && !encryptedCode.isEmpty()) {
 
       aesCrypto.check(encryptedCode, code);
-      return userTokenResponseBuilder(userService.create(req.getEmail(), req.getPassword()));
+      return userTokenResponseBuilder(
+          userService.create(
+              req.getEmail(),
+              req.getPassword(),
+              gradeService.getDefaultGrade(),
+              tierService.getDefaultTier()));
     }
 
     // OAuth 회원가입.
     oauthValidatorService.validate(provider, accessToken, providerId, email);
 
-    User user = userService.create(req.getEmail(), req.getPassword());
+    User user =
+        userService.create(
+            req.getEmail(),
+            req.getPassword(),
+            gradeService.getDefaultGrade(),
+            tierService.getDefaultTier());
     oAuthUserService.create(user, req);
 
     return userTokenResponseBuilder(user);

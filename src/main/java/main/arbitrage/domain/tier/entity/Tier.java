@@ -2,6 +2,8 @@ package main.arbitrage.domain.tier.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -21,11 +23,12 @@ public class Tier {
   @Column(name = "id")
   private Long id;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "name", nullable = false, unique = true, columnDefinition = "VARCHAR(8)")
-  private String name;
+  private TierName name;
 
   @Builder
-  public Tier(String name) {
+  public Tier(TierName name) {
     this.name = name;
   }
 }
