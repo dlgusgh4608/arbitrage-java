@@ -1,8 +1,10 @@
 package main.arbitrage.global.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import main.arbitrage.domain.autoTradingStrategy.exception.AutoTradingStrategyException;
 import main.arbitrage.domain.buyOrder.exception.BuyOrderException;
 import main.arbitrage.domain.exchangeRate.exception.ExchangeRateException;
+import main.arbitrage.domain.grade.exception.GradeException;
 import main.arbitrage.domain.oauthUser.exception.OAuthUserException;
 import main.arbitrage.domain.price.exception.PriceException;
 import main.arbitrage.domain.sellOrder.exception.SellOrderException;
@@ -35,7 +37,9 @@ public class ControllerExceptionHandler {
     OAuthUserException.class,
     BuyOrderException.class,
     SellOrderException.class,
-    ExchangeRateException.class
+    ExchangeRateException.class,
+    AutoTradingStrategyException.class,
+    GradeException.class
   })
   public ResponseEntity<ErrorResponse> handleBadCredentialsException(BaseException e) {
     String logTitle = e.getClass().getSimpleName().replace("Exception", "Error");
