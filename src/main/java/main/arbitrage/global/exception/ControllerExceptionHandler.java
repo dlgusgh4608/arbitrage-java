@@ -35,8 +35,7 @@ public class ControllerExceptionHandler {
     OAuthUserException.class,
     BuyOrderException.class,
     SellOrderException.class,
-    ExchangeRateException.class,
-    GlobalException.class
+    ExchangeRateException.class
   })
   public ResponseEntity<ErrorResponse> handleBadCredentialsException(BaseException e) {
     String logTitle = e.getClass().getSimpleName().replace("Exception", "Error");
