@@ -29,7 +29,7 @@
             <th:block th:replace="~{pages/chart/order}"></th:block>
         </section>
     </section>
-    <th:block th:replace="~{pages/chart/orderHistory}"></th:block>
+    <th:block th:replace="~{pages/chart/historyAndPosition}"></th:block>
     <script type='module' th:src=" @{/js/pages/chart/index.js}">
     </script>
     <script th:inline="javascript">
@@ -103,7 +103,7 @@
                 crossed: $('#crossed'),
             }
 
-            const { chart,chartData } = drawChart(chartJquery.candlestickChart, prices)
+            const { chart, chartData } = drawChart(chartJquery.candlestickChart, prices)
 
             const initialItems = {
                 exchangeRateJquery,
@@ -114,7 +114,7 @@
                 chart,
                 chartData
             }
-            
+
             const handleMessage = setSocketInitialItems(initialItems)
             websocketClient.setMessageHandler(handleMessage)
             websocketClient.connect()
@@ -133,7 +133,7 @@
                     upbitProfit
                 } = orderHistoryJquery
 
-                if(!upbitPosition && !binancePosition) {
+                if (!upbitPosition && !binancePosition) {
                     positionSymbol.text('')
                     upbitAvgPrice.text('')
                     upbitQty.text('')
@@ -144,32 +144,32 @@
                     binanceProfit.text('')
                     return
                 }
-                
+
                 positionSymbol.text(symbol)
 
                 const { avg_buy_price = 0, balance = 0 } = upbitPosition || {}
-                if(!balance) {
+                if (!balance) {
                     upbitAvgPrice.text('')
                     upbitQty.text('')
                     upbitProfit.text('')
-                }else {
+                } else {
                     upbitAvgPrice.text(Number(avg_buy_price).toLocaleString())
                     upbitQty.text(balance)
                 }
-                
-                const { entryPrice = 0, liquidationPrice = 0, positionAmt = 0 } = binancePosition  || {}
 
-                if(!positionAmt) {
+                const { entryPrice = 0, liquidationPrice = 0, positionAmt = 0 } = binancePosition || {}
+
+                if (!positionAmt) {
                     binanceAvgPrice.text('')
                     binanceQty.text('')
                     binanceLiquidationPrice.text('')
                     binanceProfit.text('')
-                }else {
+                } else {
                     binanceAvgPrice.text(Number(entryPrice).toLocaleString())
                     binanceQty.text(Math.abs(Number(positionAmt)))
                     binanceLiquidationPrice.text(liquidationPrice)
                 }
-                
+
             }
 
             const updateWallet = (krw, usdt) => {
@@ -180,10 +180,10 @@
 
             const updateSellQty = (binancePosition) => {
                 const { sellQtyRange, buyQtyRange, maxSellQty, buyQtyText, sellQtyText } = orderJquery
-                if(!binancePosition) {
+                if (!binancePosition) {
                     sellQtyRange.attr('max', 0)
                     maxSellQty.text(0)
-                }else {
+                } else {
                     const binanceQty = Math.abs(Number(binancePosition.positionAmt))
                     sellQtyRange.attr('max', binanceQty)
                     maxSellQty.text(binanceQty)
@@ -200,7 +200,7 @@
                 if (success) {
                     const { orders } = orderHistoryJquery
                     const { orderResponse, upbitPosition, binancePosition, usdt, krw } = data
-                    
+
                     // 오더 히스토리 업데이트
                     const element = myModule.generateOrder(orderResponse).element
                     orders.prepend(element)
@@ -227,7 +227,7 @@
                         const stringId = String(ele.id)
                         const id = Number(stringId.split('-')[1])
                         const result = orderResponse[id]
-                        if(result) $(ele).html(myModule.generateOrder(result).element)
+                        if (result) $(ele).html(myModule.generateOrder(result).element)
                     })
 
                     updatePosition(upbitPosition, binancePosition)
@@ -240,14 +240,14 @@
             }
 
             // order
-            orderJquery.orderBtn.click(function() {
-                if(!canTrade) return
+            orderJquery.orderBtn.click(function () {
+                if (!canTrade) return
 
                 const orderType = $(this).text().trim()
                 if (orderType !== 'BUY' && orderType !== 'SELL') return alert('새로고침 후 다시 시도해주세요.')
 
                 const { buyQtyRange, sellQtyRange } = orderJquery
-                
+
                 const qty = orderType === 'BUY' ? buyQtyRange.val() : sellQtyRange.val()
                 const minQty = orderType === 'BUY' ? buyQtyRange.attr('min') : sellQtyRange.attr('min')
                 const maxQty = orderType === 'BUY' ? buyQtyRange.attr('max') : sellQtyRange.attr('max')
@@ -261,17 +261,17 @@
                     symbol,
                     qty
                 }
-                
+
                 orderType === 'BUY' ? buyOrder(payload) : sellOrder(payload)
             })
         })
     </script>
     <script th:inline="javascript">
         const param = /*[[${ param }]]*/ {};
-        const [ symbol ] = param.symbol
+        const [symbol] = param.symbol
 
         const isAnonymous = /*[[${#authentication.getPrincipal() == 'anonymousUser' ? false : true}]]*/ false;
-        
+
         // 주문을 위한 심볼 정보
         const {
             maxQty = 0,
@@ -292,12 +292,13 @@
             binancePosition = null
         } = /*[[${userTradeInfo}]]*/ {};
 
-        const hasPosition = [ upbitPosition, binancePosition ].every(v => v !== null)
+        const hasPosition = [upbitPosition, binancePosition].every(v => v !== null)
         const responseOk = maxQty !== 0 && leverage !== 0
         const canTrade = isAnonymous && responseOk
 
         // 차트 초기 값
-        const prices = /*[[${prices}]]*/ [];
+        const prices = /*[[${prices}]]*/[];
     </script>
 </main>
+
 </html>
