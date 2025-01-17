@@ -116,6 +116,10 @@ public class BuyOrder {
     this.isClose = true;
   }
 
+  public void setSellOrder(List<SellOrder> sellOrders) {
+    this.sellOrders = sellOrders;
+  }
+
   public BigDecimal getRestBinanceQty() {
     BigDecimal totalBinanceQty = BigDecimal.valueOf(this.binanceQuantity);
     BigDecimal soldQty =

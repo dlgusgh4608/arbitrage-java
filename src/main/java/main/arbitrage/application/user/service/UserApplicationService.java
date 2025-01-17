@@ -1,11 +1,15 @@
 package main.arbitrage.application.user.service;
 
 import jakarta.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.auth.jwt.JwtUtil;
 import main.arbitrage.auth.security.SecurityUtil;
+import main.arbitrage.domain.buyOrder.entity.BuyOrder;
+import main.arbitrage.domain.buyOrder.service.BuyOrderService;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
 import main.arbitrage.domain.grade.service.GradeService;
@@ -28,6 +32,7 @@ import main.arbitrage.presentation.dto.form.UserEnvForm;
 import main.arbitrage.presentation.dto.form.UserLoginForm;
 import main.arbitrage.presentation.dto.form.UserSignupForm;
 import main.arbitrage.presentation.dto.request.EditUserNicknameRequest;
+import main.arbitrage.presentation.dto.response.OrderResponse;
 import main.arbitrage.presentation.dto.response.UserTokenResponseCookie;
 import main.arbitrage.presentation.dto.view.UserProfileView;
 import org.springframework.stereotype.Service;
@@ -43,6 +48,7 @@ public class UserApplicationService {
   private final UserEnvService userEnvService;
   private final GradeService gradeService;
   private final TierService tierService;
+  private final BuyOrderService buyOrderService;
   private final AESCrypto aesCrypto;
 
   private final JwtUtil jwtUtil;
@@ -186,6 +192,19 @@ public class UserApplicationService {
     userProfileDtoBuilder.exchangeRate(exchangeRate.getRate());
 
     return userProfileDtoBuilder.build();
+  }
+
+  @Transactional
+  public List<OrderResponse> getBuyOrderOfPage(int page) {
+    long userId = SecurityUtil.getUserId();
+
+    List<OrderResponse> results = new ArrayList<>();
+
+    for (BuyOrder buyOrder : buyOrderService.getOrders(userId, page)) {
+      results.add(OrderResponse.fromEntity(buyOrder));
+    }
+
+    return results;
   }
 
   @Transactional

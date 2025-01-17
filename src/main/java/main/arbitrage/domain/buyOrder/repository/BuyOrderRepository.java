@@ -14,4 +14,7 @@ public interface BuyOrderRepository extends JpaRepository<BuyOrder, Long>, BuyOr
 
   @Override
   List<BuyOrder> findBuyOrdersByUserIdAndSymbolId(long userId, long symbolId, Pageable pageable);
+
+  @Override
+  List<BuyOrder> findBuyOrderByUserId(long userId, Pageable pageable);
 }

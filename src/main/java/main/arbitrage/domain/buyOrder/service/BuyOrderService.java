@@ -135,10 +135,18 @@ public class BuyOrderService {
     }
   }
 
-  public List<BuyOrder> getOrders(Long userId, Symbol symbol, int page) {
+  public List<BuyOrder> getOrderBySymbol(Long userId, Symbol symbol, int page) {
     try {
       return buyOrderRepository.findBuyOrdersByUserIdAndSymbolId(
           userId, symbol.getId(), PageRequest.of(page, 20));
+    } catch (Exception e) {
+      throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, e);
+    }
+  }
+
+  public List<BuyOrder> getOrders(Long userId, int page) {
+    try {
+      return buyOrderRepository.findBuyOrderByUserId(userId, PageRequest.of(page, 20));
     } catch (Exception e) {
       throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, e);
     }

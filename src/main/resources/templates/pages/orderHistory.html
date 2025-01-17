@@ -7,10 +7,21 @@
 </head>
 
 <div layout:fragment="myPage">
-    오오오 더
-
+    <div class="d-flex justify-content-center align-items-center w-100 h-100 text-point-color"
+        th:if="${#lists.isEmpty(orders)}">
+        주문 목록이 비어있습니다.
+    </div>
+    <div class="d-flex align-items-center py-2" th:unless="${#lists.isEmpty(orders)}">
+        <div class="icon-wrap"></div>
+        <div class="item">심볼</div>
+        <div class="item">거래시각</div>
+        <div class="item">프리미엄</div>
+        <div class="item">거래상태</div>
+    </div>
     <script th:inline="javascript">
+
     </script>
+
 </div>
 
 </html>

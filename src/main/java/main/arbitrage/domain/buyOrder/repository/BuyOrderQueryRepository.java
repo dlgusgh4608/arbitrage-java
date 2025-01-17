@@ -7,4 +7,6 @@ import org.springframework.data.domain.Pageable;
 public interface BuyOrderQueryRepository {
   public List<BuyOrder> findBuyOrdersByUserIdAndSymbolId(
       long userId, long symbolId, Pageable pageable);
+
+  public List<BuyOrder> findBuyOrderByUserId(long userId, Pageable pageable);
 }

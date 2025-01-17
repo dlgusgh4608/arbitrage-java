@@ -51,4 +51,11 @@ public class PrivateController {
 
     return "pages/profile";
   }
+
+  @GetMapping(PrivateControllerUrlConstants.ORDER_HISTORY)
+  public String getOrderHistory(Model model) {
+    model.addAttribute("orders", userApplicationService.getBuyOrderOfPage(0));
+
+    return "pages/orderHistory";
+  }
 }

@@ -196,7 +196,8 @@ public class OrderApplicationService {
     // 주문 history
     List<OrderResponse> orders = new ArrayList<>();
     List<BuyOrder> buyOrders =
-        buyOrderService.getOrders(userId, symbolVariableService.findSymbolByName(symbolName), 0);
+        buyOrderService.getOrderBySymbol(
+            userId, symbolVariableService.findSymbolByName(symbolName), 0);
 
     for (BuyOrder buyOrder : buyOrders) {
       orders.add(OrderResponse.fromEntity(buyOrder));
@@ -238,10 +239,10 @@ public class OrderApplicationService {
   }
 
   @Transactional
-  public List<OrderResponse> getOrders(String symbolName, int page) {
+  public List<OrderResponse> getOrderBySymbol(String symbolName, int page) {
     Long userId = SecurityUtil.getUserId();
     Symbol symbol = symbolVariableService.findSymbolByName(symbolName);
-    return buyOrderService.getOrders(userId, symbol, page).stream()
+    return buyOrderService.getOrderBySymbol(userId, symbol, page).stream()
         .map(OrderResponse::fromEntity)
         .toList();
   }
