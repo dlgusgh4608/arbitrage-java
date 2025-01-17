@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.auth.dto.AuthContext;
 import main.arbitrage.auth.exception.AuthErrorCode;
 import main.arbitrage.auth.exception.AuthException;
+import main.arbitrage.domain.grade.entity.GradeName;
+import main.arbitrage.domain.tier.entity.TierName;
 import main.arbitrage.global.exception.ErrorResponse;
 import main.arbitrage.global.util.cookie.CookieUtil;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
@@ -90,6 +92,8 @@ public class JwtFilter extends OncePerRequestFilter {
       Long userId = tokenInfo.getUserId();
       String email = tokenInfo.getEmail();
       String nickname = tokenInfo.getNickname();
+      TierName tier = TierName.valueOf(tokenInfo.getTier());
+      GradeName grade = GradeName.valueOf(tokenInfo.getGrade());
 
       // email을 통해 refresh token을 redis에서 받아옴.
       String foundRefreshToken = refreshTokenService.findRefreshToken(email);
@@ -108,7 +112,7 @@ public class JwtFilter extends OncePerRequestFilter {
        * 해당 라인 아래부터는 refresh token의 TTL이 지나지 않았고 access token도 정상적인 key로 만들어졌을때 새로운 access,
        * refresh token을 만들고 response Header 및 cookie 에 넣어주고 next.
        */
-      String newAccessToken = jwtUtil.createToken(userId, email, nickname);
+      String newAccessToken = jwtUtil.createToken(userId, email, nickname, tier, grade);
       Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(email);
       String newRefreshToken =
           refreshTokenService.updateRefreshToken(

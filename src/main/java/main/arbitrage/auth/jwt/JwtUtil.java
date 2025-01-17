@@ -6,13 +6,14 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import javax.crypto.SecretKey;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.auth.dto.AuthContext;
 import main.arbitrage.auth.exception.AuthErrorCode;
 import main.arbitrage.auth.exception.AuthException;
+import main.arbitrage.domain.grade.entity.GradeName;
+import main.arbitrage.domain.tier.entity.TierName;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -29,11 +30,15 @@ public class JwtUtil {
     this.key = Keys.hmacShaKeyFor(keyBytes);
   }
 
-  public String createToken(Long userId, String email, String nickname) {
-    Map<String, String> claims = new HashMap<>();
-    claims.put("userId", userId.toString());
-    claims.put("email", email);
-    claims.put("nickname", nickname);
+  public String createToken(
+      Long userId, String email, String nickname, TierName tier, GradeName grade) {
+    Map<String, String> claims =
+        Map.of(
+            "userId", userId.toString(),
+            "email", email,
+            "nickname", nickname,
+            "tier", tier.name(),
+            "grade", grade.name());
 
     Date now = new Date();
     Date validity = new Date(now.getTime() + tokenTTL);
@@ -47,11 +52,15 @@ public class JwtUtil {
         .compact();
   }
 
-  public String createToken(Long userId, String email, String nickname, Long restTTL) {
-    Map<String, String> claims = new HashMap<>();
-    claims.put("userId", userId.toString());
-    claims.put("email", email);
-    claims.put("nickname", nickname);
+  public String createToken(
+      Long userId, String email, String nickname, TierName tier, GradeName grade, Long restTTL) {
+    Map<String, String> claims =
+        Map.of(
+            "userId", userId.toString(),
+            "email", email,
+            "nickname", nickname,
+            "tier", tier.name(),
+            "grade", grade.name());
 
     Date now = new Date();
     Date validity = new Date(restTTL);
@@ -73,6 +82,8 @@ public class JwtUtil {
           .userId(Long.parseLong(jwtClaim.get("userId", String.class)))
           .email(jwtClaim.get("email", String.class))
           .nickname(jwtClaim.get("nickname", String.class))
+          .tier(jwtClaim.get("tier", String.class))
+          .grade(jwtClaim.get("grade", String.class))
           .expiredAt(jwtClaim.get("exp", Long.class))
           .build();
     } catch (ExpiredJwtException e) { // access token이 만료되었을때에도 사용자값 return
@@ -82,6 +93,8 @@ public class JwtUtil {
           .userId(Long.parseLong(jwtClaim.get("userId", String.class)))
           .email(jwtClaim.get("email", String.class))
           .nickname(jwtClaim.get("nickname", String.class))
+          .tier(jwtClaim.get("tier", String.class))
+          .grade(jwtClaim.get("grade", String.class))
           .expiredAt(jwtClaim.get("exp", Long.class))
           .build();
     } catch (Exception e) {

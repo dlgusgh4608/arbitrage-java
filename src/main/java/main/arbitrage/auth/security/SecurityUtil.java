@@ -25,6 +25,16 @@ public class SecurityUtil {
     return authContext.getNickname();
   }
 
+  public static String getTier() {
+    AuthContext authContext = isAuthorized();
+    return authContext.getTier();
+  }
+
+  public static String getGrade() {
+    AuthContext authContext = isAuthorized();
+    return authContext.getGrade();
+  }
+
   public static Long getExpiredAt() {
     AuthContext authContext = isAuthorized();
     return authContext.getExpiredAt();

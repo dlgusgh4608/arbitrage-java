@@ -1,25 +1,29 @@
 <section class="sidebar-section rounded shadow p-2">
     <ul class="sidebar-list">
         <li>
-            <a th:href="@{/user/profile}" class="sidebar-link rounded">
+            <a th:href="@{/user/profile}" class="sidebar-link rounded"
+                th:classappend="${uri eq '/user/profile' ? 'current' : ''}">
                 <th:block th:replace="~{fragments/svg/user :: fill}"></th:block>
                 <span>내 정보</span>
             </a>
         </li>
         <li>
-            <a th:href="@{/user/order-history}" class="sidebar-link rounded">
+            <a th:href="@{/user/order-history}" class="sidebar-link rounded"
+                th:classappend="${uri eq '/user/order-history' ? 'current' : ''}">
                 <th:block th:replace="~{fragments/svg/history :: fill}"></th:block>
                 <span>주문내역</span>
             </a>
         </li>
         <li>
-            <a th:href="@{/user/env-register}" class="sidebar-link rounded">
+            <a th:href="@{/user/env-register}" class="sidebar-link rounded"
+                th:classappend="${uri eq '/user/env-register' ? 'current' : ''}">
                 <th:block th:replace="~{fragments/svg/setting :: hamburger-line}"></th:block>
-                <span>ENV등록</span>
+                <span>API등록/수정</span>
             </a>
         </li>
         <li>
-            <a th:href="@{/user/order-setting}" class="sidebar-link rounded">
+            <a th:href="@{/user/order-setting}" class="sidebar-link rounded"
+                th:classappend="${uri eq '/user/order-setting' ? 'current' : ''}">
                 <th:block th:replace="~{fragments/svg/setting :: fill}"></th:block>
                 <span>거래설정</span>
             </a>
@@ -31,7 +35,4 @@
             </div>
         </li>
     </ul>
-</section>
-<section class="m-sidebar-section rounded shadow p-2">
-    <div>나는 모바일 입니다.</div>
 </section>

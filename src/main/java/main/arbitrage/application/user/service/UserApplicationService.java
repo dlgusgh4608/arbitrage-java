@@ -181,6 +181,8 @@ public class UserApplicationService {
     ExchangeRate exchangeRate = exchangeRateService.getNonNullUsdToKrw();
 
     userProfileDtoBuilder.nickname(SecurityUtil.getNickname());
+    userProfileDtoBuilder.tier(SecurityUtil.getTier());
+    userProfileDtoBuilder.grade(SecurityUtil.getGrade());
     userProfileDtoBuilder.exchangeRate(exchangeRate.getRate());
 
     return userProfileDtoBuilder.build();
@@ -196,11 +198,22 @@ public class UserApplicationService {
     userService.updateNickname(user, nickname);
 
     return jwtUtil.createToken(
-        user.getId(), user.getEmail(), user.getNickname(), SecurityUtil.getExpiredAt());
+        user.getId(),
+        user.getEmail(),
+        user.getNickname(),
+        user.getTier().getName(),
+        user.getGrade().getName(),
+        SecurityUtil.getExpiredAt());
   }
 
   private UserTokenResponseCookie userTokenResponseBuilder(User user) {
-    String accessToken = jwtUtil.createToken(user.getId(), user.getEmail(), user.getNickname());
+    String accessToken =
+        jwtUtil.createToken(
+            user.getId(),
+            user.getEmail(),
+            user.getNickname(),
+            user.getTier().getName(),
+            user.getGrade().getName());
     String refreshToken =
         refreshTokenService.createRefreshToken(user.getEmail(), UUID.randomUUID().toString());
     Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(user.getEmail());

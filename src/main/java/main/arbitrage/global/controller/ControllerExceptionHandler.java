@@ -1,4 +1,4 @@
-package main.arbitrage.global.exception;
+package main.arbitrage.global.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.domain.autoTradingStrategy.exception.AutoTradingStrategyException;
@@ -12,6 +12,7 @@ import main.arbitrage.domain.symbol.exception.SymbolException;
 import main.arbitrage.domain.tier.exception.TierException;
 import main.arbitrage.domain.user.exception.UserException;
 import main.arbitrage.domain.userEnv.exception.UserEnvException;
+import main.arbitrage.global.exception.ErrorResponse;
 import main.arbitrage.global.exception.common.BaseException;
 import main.arbitrage.global.util.aes.exception.CryptoException;
 import main.arbitrage.infrastructure.email.exception.SendMailException;

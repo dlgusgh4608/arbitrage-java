@@ -8,9 +8,11 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.auth.jwt.JwtUtil;
 import main.arbitrage.auth.oauth.dto.CustomOAuthRequest;
+import main.arbitrage.domain.grade.entity.GradeName;
 import main.arbitrage.domain.oauthUser.entity.OAuthUser;
 import main.arbitrage.domain.oauthUser.repository.OAuthUserRepository;
 import main.arbitrage.domain.oauthUser.store.OAuthUserStore;
+import main.arbitrage.domain.tier.entity.TierName;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.user.repository.UserRepository;
 import main.arbitrage.global.util.cookie.CookieUtil;
@@ -19,6 +21,7 @@ import main.arbitrage.presentation.dto.view.OAuthSignupView;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Service
@@ -31,6 +34,7 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
   private final OAuthUserRepository oAuthUserRepository;
 
   @Override
+  @Transactional
   public void onAuthenticationSuccess(
       HttpServletRequest request, HttpServletResponse response, Authentication authentication)
       throws IOException {
@@ -109,8 +113,10 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     Long userId = user.getId();
     String email = user.getEmail();
     String nickname = user.getNickname();
+    TierName tier = user.getTier().getName();
+    GradeName grade = user.getGrade().getName();
 
-    String accessToken = jwtUtil.createToken(userId, email, nickname);
+    String accessToken = jwtUtil.createToken(userId, email, nickname, tier, grade);
     Long refreshTokenTTL = refreshTokenService.getRefreshTokenTTL(email);
     String refreshToken =
         refreshTokenService.updateRefreshToken(

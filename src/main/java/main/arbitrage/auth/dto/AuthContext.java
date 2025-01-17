@@ -13,6 +13,8 @@ public class AuthContext implements UserDetails {
   private final Long userId;
   private final String email;
   private final String nickname;
+  private final String tier;
+  private final String grade;
   private final Long expiredAt;
 
   @Override

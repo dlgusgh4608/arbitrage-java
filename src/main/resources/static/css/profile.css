@@ -1,14 +1,13 @@
-.article {
-    display: flex;
-    justify-content: space-between;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-}
-
 .item {
-    flex: 1;
+    width: calc(50% - .5rem);
     padding: 1.5rem;
     border-radius: 0.8rem;
+}
+
+.profile-wrap {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
 }
 
 .profile-item {
@@ -21,13 +20,19 @@
 
 .profile-title {
     display: flex;
-    margin-bottom: 0.5rem;
+    align-items: center;
+    width: 100%;
+}
+
+.profile-tier-img {
+    width: 2rem;
+    height: 2rem;
+    margin-right: .75rem;
 }
 
 .profile-nickname {
-    font-size: 1.2rem;
     font-weight: bold;
-    max-width: 15rem;
+    max-width: calc(100% - 3.75rem - 110px);
     word-break: break-all;
     -webkit-box-orient: vertical;
     display: -webkit-box;
@@ -35,6 +40,11 @@
     line-height: 1.5rem;
     -webkit-line-clamp: 2 !important;
     margin-right: 1rem;
+}
+
+.profile-grade {
+    width: 110px;
+    color: var(--text-color);
 }
 
 .profile-edit {
@@ -82,7 +92,7 @@
 }
 
 @media(max-width: 1024px) {
-    .article {
+    .profile-wrap {
         flex-direction: column;
     }
 
