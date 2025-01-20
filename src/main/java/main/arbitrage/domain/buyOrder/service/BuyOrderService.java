@@ -52,9 +52,11 @@ public class BuyOrderService {
               .upbitPrice(upbitAvgPrice)
               .upbitQuantity(upbitQty)
               .upbitCommission(upbitCommission)
+              .upbitEventTime(upbitOrderRes.eventTime())
               .binancePrice(binanceAvgPrice)
               .binanceQuantity(binanceQty)
               .binanceCommission(binanceCommission)
+              .binanceEventTime(binanceOrderRes.eventTime())
               .isMaker(false)
               .isClose(false)
               .build());
@@ -97,9 +99,11 @@ public class BuyOrderService {
               .upbitPrice(upbitAvgPrice)
               .upbitQuantity(upbitQty)
               .upbitCommission(upbitCommission)
+              .upbitEventTime(upbitOrderRes.eventTime())
               .binancePrice(binanceAvgPrice)
               .binanceQuantity(binanceQty)
               .binanceCommission(binanceCommission)
+              .binanceEventTime(binanceOrderRes.getEventTime())
               .isMaker(binanceOrderRes.getIsMaker())
               .isClose(false)
               .build());

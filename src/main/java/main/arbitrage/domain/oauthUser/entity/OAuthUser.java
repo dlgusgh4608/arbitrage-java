@@ -8,7 +8,7 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,7 +39,7 @@ public class OAuthUser {
 
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
-  private LocalDateTime createdAt;
+  private Timestamp createdAt;
 
   @Builder
   public OAuthUser(String providerId, String provider, User user) {

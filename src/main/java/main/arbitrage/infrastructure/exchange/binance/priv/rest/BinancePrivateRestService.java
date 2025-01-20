@@ -12,8 +12,8 @@ import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Mar
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Side;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Type;
 import main.arbitrage.infrastructure.exchange.binance.dto.request.BinancePostOrderRequest;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceAccountResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceChangeLeverageResponse;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceGetAccountResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceLeverageBracketResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinancePositionInfoResponse;
@@ -35,7 +35,7 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
     super(accessKey, secretKey, okHttpClient, objectMapper, symbolNames);
   }
 
-  public List<BinanceGetAccountResponse> getAccount() {
+  public List<BinanceAccountResponse> getAccount() {
     try {
       Map<String, Object> params = new LinkedHashMap<>();
       params.put("timestamp", System.currentTimeMillis());
@@ -59,14 +59,14 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
           responseBody,
           objectMapper
               .getTypeFactory()
-              .constructCollectionType(List.class, BinanceGetAccountResponse.class));
+              .constructCollectionType(List.class, BinanceAccountResponse.class));
     } catch (IOException e) {
       throw new BinanceException(BinanceErrorCode.API_ERROR, e);
     }
   }
 
-  public Optional<BinanceGetAccountResponse> getUSDT() {
-    List<BinanceGetAccountResponse> account = getAccount();
+  public Optional<BinanceAccountResponse> getUSDT() {
+    List<BinanceAccountResponse> account = getAccount();
     return account.stream()
         .filter(binanceAccount -> binanceAccount.asset().equals("USDT"))
         .findFirst();

@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.order.dto.OrderCalcResultDTO;
 import main.arbitrage.domain.buyOrder.entity.BuyOrder;
 import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
+import main.arbitrage.domain.sellOrder.dto.ProfitRateDTO;
 import main.arbitrage.domain.sellOrder.entity.SellOrder;
 import main.arbitrage.domain.sellOrder.exception.SellOrderErrorCode;
 import main.arbitrage.domain.sellOrder.exception.SellOrderException;
@@ -27,7 +28,7 @@ public class SellOrderService {
   public SellOrder createMarketOrder(
       OrderCalcResultDTO orderCalcResult,
       BinanceOrderResponse binanceOrderResponse,
-      UpbitOrderResponse upbitGetOrderResponse,
+      UpbitOrderResponse upbitOrderResponse,
       ExchangeRate exchangeRate) {
     try {
       double binanceAvgPrice = binanceOrderResponse.avgPrice(); // 바이낸스 평단가
@@ -38,10 +39,8 @@ public class SellOrderService {
 
       /** 업비트 API Response의 데이터를 이용해 평단가를 구함. */
       double upbitTotalPriceFromAPI =
-          upbitGetOrderResponse.trades().stream()
-              .mapToDouble(UpbitOrderResponse.Trade::funds)
-              .sum();
-      double upbitQtyFromAPI = upbitGetOrderResponse.executedVolume();
+          upbitOrderResponse.trades().stream().mapToDouble(UpbitOrderResponse.Trade::funds).sum();
+      double upbitQtyFromAPI = upbitOrderResponse.executedVolume();
       double upbitAvgPrice =
           MathUtil.roundTo(upbitTotalPriceFromAPI / upbitQtyFromAPI, 8).doubleValue();
 
@@ -55,13 +54,14 @@ public class SellOrderService {
       float usdToKrw = exchangeRate.getRate();
       float premium = MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, usdToKrw);
 
-      /** 구매 당시 환율을 이용하여 환율이 고정된 상태, 즉 실제 수익률을 구함. */
-      float exchangeRateAtBuy = orderCalcResult.getBuyOrder().getExchangeRate().getRate();
-      double premiumInBuyOrder = orderCalcResult.getBuyOrder().getPremium();
-      float premiumWithBuyExchangeRate =
-          MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, exchangeRateAtBuy);
-      float profitRate =
-          MathUtil.roundTo(premiumInBuyOrder - premiumWithBuyExchangeRate, 4).floatValue();
+      ProfitRateDTO profitRateDTO =
+          calculateProfitRate(
+              orderCalcResult,
+              binanceTotalPrice,
+              binanceCommission,
+              upbitTotalPrice,
+              upbitCommission,
+              usdToKrw);
 
       SellOrder sellOrder =
           SellOrder.builder()
@@ -71,11 +71,14 @@ public class SellOrderService {
               .upbitPrice(upbitAvgPrice)
               .upbitQuantity(upbitQty)
               .upbitCommission(upbitCommission)
+              .upbitEventTime(upbitOrderResponse.eventTime())
               .binancePrice(binanceAvgPrice)
               .binanceQuantity(binanceQty)
               .binanceCommission(binanceCommission)
+              .binanceEventTime(binanceOrderResponse.eventTime())
               .isMaker(false)
-              .profitRate(profitRate)
+              .profitRate(profitRateDTO.getProfitRate())
+              .profitRateWithFees(profitRateDTO.getProfitRateWithFees())
               .build();
 
       return sellOrderRepository.save(sellOrder);
@@ -83,7 +86,7 @@ public class SellOrderService {
       String errorMessage =
           String.format(
               "매도 주문 생성 오류(시장가)\ncalcResult: %s\nbinanceResponse: %s\nupbitResponse: %s",
-              orderCalcResult, binanceOrderResponse, upbitGetOrderResponse);
+              orderCalcResult, binanceOrderResponse, upbitOrderResponse);
       throw new SellOrderException(SellOrderErrorCode.UNKNOWN, errorMessage, e);
     }
   }
@@ -91,25 +94,23 @@ public class SellOrderService {
   public SellOrder createLimitOrder(
       OrderCalcResultDTO orderCalcResult,
       BinanceOrderTradeUpdateEvent binanceOrderResponse,
-      UpbitOrderResponse upbitGetOrderResponse,
+      UpbitOrderResponse upbitOrderResponse,
       ExchangeRate exchangeRate) {
     try {
       double binanceAvgPrice = binanceOrderResponse.getPrice(); // 바이낸스 평단가
       double binanceQty = orderCalcResult.getBinanceQty().doubleValue(); // 바이낸스 체결 개수
+      double binanceTotalPrice = binanceAvgPrice * binanceQty;
       double binanceTotalQty = binanceOrderResponse.getQuantity();
       float binanceTotalCommission = binanceOrderResponse.getCommission();
 
-      // sellOrder에대한 개수 / 총 개수 * 총 수수료
       // 바이낸스 수수료
       float binanceCommission =
           MathUtil.roundTo(binanceQty / binanceTotalQty * binanceTotalCommission, 8).floatValue();
 
       /** 업비트 API Response의 데이터를 이용해 평단가를 구함. */
       double upbitTotalPriceFromAPI =
-          upbitGetOrderResponse.trades().stream()
-              .mapToDouble(UpbitOrderResponse.Trade::funds)
-              .sum();
-      double upbitQtyFromAPI = upbitGetOrderResponse.executedVolume();
+          upbitOrderResponse.trades().stream().mapToDouble(UpbitOrderResponse.Trade::funds).sum();
+      double upbitQtyFromAPI = upbitOrderResponse.executedVolume();
       double upbitAvgPrice =
           MathUtil.roundTo(upbitTotalPriceFromAPI / upbitQtyFromAPI, 8).doubleValue();
 
@@ -123,13 +124,14 @@ public class SellOrderService {
       float usdToKrw = exchangeRate.getRate();
       float premium = MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, usdToKrw);
 
-      /** 구매 당시 환율을 이용하여 환율이 고정된 상태, 즉 실제 수익률을 구함. */
-      float exchangeRateAtBuy = orderCalcResult.getBuyOrder().getExchangeRate().getRate();
-      double premiumInBuyOrder = orderCalcResult.getBuyOrder().getPremium();
-      float premiumWithBuyExchangeRate =
-          MathUtil.calculatePremium(upbitAvgPrice, binanceAvgPrice, exchangeRateAtBuy);
-      float profitRate =
-          MathUtil.roundTo(premiumInBuyOrder - premiumWithBuyExchangeRate, 4).floatValue();
+      ProfitRateDTO profitRateDTO =
+          calculateProfitRate(
+              orderCalcResult,
+              binanceTotalPrice,
+              binanceCommission,
+              upbitTotalPrice,
+              upbitCommission,
+              usdToKrw);
 
       SellOrder sellOrder =
           SellOrder.builder()
@@ -139,11 +141,14 @@ public class SellOrderService {
               .upbitPrice(upbitAvgPrice)
               .upbitQuantity(upbitQty)
               .upbitCommission(upbitCommission)
+              .upbitEventTime(upbitOrderResponse.eventTime())
               .binancePrice(binanceAvgPrice)
               .binanceQuantity(binanceQty)
               .binanceCommission(binanceCommission)
+              .binanceEventTime(binanceOrderResponse.getEventTime())
               .isMaker(binanceOrderResponse.getIsMaker())
-              .profitRate(profitRate)
+              .profitRate(profitRateDTO.getProfitRate())
+              .profitRateWithFees(profitRateDTO.getProfitRateWithFees())
               .build();
 
       return sellOrderRepository.save(sellOrder);
@@ -151,9 +156,67 @@ public class SellOrderService {
       String errorMessage =
           String.format(
               "매도 주문 생성 오류(지정가)\ncalcResult: %s\nbinanceResponse: %s\nupbitResponse: %s",
-              orderCalcResult, binanceOrderResponse, upbitGetOrderResponse);
+              orderCalcResult, binanceOrderResponse, upbitOrderResponse);
       throw new SellOrderException(SellOrderErrorCode.UNKNOWN, errorMessage, e);
     }
+  }
+
+  private ProfitRateDTO calculateProfitRate(
+      OrderCalcResultDTO orderCalcResult,
+      double binanceTotalPriceOfSell,
+      float binanceCommissionOfSell,
+      double upbitTotalPriceOfSell,
+      float upbitCommissionOfSell,
+      float exchangeRateOfSell) {
+    BuyOrder buyOrder = orderCalcResult.getBuyOrder();
+    float exchangeRateOfBuy = buyOrder.getExchangeRate().getRate();
+
+    double binanceExecRate =
+        orderCalcResult.getBinanceQty().doubleValue() / buyOrder.getBinanceQuantity();
+    double upbitExecRate =
+        orderCalcResult.getUpbitQty().doubleValue() / buyOrder.getUpbitQuantity();
+
+    // [매수] 구매당시 가격으로 판매한 개수만큼 총액과 수수료를 구함 (바이낸스)
+    double binanceTotalPriceToKrwOfBuy =
+        buyOrder.getBinancePrice()
+            * buyOrder.getBinanceQuantity()
+            * exchangeRateOfBuy
+            * binanceExecRate;
+    float binanceCommissionToKrwOfBuy =
+        buyOrder.getBinanceCommission() * (float) exchangeRateOfBuy * (float) binanceExecRate;
+
+    // [매수] 구매당시 가격으로 판매한 개수만큼 총액과 수수료를 구함 (업비트)
+    double upbitTotalPriceOfBuy =
+        buyOrder.getUpbitPrice() * buyOrder.getUpbitQuantity() * upbitExecRate;
+    float upbitCommissionOfBuy = buyOrder.getUpbitCommission() * (float) upbitExecRate;
+
+    // [매도] 현재 환율로 총액과 수수료를 구함 (바이낸스)
+    double binanceTotalPriceToKrwOfSell = binanceTotalPriceOfSell * exchangeRateOfSell;
+    float binanceCommissionToKrwOfSell = binanceCommissionOfSell * exchangeRateOfSell;
+
+    // [매수, 매도] 수수료 제외 총 금액
+    double totalBuyCost = binanceTotalPriceToKrwOfBuy + upbitTotalPriceOfBuy;
+    double totalSellCost = binanceTotalPriceToKrwOfSell + upbitTotalPriceOfSell;
+
+    // [매수, 매도] 수수료 포함 총 금액
+    double totalBuyCostWithFees = totalBuyCost + binanceCommissionToKrwOfBuy + upbitCommissionOfBuy;
+
+    double totalSellCostWithFees =
+        totalSellCost - binanceCommissionToKrwOfSell - upbitCommissionOfSell;
+
+    // [매수, 매도] 수익률 ((매도 총액 - 매수 총액) / 매수 총액) * 100
+    float profitRate =
+        MathUtil.roundTo(((totalSellCost - totalBuyCost) / totalBuyCost) * 100, 4).floatValue();
+
+    float profitRateWithFees =
+        MathUtil.roundTo(
+                ((totalSellCostWithFees - totalBuyCostWithFees) / totalBuyCostWithFees) * 100, 4)
+            .floatValue();
+
+    return ProfitRateDTO.builder()
+        .profitRate(profitRate)
+        .profitRateWithFees(profitRateWithFees)
+        .build();
   }
 
   public double calculateSellQty(

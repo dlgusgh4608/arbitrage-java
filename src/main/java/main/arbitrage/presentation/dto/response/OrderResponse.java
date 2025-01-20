@@ -66,7 +66,7 @@ public class OrderResponse {
         .usdToKrw(buyOrder.getExchangeRate().getRate())
         .isMaker(buyOrder.isMaker())
         .isClose(buyOrder.isClose())
-        .createdAt(buyOrder.getCreatedAt())
+        .createdAt(buyOrder.getCreatedAt().toLocalDateTime())
         .sellOrders(
             buyOrder.getSellOrders().stream()
                 .map(
@@ -85,8 +85,8 @@ public class OrderResponse {
                             .upbitCommission(sellOrder.getUpbitCommission())
                             .usdToKrw(sellOrder.getExchangeRate().getRate())
                             .isMaker(sellOrder.isMaker())
-                            .profitRate(sellOrder.getProfitRate())
-                            .createdAt(sellOrder.getCreatedAt())
+                            .profitRate(sellOrder.getProfitRateWithFees())
+                            .createdAt(sellOrder.getCreatedAt().toLocalDateTime())
                             .build())
                 .toList())
         .build();

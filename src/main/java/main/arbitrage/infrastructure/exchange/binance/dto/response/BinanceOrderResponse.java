@@ -1,6 +1,7 @@
 package main.arbitrage.infrastructure.exchange.binance.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Side;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Status;
 
@@ -14,4 +15,5 @@ public record BinanceOrderResponse(
     double origQty,
     double avgPrice,
     double executedQty,
-    double cumQuote) {}
+    double cumQuote,
+    @JsonProperty("updateTime") Long eventTime) {}

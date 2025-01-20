@@ -110,6 +110,7 @@ public abstract class BaseUpbitPrivateRestService implements ExchangeRestService
   @Override
   public void validateResponse(JsonNode json) {
     String errorCode = json.get("error").get("name").asText();
+
     switch (errorCode) {
       case "invalid_query_payload":
         throw new UpbitException(UpbitErrorCode.INVALID_QUERY_PAYLOAD, errorCode);
@@ -119,7 +120,7 @@ public abstract class BaseUpbitPrivateRestService implements ExchangeRestService
         throw new UpbitException(UpbitErrorCode.EXPIRED_ACCESS_KEY, errorCode);
       case "nonce_used":
         throw new UpbitException(UpbitErrorCode.NONCE_USED, errorCode);
-      case "no_authorization_i_p":
+      case "no_authorization_ip":
         throw new UpbitException(UpbitErrorCode.NO_AUTHORIZATION_IP, errorCode);
       case "out_of_scope":
         throw new UpbitException(UpbitErrorCode.OUT_OF_SCOPE, errorCode);

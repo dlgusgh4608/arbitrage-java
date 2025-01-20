@@ -9,7 +9,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -49,6 +51,12 @@ public class SellOrder {
   @Column(name = "upbit_commission", nullable = false, columnDefinition = "REAL")
   private float upbitCommission;
 
+  @Column(
+      name = "upbit_event_time",
+      nullable = false,
+      columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
+  private Timestamp upbitEventTime;
+
   @Column(name = "binance_price", nullable = false, columnDefinition = "DOUBLE PRECISION")
   private double binancePrice;
 
@@ -58,19 +66,28 @@ public class SellOrder {
   @Column(name = "binance_commission", nullable = false, columnDefinition = "REAL")
   private float binanceCommission;
 
+  @Column(
+      name = "binance_event_time",
+      nullable = false,
+      columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
+  private Timestamp binanceEventTime;
+
   @Column(name = "is_maker", columnDefinition = "BOOLEAN DEFAULT FALSE")
   private boolean isMaker;
 
   @Column(name = "profit_rate", columnDefinition = "REAL")
   private float profitRate;
 
+  @Column(name = "profit_rate_with_fees", columnDefinition = "REAL")
+  private float profitRateWithFees;
+
   @CreationTimestamp
   @Column(name = "created_at", updatable = false)
-  private LocalDateTime createdAt;
+  private Timestamp createdAt;
 
   @UpdateTimestamp
   @Column(name = "updated_at", nullable = false)
-  private LocalDateTime updatedAt;
+  private Timestamp updatedAt;
 
   @Builder
   public SellOrder(
@@ -80,21 +97,30 @@ public class SellOrder {
       double upbitPrice,
       double upbitQuantity,
       float upbitCommission,
+      String upbitEventTime,
       double binancePrice,
       double binanceQuantity,
       float binanceCommission,
+      Long binanceEventTime,
       boolean isMaker,
-      float profitRate) {
+      float profitRate,
+      float profitRateWithFees) {
     this.exchangeRate = exchangeRate;
     this.premium = premium;
     this.upbitPrice = upbitPrice;
     this.upbitQuantity = upbitQuantity;
     this.upbitCommission = upbitCommission;
+    this.upbitEventTime =
+        Timestamp.valueOf(
+            LocalDateTime.parse(
+                upbitEventTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")));
     this.binancePrice = binancePrice;
     this.binanceQuantity = binanceQuantity;
     this.binanceCommission = binanceCommission;
+    this.binanceEventTime = new Timestamp(binanceEventTime);
     this.isMaker = isMaker;
     this.profitRate = profitRate;
+    this.profitRateWithFees = profitRateWithFees;
     this.buyOrder = buyOrder;
 
     if (buyOrder != null && !buyOrder.getSellOrders().contains(this)) {
