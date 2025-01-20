@@ -1,81 +1,168 @@
-export const generateOrder = (order) => {    
+const generateOrder = (order) => {
+    /**
+     * 해당 element의 부모는 id가 orders이어야합니다.
+     * 해당 element 생성기를 사용하려면 orderHistory.css를 로드하고 사용해야합니다.
+     * 
+     */
     const element = `
-    <div id="${'order-' + order.id}">
-        <div class="d-flex align-items-center py-2" style="border-bottom: 1px solid var(--gray3);">
-            ${
-                order.sellOrders.length > 0
-                ?
-                `<div
-                    class="order-history-item-chevron-wrap close"
-                    onclick="(function() {
-                        const ele = $(this);
-                        const nextAll = ele.parent().nextAll();
-                        if (ele.hasClass('close')) {
-                            ele.removeClass('close').addClass('open');
-                            nextAll.each(function () { $(this).removeClass('d-none').addClass('d-flex') });
-                        } else {
-                            ele.removeClass('open').addClass('close');
-                            nextAll.each(function () { $(this).removeClass('d-flex').addClass('d-none') });
-                        }
-                    }).call(this)"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                        class="bi bi-chevron-down" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd"
-                            d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
-                    </svg>
-                </div>`
-                :
-                `<div class="order-history-item-empty"></div>`
-            }
-            <div class="history-item">${order.symbol}</div>
-            <div class="history-item text-up-color">BUY</div>
-            <div class="history-item">${order.createdAt}</div>
-            <div class="history-item">${order.binanceAvgPrice.toLocaleString()}</div>
-            <div class="history-item">${order.binanceQty}</div>
-            <div class="history-item">${order.binanceCommission}</div>
-            <div class="history-item">${order.upbitAvgPrice.toLocaleString()}</div>
-            <div class="history-item">${order.upbitQty}</div>
-            <div class="history-item">${order.upbitCommission}</div>
-            <div class="history-item">${order.usdToKrw.toLocaleString()}</div>
-            <div class="history-item">${order.isMaker ? 'MAKER' : 'TAKER'}</div>
-            <div class="history-item">${order.premium}</div>
-            <div class="history-item order-close ${order.close || 'text-up-color'}">${order.close ? 'CLOSE' : 'RUN'}</div>
-        </div>
-        ${
-            order.sellOrders.map(sellOrder => (
-                `
-                <div class="d-none align-items-center py-2" style="border-bottom: 1px solid var(--gray3);">
-                    <div class="order-history-item-empty"></div>
-                    <div class="history-item">
+        <ul class="history-container" id="${'order-' + order.id}">
+            <li class="history-wrap">
+                <div class="history-icon-wrap">
+                    <div class="history-icon text-up-color">BUY</div>
+        ${order.sellOrders.length > 0
+            ? `
+                    <div
+                        class="history-icon close"
+                        onclick="(function() {
+                            const ele = $(this)
+                            const nextAll = ele.parent().parent().nextAll()
+                            if (ele.hasClass('close')) {
+                                ele.removeClass('close').addClass('open');
+                                nextAll.each(function () { $(this).removeClass('d-none') })
+                            } else {
+                                ele.removeClass('open').addClass('close');
+                                nextAll.each(function () { $(this).addClass('d-none') })
+                            }
+                        }).call(this)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                            class="bi bi-arrow-return-right" viewBox="0 0 16 16">
+                            class="bi bi-chevron-down" viewBox="0 0 16 16">
                             <path fill-rule="evenodd"
-                                d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5" />
+                                d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
                         </svg>
-                    </div>
-                    <div class="history-item text-down-color">SELL</div>
-                    <div class="history-item">${sellOrder.createdAt}</div>
-                    <div class="history-item">${sellOrder.binanceAvgPrice.toLocaleString()}</div>
-                    <div class="history-item">${sellOrder.binanceQty}</div>
-                    <div class="history-item">${sellOrder.binanceCommission}</div>
-                    <div class="history-item">${sellOrder.upbitAvgPrice.toLocaleString()}</div>
-                    <div class="history-item">${sellOrder.upbitQty}</div>
-                    <div class="history-item">${sellOrder.upbitCommission}</div>
-                    <div class="history-item">${sellOrder.usdToKrw.toLocaleString()}</div>
-                    <div class="history-item">${sellOrder.isMaker ? 'MAKER' : 'TAKER'}</div>
-                    <div class="history-item">${sellOrder.premium}</div>
-                    <div class="history-item ${sellOrder.profitRate <= 0 ? 'text-down-color' : 'text-up-color'}">${String(sellOrder.profitRate).concat('%')}</div>
-                </div>
-                `
-            )).join('')
+                    </div>`
+            : `
+                    <div class="history-icon"></div>`
         }
-    </div>
+                </div>
+                <div class="history-item-wrap">
+                    <div class="history-item-row">
+                        <div class="history-item">
+                            <div>심볼</div>
+                            <div>${order.symbol}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>바이낸스 거래시각</div>
+                            <div>${order.binanceEventTime}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>바이낸스 평단가</div>
+                            <div>${order.binanceAvgPrice}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>바이낸스 수량</div>
+                            <div>${order.binanceQty}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>바이낸스 수수료</div>
+                            <div>${order.binanceCommission}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>거래상태</div>
+                            <div class="text-point-color">${order.close ? 'CLOSE' : 'OPEN'}</div>
+                        </div>
+                    </div>
+                    <div class="history-item-row">
+                        <div class="history-item">
+                            <div>기준 환율</div>
+                            <div>${order.usdToKrw}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>업비트 거래시각</div>
+                            <div>${order.upbitEventTime}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>업비트 평단가</div>
+                            <div>${order.upbitAvgPrice}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>업비트 수량</div>
+                            <div>${order.upbitQty}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>업비트 수수료</div>
+                            <div>${order.upbitCommission}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>프리미엄</div>
+                            <div>${order.premium}</div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+            ${order.sellOrders.map(sellOrder => (
+            `
+            <li class="history-wrap d-none">
+                <div class="history-icon-wrap">
+                    <div class="history-icon text-down-color">SELL</div>
+                    <div class="history-icon"></div>
+                </div>
+                <div class="history-item-wrap">
+                    <div class="history-item-row">
+                        <div class="history-item">
+                            <div>심볼</div>
+                            <div>${order.symbol}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>바이낸스 거래시각</div>
+                            <div>${sellOrder.binanceEventTime}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>바이낸스 평단가</div>
+                            <div>${sellOrder.binanceAvgPrice}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>바이낸스 수량</div>
+                            <div>${sellOrder.binanceQty}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>바이낸스 수수료</div>
+                            <div>${sellOrder.binanceCommission}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>수익률</div>
+                            <div class="${sellOrder.profitRate <= 0 ? 'text-down-color' : 'text-up-color'}">
+                                ${String(sellOrder.profitRate).concat('%')}
+                            </div >
+                        </div >
+                    </div >
+                    <div class="history-item-row">
+                        <div class="history-item">
+                            <div>기준 환율</div>
+                            <div>${sellOrder.usdToKrw}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>업비트 거래시각</div>
+                            <div>${sellOrder.upbitEventTime}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>업비트 평단가</div>
+                            <div>${sellOrder.upbitAvgPrice}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>업비트 수량</div>
+                            <div>${sellOrder.upbitQty}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>업비트 수수료</div>
+                            <div>${sellOrder.upbitCommission}</div>
+                        </div>
+                        <div class="history-item">
+                            <div>프리미엄</div>
+                            <div>${sellOrder.premium}</div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        `)).join('')
+        }
+        </ul>
     `.trim()
 
-    
+
     return {
         id: order.id,
         element: element,
     }
 }
+
+window.myModule.generateOrder = generateOrder

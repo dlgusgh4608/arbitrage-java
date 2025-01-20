@@ -3,7 +3,7 @@
 
 <head>
     <title>내 정보</title>
-    <link rel="stylesheet" th:href="@{/css/orderHistory.css}">
+    <link rel="stylesheet" th:href="@{/css/components/orderHistory.css}">
 </head>
 
 <div layout:fragment="myPage">
@@ -11,17 +11,24 @@
         th:if="${#lists.isEmpty(orders)}">
         주문 목록이 비어있습니다.
     </div>
-    <div class="d-flex align-items-center py-2" th:unless="${#lists.isEmpty(orders)}">
-        <div class="icon-wrap"></div>
-        <div class="item">심볼</div>
-        <div class="item">거래시각</div>
-        <div class="item">프리미엄</div>
-        <div class="item">거래상태</div>
+    <div id="orders">
     </div>
+    <script type='module' th:src="@{/js/elements/orderHistory.js}"></script>
     <script th:inline="javascript">
+        $(() => {
+            const {
+                generateOrder
+            } = myModule
 
+            const orders = /*[[${orders}]]*/[];
+
+            if (orders.length > 0) {
+                const wrapEle = $('#orders')
+                const element = orders.map(myModule.generateOrder).map(v => v.element).join('')
+                wrapEle.append(element)
+            }
+        })
     </script>
-
 </div>
 
 </html>

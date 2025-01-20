@@ -2,9 +2,11 @@
 .main-section {
     flex-direction: row;
 }
+
 .chart-section {
     width: 75%;
-} 
+}
+
 .order-section {
     flex-direction: column;
 }
@@ -27,13 +29,16 @@
     display: flex;
     border-radius: .375rem;
 }
+
 .leverage-input-container:hover {
     border: 1px solid var(--point-color);
 }
+
 .leverage-input-wrap {
     display: flex;
     flex: 1;
 }
+
 .leverage-input {
     width: 50%;
     text-align: end;
@@ -41,11 +46,13 @@
     border: none;
     background-color: transparent;
 }
+
 .leverage-input-sub {
     width: 50%;
     display: flex;
     align-items: center;
 }
+
 .leverage-btn {
     display: flex;
     justify-content: center;
@@ -55,14 +62,17 @@
     cursor: pointer;
     user-select: none;
 }
+
 .leverage-btn.minus {
     border-top-left-radius: .375rem;
     border-bottom-left-radius: .375rem;
 }
+
 .leverage-btn.plus {
     border-top-right-radius: .375rem;
     border-bottom-right-radius: .375rem;
 }
+
 .leverage-qty-wrap {
     position: relative;
     width: calc(100% - 1rem);
@@ -70,6 +80,7 @@
     margin-left: .5rem;
     margin-bottom: 20px;
 }
+
 .leverage-value-bubble {
     display: none;
     position: absolute;
@@ -83,6 +94,7 @@
     top: 0px;
     transform: translateX(-50%);
 }
+
 .leverage-qty-range-input {
     position: absolute;
     bottom: 0px;
@@ -95,6 +107,7 @@
     outline: none;
     cursor: pointer;
 }
+
 .leverage-qty-range-input::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 1rem;
@@ -104,6 +117,7 @@
     transform: rotate(45deg);
     cursor: pointer;
 }
+
 .leverage-qty-range-input::-moz-range-thumb {
     width: 1rem;
     height: 1rem;
@@ -112,6 +126,7 @@
     transform: rotate(45deg);
     cursor: pointer;
 }
+
 .leverage-info {
     font-size: .8rem;
 }
@@ -125,12 +140,15 @@
     margin-right: .5rem;
     padding: .2rem .5rem;
 }
+
 .margin-mode-modal-btn:hover {
     opacity: .7;
 }
+
 .margin-mode-info {
     font-size: .8rem;
 }
+
 .select {
     border: 1px solid var(--gray7);
 }
@@ -141,17 +159,21 @@
     padding-right: .5rem;
     margin-bottom: 5rem;
 }
+
 .order-history-nav {
     border-bottom: 1px solid var(--bg-color)
 }
+
 .order-history-nav-item {
     padding-top: 0;
     cursor: pointer;
 }
+
 .order-history-nav-item:hover,
 .order-history-nav-item:focus {
     opacity: .7;
 }
+
 .position-item {
     flex: 1;
     font-size: .7em;
@@ -159,30 +181,7 @@
     list-style: none;
     text-align: center;
 }
-.history-item {
-    flex: 1;
-    font-size: .7rem;
-    font-weight: bold;
-    list-style: none;
-    text-align: center;
-}
-.order-history-item-empty {
-    width: 30px;
-    height: 16px;
-}
-.order-history-item-chevron-wrap {
-    display: flex;
-    align-items: center;
-    width: 30px;
-    height: 16px;
-    cursor: pointer;
-}
-.order-history-item-chevron-wrap.open>svg {
-    transform: rotate(180deg);
-}
-.order-history-item-chevron-wrap.close>svg {
-    transform: rotate(0deg);
-}
+
 .orders {
     max-height: 500px;
     overflow-y: auto;
@@ -193,6 +192,7 @@
     position: relative;
     flex: 1;
 }
+
 .order-modal-btn {
     border-radius: .375rem;
     border: 1px solid transparent;
@@ -201,24 +201,30 @@
     margin-right: .5rem;
     padding: .2rem .5rem;
 }
+
 .order-modal-btn:hover {
     opacity: .7;
 }
+
 .order-type-wrap {
     flex: 1;
     text-align: center;
 }
+
 .order-type-item {
     padding-top: 0;
     cursor: pointer;
 }
+
 .order-type-item:hover,
 .order-type-item:focus {
     opacity: .7;
 }
+
 .order-qty-text {
     font-size: .9rem;
 }
+
 .order-qty-wrap {
     position: relative;
     width: calc(100% - 1rem);
@@ -226,6 +232,7 @@
     margin-left: .5rem;
     margin-bottom: 20px;
 }
+
 .order-qty-input {
     position: absolute;
     bottom: 0px;
@@ -238,6 +245,7 @@
     outline: none;
     cursor: pointer;
 }
+
 .order-qty-input::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 1rem;
@@ -247,6 +255,7 @@
     transform: rotate(45deg);
     cursor: pointer;
 }
+
 .order-qty-input::-moz-range-thumb {
     width: 1rem;
     height: 1rem;
@@ -255,6 +264,7 @@
     transform: rotate(45deg);
     cursor: pointer;
 }
+
 .order-value-bubble {
     display: none;
     position: absolute;
@@ -268,26 +278,33 @@
     top: 0px;
     transform: translateX(-50%);
 }
+
 .order-wallet-text {
     font-size: .8rem;
 }
+
 .order-btn {
     width: 100%;
 }
+
 .buy-btn {
     background-color: var(--up-color);
 }
+
 .sell-btn {
     background-color: var(--down-color);
 }
+
 .buy-btn:hover {
     background-color: var(--up-color);
     opacity: .7;
 }
+
 .sell-btn:hover {
     background-color: var(--down-color);
     opacity: .7;
 }
+
 .order-disabled {
     min-height: 300px;
 }

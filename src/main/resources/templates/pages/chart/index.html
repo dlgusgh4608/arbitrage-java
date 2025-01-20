@@ -4,6 +4,7 @@
 <head>
     <title>차트</title>
     <link rel="stylesheet" th:href="@{/css/chart.css}">
+    <link rel="stylesheet" th:href="@{/css/components/orderHistory.css}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
@@ -30,8 +31,8 @@
         </section>
     </section>
     <th:block th:replace="~{pages/chart/historyAndPosition}"></th:block>
-    <script type='module' th:src=" @{/js/pages/chart/index.js}">
-    </script>
+    <script type='module' th:src="@{/js/pages/chart/index.js}"></script>
+    <script type='module' th:src="@{/js/elements/orderHistory.js}"></script>
     <script th:inline="javascript">
         $(() => {
             // 모듈 window.myModule을 통해 가져옴

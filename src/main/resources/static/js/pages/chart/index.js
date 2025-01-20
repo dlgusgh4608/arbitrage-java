@@ -1,4 +1,3 @@
-import { generateOrder } from '../../elements/orderHistory.js'
 import WebsocketClient from '../../WebsocketClient.js'
 import {
     chart,
@@ -32,7 +31,7 @@ const setSocketInitialItems = (requiredItems) => (message) => {
         orderbookJquery.bids,
         { upbit: upbit.bids, binance: binance.bids },
         premium)
-        orderbookJquery.premium.text(`${kimp}%`)
+    orderbookJquery.premium.text(`${kimp}%`)
 
     // exchange rate update
     exchangeRateJquery.usdToKrw.text(usdToKrw)
@@ -47,6 +46,5 @@ const setSocketInitialItems = (requiredItems) => (message) => {
 }
 
 window.myModule.websocketClient = client
-window.myModule.generateOrder = generateOrder
 window.myModule.setSocketInitialItems = setSocketInitialItems;
 window.myModule.drawChart = chart.drawChart;

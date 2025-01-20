@@ -37,22 +37,6 @@
         </div>
         <!-- order history -->
         <div id="order-history-wrap" class="d-none">
-            <div class="d-flex align-items-center py-2">
-                <div class="order-history-item-empty"></div>
-                <div class="history-item">심볼</div>
-                <div class="history-item">타입</div>
-                <div class="history-item">거래시각</div>
-                <div class="history-item">바이낸스 평단가</div>
-                <div class="history-item">바이낸스 수량</div>
-                <div class="history-item">바이낸스 수수료</div>
-                <div class="history-item">업비트 평단가</div>
-                <div class="history-item">업비트 수량</div>
-                <div class="history-item">업비트 수수료</div>
-                <div class="history-item">기준 환율</div>
-                <div class="history-item">수수료 타입</div>
-                <div class="history-item">프리미엄</div>
-                <div class="history-item">거래 상태 / 수익률</div>
-            </div>
             <div id="orders" class="orders"></div>
         </div>
     </article>
@@ -97,7 +81,7 @@
             noneToBlock($('#order-history-wrap'))
         })
 
-        if(orders.length > 0) {
+        if (orders.length > 0) {
             const wrapEle = $('#orders')
             const element = orders.map(myModule.generateOrder).map(v => v.element).join('')
             wrapEle.append(element)
@@ -111,29 +95,29 @@
         async function getOrders(doc) {
             const { success, data } = await myModule.fetch('GET', `/api/orders?symbol=${symbol}&page=${page}`)
 
-            if(success) {
+            if (success) {
                 const element = data.map(myModule.generateOrder).map(v => v.element).join('')
                 $(doc).append(element)
 
-                if(data.length < LOAD_ORDER_NUM) {
+                if (data.length < LOAD_ORDER_NUM) {
                     done = true
                 }
-            }else {
+            } else {
                 done = true
                 alert(data)
             }
-            
+
             loading = false
             page++
         }
-        
-        $('#orders').scroll(function() {
-            if(orders.length < LOAD_ORDER_NUM || loading || done) return
-            
+
+        $('#orders').scroll(function () {
+            if (orders.length < LOAD_ORDER_NUM || loading || done) return
+
             const scrollHeight = $(this).prop("scrollHeight")
             const currentHeight = $(this).scrollTop() + $(this).prop("clientHeight")
 
-            if(scrollHeight - currentHeight < 150) {
+            if (scrollHeight - currentHeight < 150) {
                 loading = true
                 getOrders(this)
             }
