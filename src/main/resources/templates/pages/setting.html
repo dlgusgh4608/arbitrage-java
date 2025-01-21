@@ -1,0 +1,154 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout/myPage}">
+
+<head>
+    <title>거래설정</title>
+    <link rel="stylesheet" th:href="@{/css/setting.css}">
+</head>
+
+<div layout:fragment="myPage">
+    <form method="post" th:action th:object="${formDto}" th:with="hasError=${#fields.hasErrors('*')}">
+        <div class="checkbox-item">
+            <label for="lpFlag">청산방지</label>
+            <div class="checkbox">
+                <input id="lpFlag" name="lpFlag" type="checkbox" class="switch-btn" th:checked="*{lpFlag}">
+                <label></label>
+            </div>
+            <input type="hidden" name="_lpFlag" value="on">
+        </div>
+        <div class="checkbox-item">
+            <label for="autoFlag">자동거래</label>
+            <div class="checkbox">
+                <input id="autoFlag" name="autoFlag" type="checkbox" class="switch-btn" th:checked="*{autoFlag}">
+                <label></label>
+            </div>
+            <input type="hidden" name="_autoFlag" value="on">
+        </div>
+        <p class="valid-warning" th:if="${hasError}" th:errors="*{validFlag}"></p>
+        <div id="automatic-order-setting-wrap">
+            <div class="mb-2">
+                <label for="symbol" class="mb-2">심볼</label>
+                <select id="symbol" th:field="*{symbol}" class="input">
+                    <option style="background-color: var(--ele-bg-color);" th:value="${symbol}" th:text="${symbol}"
+                        th:each="symbol : ${symbols}"></option>
+                </select>
+                <p class="valid-warning" th:errors="*{symbol}"></p>
+            </div>
+            <p class="valid-warning" th:if="${hasError}" th:errors="*{validSymbol}"></p>
+            <div class="mb-2">
+                <label for="stopLossPercent" class="mb-2">손절 퍼센트</label>
+                <input id="stopLossPercent" th:field="*{stopLossPercent}" class="input">
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validStopLossPercent}"></p>
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validStopLossAndAdditionalBuyTarget}"></p>
+            </div>
+            <div class="mb-2">
+                <label for="minimumProfitTargetPercent" class="mb-2">최소 수익 퍼센트</label>
+                <input id="minimumProfitTargetPercent" th:field="*{minimumProfitTargetPercent}" class="input">
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validMinimumProfitTargetPercent}"></p>
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validProfitTargets}"></p>
+            </div>
+            <div class="mb-2">
+                <label for="fixedProfitTargetPercent" class="mb-2">고정 수익 퍼센트</label>
+                <input id="fixedProfitTargetPercent" th:field="*{fixedProfitTargetPercent}" class="input">
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validFixedProfitTargetPercent}"></p>
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validProfitTargets}"></p>
+            </div>
+            <div class="mb-2">
+                <label for="divisionCount" class="mb-2">분할 매수 횟수</label>
+                <input id="divisionCount" th:field="*{divisionCount}" class="input">
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validDivisionCount}"></p>
+            </div>
+            <div class="mb-2">
+                <label for="additionalBuyTargetPercent" class="mb-2">추가 매수 퍼센트</label>
+                <input id="additionalBuyTargetPercent" th:field="*{additionalBuyTargetPercent}" class="input">
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validAdditionalBuyTargetPercent}"></p>
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validStopLossAndAdditionalBuyTarget}"></p>
+            </div>
+            <div class="mb-2">
+                <label for="entryCandleMinutes" class="mb-2">매수 기준가 분봉</label>
+                <input id="entryCandleMinutes" th:field="*{entryCandleMinutes}" class="input">
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validEntryCandleMinutes}"></p>
+            </div>
+            <div class="mb-2">
+                <label for="kneeEntryPercent" class="mb-2">무릎 퍼센트</label>
+                <input id="kneeEntryPercent" th:field="*{kneeEntryPercent}" class="input">
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validKneeEntryPercent}"></p>
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validEntryPercents}"></p>
+            </div>
+            <div class="mb-4">
+                <label for="shoulderEntryPercent" class="mb-2">어깨 퍼센트</label>
+                <input id="shoulderEntryPercent" th:field="*{shoulderEntryPercent}" class="input">
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validShoulderEntryPercent}"></p>
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validEntryPercents}"></p>
+            </div>
+        </div>
+        <button type="submit" class="btn-point w-100">저장</button>
+        <script th:inline="javascript">
+            const globalErrors = /*[[${#fields.hasGlobalErrors()} ? ${#fields.globalErrors()} : null]]*/ null;
+            if (globalErrors) {
+                alert(globalErrors[0])
+            }
+        </script>
+    </form>
+    <script th:inline="javascript">
+        const lpFlagJqueryEle = $('#lpFlag')
+        const autoFlagJqueryEle = $('#autoFlag')
+
+        lpFlagJqueryEle.change(e => {
+            const checked = e.target.checked
+            if (!checked) autoFlagJqueryEle.prop('checked', false)
+        })
+        autoFlagJqueryEle.change(e => {
+            const checked = e.target.checked
+            if (checked) lpFlagJqueryEle.prop('checked', true)
+        })
+
+        function replaceNumberOfInput(val) {
+            let value = val.replace(/(?!^)-/g, '')
+
+            value = value.replace(/[^\d.-]/g, '')
+
+            const parts = value.split('.')
+            if (parts.length > 2) {
+                value = parts[0] + '.' + parts.slice(1).join('')
+            }
+
+            return value
+        }
+
+        $('#stopLossPercent').on('input', function () {
+            const replacedValue = replaceNumberOfInput($(this).val())
+            $(this).val(replacedValue)
+        })
+        $('#minimumProfitTargetPercent').on('input', function () {
+            const replacedValue = replaceNumberOfInput($(this).val())
+            $(this).val(replacedValue)
+        })
+        $('#fixedProfitTargetPercent').on('input', function () {
+            const replacedValue = replaceNumberOfInput($(this).val())
+            $(this).val(replacedValue)
+        })
+        $('#divisionCount').on('input', function () {
+            const replacedValue = replaceNumberOfInput($(this).val())
+            $(this).val(replacedValue)
+        })
+        $('#additionalBuyTargetPercent').on('input', function () {
+            const replacedValue = replaceNumberOfInput($(this).val())
+            $(this).val(replacedValue)
+        })
+        $('#entryCandleMinutes').on('input', function () {
+            const replacedValue = replaceNumberOfInput($(this).val())
+            $(this).val(replacedValue)
+        })
+        $('#kneeEntryPercent').on('input', function () {
+            const replacedValue = replaceNumberOfInput($(this).val())
+            $(this).val(replacedValue)
+        })
+        $('#shoulderEntryPercent').on('input', function () {
+            const replacedValue = replaceNumberOfInput($(this).val())
+            $(this).val(replacedValue)
+        })
+    </script>
+</div>
+
+</html>

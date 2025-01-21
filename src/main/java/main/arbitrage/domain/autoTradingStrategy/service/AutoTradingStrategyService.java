@@ -46,7 +46,7 @@ public class AutoTradingStrategyService {
     }
   }
 
-  public Optional<AutoTradingStrategy> findById(Long userId) {
+  public Optional<AutoTradingStrategy> findByUserId(Long userId) {
     try {
       return autoTradingStrategyRepository.findById(userId);
     } catch (AutoTradingStrategyException e) {

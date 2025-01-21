@@ -244,7 +244,7 @@ public class AutoTradingStrategy {
       throw new AutoTradingStrategyException(
           AutoTradingStrategyErrorCode.ADDITIONAL_BUY_PERCENT_POSITIVE);
     }
-    if (additionalBuyTargetPercent <= stopLossPercent) {
+    if (additionalBuyTargetPercent > stopLossPercent) {
       throw new AutoTradingStrategyException(
           AutoTradingStrategyErrorCode.ADDITIONAL_BUY_PERCENT_LESS_THAN_STOP_LOSS);
     }

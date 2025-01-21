@@ -31,7 +31,7 @@ public enum AutoTradingStrategyErrorCode implements BaseErrorCode {
   // 추가 매수 퍼센트 관련 에러
   ADDITIONAL_BUY_PERCENT_POSITIVE("TS10", "추가 매수 퍼센트는 음수여야 합니다.", HttpStatus.BAD_REQUEST),
   ADDITIONAL_BUY_PERCENT_LESS_THAN_STOP_LOSS(
-      "TS11", "추가 매수 퍼센트는 손절 퍼센트보다 커야 합니다.", HttpStatus.BAD_REQUEST),
+      "TS11", "손절 퍼센트는 추가 매수 퍼센트보다 작을 수 없습니다.", HttpStatus.BAD_REQUEST),
 
   // 매수 기준 분봉 관련 에러
   ENTRY_CANDLE_MINUTES_TOO_LOW("TS12", "매수 기준 분봉은 240분(4시간) 이상이어야 합니다.", HttpStatus.BAD_REQUEST),

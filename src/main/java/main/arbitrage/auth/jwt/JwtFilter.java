@@ -131,7 +131,10 @@ public class JwtFilter extends OncePerRequestFilter {
       handlerAuthException(
           request,
           response,
-          new AuthException(AuthErrorCode.UNKNOWN, "토큰 처리 중 예상치 못한 오류가 발생했습니다", e));
+          new AuthException(
+              AuthErrorCode.UNKNOWN,
+              String.format("토큰 처리 중 예상치 못한 오류가 발생했습니다 - %s", e.getMessage()),
+              e));
     }
   }
 

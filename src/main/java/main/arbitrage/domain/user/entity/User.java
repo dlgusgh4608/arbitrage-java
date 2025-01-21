@@ -72,18 +72,18 @@ public class User {
     this.grade = grade;
   }
 
-  public User disableLpFlag() {
+  private User disableLpFlag() {
     this.lpFlag = false;
     this.autoFlag = false;
     return this;
   }
 
-  public User disableAutoFlag() {
+  private User disableAutoFlag() {
     this.autoFlag = false;
     return this;
   }
 
-  public User enableLpFlag() {
+  private User enableLpFlag() {
     if (this.grade.getName() == GradeName.STANDARD) {
       throw new UserException(UserErrorCode.USED_FORBIDDEN);
     }
@@ -91,13 +91,29 @@ public class User {
     return this;
   }
 
-  public User enableAutoFlag() {
+  private User enableAutoFlag() {
     if (this.grade.getName() == GradeName.STANDARD || this.grade.getName() == GradeName.BUSINESS) {
       throw new UserException(UserErrorCode.USED_FORBIDDEN);
     }
     this.lpFlag = true;
     this.autoFlag = true;
     return this;
+  }
+
+  public User updateAutoFlag(boolean flag) {
+    if (flag) {
+      return enableAutoFlag();
+    } else {
+      return disableAutoFlag();
+    }
+  }
+
+  public User updateLpFlag(boolean flag) {
+    if (flag) {
+      return enableLpFlag();
+    } else {
+      return disableLpFlag();
+    }
   }
 
   public User updateUserNickname(String nickname) {

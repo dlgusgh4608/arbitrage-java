@@ -2,14 +2,14 @@
     layout:decorate="~{layout/myPage}">
 
 <head>
-    <title>내 정보</title>
+    <title>주문내역</title>
     <link rel="stylesheet" th:href="@{/css/components/orderHistory.css}">
 </head>
 
 <div layout:fragment="myPage">
     <div class="d-flex justify-content-center align-items-center w-100 h-100 text-point-color"
         th:if="${#lists.isEmpty(orders)}">
-        주문 목록이 비어있습니다.
+        주문내역이 비어있습니다.
     </div>
     <div id="orders">
     </div>

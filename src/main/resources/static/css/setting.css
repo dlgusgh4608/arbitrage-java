@@ -1,0 +1,88 @@
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: .5rem;
+}
+
+.checkbox-item>label {
+    margin-right: .5rem;
+}
+
+.checkbox {
+    position: relative;
+    height: 30px;
+    display: inline-block;
+}
+
+.checkbox>.switch-btn {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.checkbox:after {
+    content: 'OFF';
+    position: absolute;
+    color: var(--text-color);
+    top: 2px;
+    right: 11px;
+    text-align: center;
+}
+
+.checkbox>label {
+    width: 70px;
+    position: relative;
+    display: inline-block;
+    transition: 0.4s;
+    background: none;
+    border: 3px solid var(--text-color);
+    height: 30px;
+    border-radius: 20px;
+}
+
+.checkbox>label:after {
+    position: absolute;
+    z-index: 2;
+    content: 'ON';
+    color: var(--text-color);
+    line-height: 1rem;
+    text-indent: 100px;
+    background: var(--text-color);
+    overflow: hidden;
+    box-shadow: none;
+    border-radius: 14px;
+    transform: translateX(-50px);
+    -moz-transition: all 0.4s 0.2s, width 0.2s linear, text-indent 0.4s linear;
+    -o-transition: all 0.4s 0.2s, width 0.2s linear, text-indent 0.4s linear;
+    -webkit-transition: all 0.4s, width 0.2s linear, text-indent 0.4s linear;
+    -webkit-transition-delay: 0.2s, 0s, 0s;
+    transition: all 0.4s 0.2s, width 0.2s linear, text-indent 0.4s linear;
+    top: 3px;
+    left: auto;
+    right: -8px;
+    width: 18px;
+    height: 18px;
+    text-align: center;
+}
+
+.checkbox>.switch-btn:checked+label {
+    border-color: var(--point-color);
+}
+
+.checkbox>.switch-btn:checked+label:after {
+    background: var(--point-color);
+    left: auto;
+    transform: translateX(-12px);
+    -moz-transition: all 0.4s, width 0.2s linear 0.4s, text-indent 0.3s linear 0.4s;
+    -o-transition: all 0.4s, width 0.2s linear 0.4s, text-indent 0.3s linear 0.4s;
+    -webkit-transition: all 0.4s, width 0.2s linear, text-indent 0.3s linear;
+    -webkit-transition-delay: 0s, 0.4s, 0.4s;
+    transition: all 0.4s, width 0.2s linear 0.4s, text-indent 0.3s linear 0.4s;
+    width: 56px;
+    text-indent: 0;
+}

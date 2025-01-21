@@ -2,8 +2,11 @@ package main.arbitrage.presentation.controller.priv;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import main.arbitrage.application.auto.service.AutoApplicationService;
 import main.arbitrage.application.user.service.UserApplicationService;
+import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.presentation.controller.priv.constant.PrivateControllerUrlConstants;
+import main.arbitrage.presentation.dto.form.AutoTradingStrategyForm;
 import main.arbitrage.presentation.dto.form.UserEnvForm;
 import main.arbitrage.presentation.dto.view.UserProfileView;
 import org.springframework.stereotype.Controller;
@@ -18,6 +21,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping(PrivateControllerUrlConstants.DEFAULT_URL)
 @RequiredArgsConstructor
 public class PrivateController {
+  private final AutoApplicationService autoApplicationService;
+  private final SymbolVariableService symbolVariableService;
   private final UserApplicationService userApplicationService;
 
   @GetMapping(PrivateControllerUrlConstants.USER_ENV_REGISTER)
@@ -57,5 +62,42 @@ public class PrivateController {
     model.addAttribute("orders", userApplicationService.getBuyOrderOfPage(0));
 
     return "pages/orderHistory";
+  }
+
+  @GetMapping(PrivateControllerUrlConstants.ORDER_SETTING)
+  public String getOrderSetting(Model model) {
+    AutoTradingStrategyForm autoTradingStrategyForm =
+        autoApplicationService.getAutoTradingStrategyForm();
+
+    model.addAttribute("symbols", symbolVariableService.getSupportedSymbolNames());
+    if (autoTradingStrategyForm == null) {
+      model.addAttribute("formDto", new AutoTradingStrategyForm());
+    } else {
+      model.addAttribute("formDto", autoTradingStrategyForm);
+    }
+
+    return "pages/setting";
+  }
+
+  @PostMapping(PrivateControllerUrlConstants.ORDER_SETTING)
+  public String postOrderSetting(
+      Model model,
+      @Valid @ModelAttribute("formDto") AutoTradingStrategyForm autoTradingStrategyForm,
+      BindingResult bindingResult) {
+
+    model.addAttribute("symbols", symbolVariableService.getSupportedSymbolNames());
+
+    if (bindingResult.hasErrors()) return "pages/setting";
+
+    try {
+      model.addAttribute(
+          "formDto", autoApplicationService.updateAutoTradingStrategy(autoTradingStrategyForm));
+
+      return "pages/setting";
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      bindingResult.reject("serverError", e.getMessage());
+      return "pages/setting";
+    }
   }
 }
