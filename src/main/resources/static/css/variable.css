@@ -12,6 +12,8 @@
     /* 대표 컬러 */
     --bg-color: #FAFAFA;
     --ele-bg-color: #FFFFFF;
+    --tooltip-bg-color: rgba(0, 0, 0, 0.7);
+    --tooltip-text-color: #E9ECEF;
     --text-color: #212529;
 
     /* from: open color */
@@ -31,6 +33,8 @@
     /* 대표 컬러 */
     --bg-color: #121212;
     --ele-bg-color: #1E1E1E;
+    --tooltip-bg-color: rgba(255, 255, 255, 0.7);
+    --tooltip-text-color: #212529;
     --text-color: #E9ECEF;
 
     /* from: open color - 다크모드용 그레이스케일 반전  */

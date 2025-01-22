@@ -127,3 +127,22 @@ input[type='number'] {
     scrollbar-width: thin;
     scrollbar-color: var(--gray2) var(--gray0);
 }
+
+.tooltip-wrap {
+    width: 16px;
+    height: 16px;
+}
+
+.tooltip-wrap>svg {
+    vertical-align: top;
+}
+
+/* bootstrap tooltip override */
+.custom-tooltip {
+    --bs-tooltip-bg: var(--tooltip-bg-color);
+}
+
+.custom-tooltip>.tooltip-inner>p {
+    color: var(--tooltip-text-color);
+    margin-bottom: .25rem
+}

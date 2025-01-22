@@ -1,0 +1,75 @@
+<i th:fragment="top(values)" class="tooltip-wrap" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
+    data-bs-toggle="tooltip" data-bs-html="true" th:data-bs-title="${
+        #strings.arrayJoin(
+            #strings.arrayAppend
+            (
+                #strings.arrayPrepend
+                (
+                    (
+                        #strings.arraySplit(values, ',')
+                    ),
+                    '<p style=`color: var(--tooltip-text-color);`>'
+                ),
+                '</p>'
+            ), ''
+        )
+    }">
+    <th:block th:replace="~{fragments/svg/info :: line}"></th:block>
+</i>
+
+<i th:fragment="right(values)" class="tooltip-wrap" data-bs-placement="right" data-bs-custom-class="custom-tooltip"
+    data-bs-toggle="tooltip" data-bs-html="true" th:data-bs-title="${
+        #strings.arrayJoin(
+            #strings.arrayAppend
+            (
+                #strings.arrayPrepend
+                (
+                    (
+                        #strings.arraySplit(values, ',')
+                    ),
+                    '<p style=`color: var(--tooltip-text-color);`>'
+                ),
+                '</p>'
+            ), ''
+        )
+    }">
+    <th:block th:replace="~{fragments/svg/info :: line}"></th:block>
+</i>
+
+<i th:fragment="bottom(values)" class="tooltip-wrap" data-bs-placement="bottom" data-bs-custom-class="custom-tooltip"
+    data-bs-toggle="tooltip" data-bs-html="true" th:data-bs-title="${
+        #strings.arrayJoin(
+            #strings.arrayAppend
+            (
+                #strings.arrayPrepend
+                (
+                    (
+                        #strings.arraySplit(values, ',')
+                    ),
+                    '<p style=`color: var(--tooltip-text-color);`>'
+                ),
+                '</p>'
+            ), ''
+        )
+    }">
+    <th:block th:replace="~{fragments/svg/info :: line}"></th:block>
+</i>
+
+<i th:fragment="left(values)" class="tooltip-wrap" data-bs-placement="left" data-bs-custom-class="custom-tooltip"
+    data-bs-toggle="tooltip" data-bs-html="true" th:data-bs-title="${
+        #strings.arrayJoin(
+            #strings.arrayAppend
+            (
+                #strings.arrayPrepend
+                (
+                    (
+                        #strings.arraySplit(values, ',')
+                    ),
+                    '<p style=`color: var(--tooltip-text-color);`>'
+                ),
+                '</p>'
+            ), ''
+        )
+    }">
+    <th:block th:replace="~{fragments/svg/info :: line}"></th:block>
+</i>
