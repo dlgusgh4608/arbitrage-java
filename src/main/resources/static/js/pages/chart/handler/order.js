@@ -68,6 +68,11 @@ const update = (
     const { max, min } = calculateQty(premium, krw, usdt, leverage)
     const { maxQty, minQty } = prev
 
+    if (max === 0 && maxQty === 0) {
+        buyQtyRange.attr('max', max)
+        maxBuyQty.text(max)
+    }
+
     if (max !== maxQty) {
         prev.maxQty = max
         buyQtyRange.attr('max', max)
