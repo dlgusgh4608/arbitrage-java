@@ -7,7 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.sql.Timestamp;
 import lombok.AccessLevel;
@@ -47,11 +47,11 @@ public class User {
   @Column(name = "auto_flag", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
   private boolean autoFlag;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "grade_id", referencedColumnName = "id", nullable = false)
   private Grade grade;
 
-  @OneToOne(fetch = FetchType.LAZY)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "tier_id", referencedColumnName = "id", nullable = false)
   private Tier tier;
 
