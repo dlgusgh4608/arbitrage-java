@@ -72,12 +72,12 @@ public final class AESCrypto {
     if (encryptedText == null || encryptedText.isEmpty())
       throw new CryptoException(CryptoErrorCode.INVALID_INPUT, "복호화할 데이터가 비어있습니다");
 
-    byte[] combined = Base64.getDecoder().decode(encryptedText);
-
-    if (combined.length < 16)
-      throw new CryptoException(CryptoErrorCode.INVALID_INPUT, "유효하지 않은 암호화 데이터 형식");
-
     try {
+      byte[] combined = Base64.getDecoder().decode(encryptedText);
+
+      if (combined.length < 16)
+        throw new CryptoException(CryptoErrorCode.INVALID_INPUT, "유효하지 않은 암호화 데이터 형식");
+
       byte[] iv = new byte[16];
       System.arraycopy(combined, 0, iv, 0, iv.length);
       IvParameterSpec ivParameterSpec = new IvParameterSpec(iv);
