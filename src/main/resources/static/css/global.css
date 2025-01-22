@@ -142,7 +142,13 @@ input[type='number'] {
     --bs-tooltip-bg: var(--tooltip-bg-color);
 }
 
+.custom-tooltip>.tooltip-inner {
+    max-width: 280px;
+}
+
 .custom-tooltip>.tooltip-inner>p {
     color: var(--tooltip-text-color);
-    margin-bottom: .25rem
+    font-size: .8rem;
+    margin-bottom: .25rem;
+    text-align: start;
 }

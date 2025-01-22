@@ -3,13 +3,8 @@
 }
 
 .history-container {
-    border-bottom: 1px solid var(--text-color);
     padding: 0;
     margin: 0;
-}
-
-.history-container>li.history-wrap:last-child {
-    border-bottom: none;
 }
 
 .history-wrap {

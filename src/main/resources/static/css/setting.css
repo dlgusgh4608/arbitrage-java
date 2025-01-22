@@ -1,3 +1,8 @@
+.setting-tooltip-wrap {
+    height: 16px;
+    margin-right: .5rem;
+}
+
 .checkbox-item {
     display: flex;
     align-items: center;
@@ -49,10 +54,11 @@
     position: absolute;
     z-index: 2;
     content: 'ON';
-    color: var(--text-color);
+    color: var(--text-black);
+    font-weight: 600;
     line-height: 1rem;
     text-indent: 100px;
-    background: var(--text-color);
+    background-color: var(--text-color);
     overflow: hidden;
     box-shadow: none;
     border-radius: 14px;

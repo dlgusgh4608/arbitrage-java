@@ -77,13 +77,16 @@
                 </div>
             </div>
         </article>
-        <article class="d-flex justify-content-spacebetween flex-wrap gap-3" th:with="
+        <article class="d-flex justify-content-between flex-wrap gap-3" th:with="
                 upbitBalance=${profile.upbitBalance != null ? profile.upbitBalance : 0},
                 binanceBalance=${profile.binanceBalance != null ? profile.binanceBalance : 0},
                 exchangeRate=${profile.exchangeRate != null ? profile.exchangeRate : 0}
         ">
             <div class="item ele-bg-color border-gray2">
-                <div class="wallet-label text-gray6">총 자산</div>
+                <div class="w-100 d-flex align-items-center justify-content-between wallet-label text-gray6">
+                    <span>총 자산</span>
+                    <th:block th:replace="~{fragments/info :: bottom('환율에 따라 변동될 수 있습니다.')}"></th:block>
+                </div>
                 <div class="wallet-value" th:text="${
                         upbitBlanace != 0 && binanceBalance != 0 && exchangeRate != 0
                             ? #numbers.formatDecimal(upbitBalance + binanceBalance * exchangeRate, 0, 'COMMA', 0, 'POINT') + '원'

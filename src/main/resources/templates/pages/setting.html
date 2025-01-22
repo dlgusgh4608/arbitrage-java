@@ -9,6 +9,9 @@
 <div layout:fragment="myPage">
     <form method="post" th:action th:object="${formDto}" th:with="hasError=${#fields.hasErrors('*')}">
         <div class="checkbox-item">
+            <span class="setting-tooltip-wrap">
+                <th:block th:replace="~{fragments/info :: bottom('[ BUSINESS ] 등급부터 이용할 수 있습니다.')}"></th:block>
+            </span>
             <label for="lpFlag">청산방지</label>
             <div class="checkbox">
                 <input id="lpFlag" name="lpFlag" type="checkbox" class="switch-btn" th:checked="*{lpFlag}">
@@ -17,6 +20,14 @@
             <input type="hidden" name="_lpFlag" value="on">
         </div>
         <div class="checkbox-item">
+            <span class="setting-tooltip-wrap">
+                <th:block th:replace="~{fragments/info :: bottom('
+                    [ FIRST ] 등급부터 이용할 수 있습니다.,
+                    1. 청산방지를 반드시 같이 사용해야합니다.,
+                    2. 자동거래 기능이 OFF일 경우 청산방지를 제외한 나머지 설정이 저장되지 않습니다.
+                ')}">
+                </th:block>
+            </span>
             <label for="autoFlag">자동거래</label>
             <div class="checkbox">
                 <input id="autoFlag" name="autoFlag" type="checkbox" class="switch-btn" th:checked="*{autoFlag}">
@@ -26,60 +37,136 @@
         </div>
         <p class="valid-warning" th:if="${hasError}" th:errors="*{validFlag}"></p>
         <div id="automatic-order-setting-wrap">
+            <!-- 매매 기본 설정 -->
             <div class="mb-2">
-                <label for="symbol" class="mb-2">심볼</label>
+                <div class="d-flex align-items-center mb-2">
+                    <th:block th:replace="~{fragments/info :: bottom('자동거래를 통해 거래할 심볼입니다.')}">
+                    </th:block>
+                    <label for="symbol" class="ms-2">심볼</label>
+                </div>
                 <select id="symbol" th:field="*{symbol}" class="input">
                     <option style="background-color: var(--ele-bg-color);" th:value="${symbol}" th:text="${symbol}"
                         th:each="symbol : ${symbols}"></option>
                 </select>
                 <p class="valid-warning" th:errors="*{symbol}"></p>
-            </div>
-            <p class="valid-warning" th:if="${hasError}" th:errors="*{validSymbol}"></p>
-            <div class="mb-2">
-                <label for="stopLossPercent" class="mb-2">손절 퍼센트</label>
-                <input id="stopLossPercent" th:field="*{stopLossPercent}" class="input">
-                <p class="valid-warning" th:if="${hasError}" th:errors="*{validStopLossPercent}"></p>
-                <p class="valid-warning" th:if="${hasError}" th:errors="*{validStopLossAndAdditionalBuyTarget}"></p>
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validSymbol}"></p>
             </div>
             <div class="mb-2">
-                <label for="minimumProfitTargetPercent" class="mb-2">최소 수익 퍼센트</label>
+                <div class="d-flex align-items-center mb-2">
+                    <th:block th:replace="~{fragments/info :: bottom('
+                        고점과 저점을 결정하는 값입니다.,
+                        고점과 저점을 통해 무릎과 어깨가 계산됩니다.,
+                        입력하는 값의 1/2의 시간마다 업데이트 됩니다.,
+                        ex. 240(4시간)이면 120(2시간)마다 갱신 됩니다.,
+                        1. 240분(4시간)이상만 입력 가능합니다.,
+                        2. 21600(15일)이하만 입력 가능합니다.
+                    ')}">
+                    </th:block>
+                    <label for="entryCandleMinutes" class="ms-2">기준 분봉</label>
+                </div>
+                <input id="entryCandleMinutes" th:field="*{entryCandleMinutes}" class="input">
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validEntryCandleMinutes}"></p>
+            </div>
+            <div class="mb-2">
+                <div class="d-flex align-items-center mb-2">
+                    <th:block th:replace="~{fragments/info :: bottom('
+                        분할 매수 횟수를 결정하는 값입니다.,
+                        해당 심볼의 거래가 모두 종료되었을때 기준으로 남은 지갑 잔액을 통해 매수 금액이 정해집니다.,
+                        1. 1-100사이의 값이어야합니다.,
+                        2. 계산된 금액이 최소 주문금액보다 작으면 최소 주문금액으로 매수합니다.
+                    ')}">
+                    </th:block>
+                    <label for="divisionCount" class="ms-2">분할 매수 횟수</label>
+                </div>
+                <input id="divisionCount" th:field="*{divisionCount}" class="input">
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validDivisionCount}"></p>
+            </div>
+
+            <!-- 매매 값 설정 -->
+            <div class="mb-2">
+                <div class="d-flex align-items-center mb-2">
+                    <th:block th:replace="~{fragments/info :: bottom('
+                        기준 분봉을 통해 구해진 고점과 저점사이의 매수 퍼센트를 결정하는 값입니다.,
+                        1. 10-100사이의 값이어야합니다.,
+                        2. 어깨 퍼센트보다 작아야합니다.
+                    ')}">
+                    </th:block>
+                    <label for="kneeEntryPercent" class="ms-2">무릎 퍼센트</label>
+                </div>
+                <input id="kneeEntryPercent" th:field="*{kneeEntryPercent}" class="input">
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validKneeEntryPercent}"></p>
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validEntryPercents}"></p>
+            </div>
+            <div class="mb-2">
+                <div class="d-flex align-items-center mb-2">
+                    <th:block th:replace="~{fragments/info :: bottom('
+                        기준 분봉을 통해 구해진 고점과 저점사이의 매도 퍼센트를 결정하는 값입니다.,
+                        1. 무릎 퍼센트보다 커야합니다.,
+                        2. 최소 수익 퍼센트보다 수익이 덜 발생했을시 동작하지 않습니다.,
+                        3. 고정 수익 퍼센트가 0이 아닐시 동작하지 않습니다.
+                    ')}">
+                    </th:block>
+                    <label for="shoulderEntryPercent" class="ms-2">어깨 퍼센트</label>
+                </div>
+                <input id="shoulderEntryPercent" th:field="*{shoulderEntryPercent}" class="input">
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validShoulderEntryPercent}"></p>
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validEntryPercents}"></p>
+            </div>
+            <div class="mb-2">
+                <div class="d-flex align-items-center mb-2">
+                    <th:block th:replace="~{fragments/info :: bottom('
+                        최소한의 수익률을 담당하는 값입니다.,
+                        1. 0.25 이상이어야 합니다.,
+                        2. 고정 수익 퍼센트가 0이 아닐시 동작하지 않습니다.,
+                        3. 고정 수익 퍼센트가 0이 아닐시 고정 수익 퍼센트보다 작아야합니다.
+                    ')}">
+                    </th:block>
+                    <label for="minimumProfitTargetPercent" class="ms-2">최소 수익 퍼센트</label>
+                </div>
                 <input id="minimumProfitTargetPercent" th:field="*{minimumProfitTargetPercent}" class="input">
                 <p class="valid-warning" th:if="${hasError}" th:errors="*{validMinimumProfitTargetPercent}"></p>
                 <p class="valid-warning" th:if="${hasError}" th:errors="*{validProfitTargets}"></p>
             </div>
             <div class="mb-2">
-                <label for="fixedProfitTargetPercent" class="mb-2">고정 수익 퍼센트</label>
+                <div class="d-flex align-items-center mb-2">
+                    <th:block th:replace="~{fragments/info :: bottom('
+                        항상 같은 수익률을 얻고싶을때 사용하는 값입니다.,
+                        1. 해당 값이 0이 아닐시 최소 수익 퍼센트와 어깨 퍼센트의 값은 동작하지 않습니다.,
+                        2. 해당 값이 0이 아닐시 최소 수익 퍼센트보다 작을 수 없습니다.
+                    ')}">
+                    </th:block>
+                    <label for="fixedProfitTargetPercent" class="ms-2">고정 수익 퍼센트</label>
+                </div>
                 <input id="fixedProfitTargetPercent" th:field="*{fixedProfitTargetPercent}" class="input">
                 <p class="valid-warning" th:if="${hasError}" th:errors="*{validFixedProfitTargetPercent}"></p>
                 <p class="valid-warning" th:if="${hasError}" th:errors="*{validProfitTargets}"></p>
             </div>
             <div class="mb-2">
-                <label for="divisionCount" class="mb-2">분할 매수 횟수</label>
-                <input id="divisionCount" th:field="*{divisionCount}" class="input">
-                <p class="valid-warning" th:if="${hasError}" th:errors="*{validDivisionCount}"></p>
+                <div class="d-flex align-items-center mb-2">
+                    <th:block th:replace="~{fragments/info :: bottom('
+                        마이너스 수익률을 멈추고 싶을때 사용하는 값입니다,
+                        1. 0보다 클 수 없습니다.,
+                        2. 추가 매수 퍼센트보다 작을 수 없습니다.
+                    ')}">
+                    </th:block>
+                    <label for="stopLossPercent" class="ms-2">손절 퍼센트</label>
+                </div>
+                <input id="stopLossPercent" th:field="*{stopLossPercent}" class="input">
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validStopLossPercent}"></p>
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validStopLossAndAdditionalBuyTarget}"></p>
             </div>
-            <div class="mb-2">
-                <label for="additionalBuyTargetPercent" class="mb-2">추가 매수 퍼센트</label>
+            <div class="mb-4">
+                <div class="d-flex align-items-center mb-2">
+                    <th:block th:replace="~{fragments/info :: bottom('
+                        마이너스 수익률이 일정 퍼센트에 도착했을때 추가매수를 하는 값입니다.,
+                        1. 손절 퍼센트보다 클 수 없습니다.
+                    ')}">
+                    </th:block>
+                    <label for="additionalBuyTargetPercent" class="ms-2">추가 매수 퍼센트</label>
+                </div>
                 <input id="additionalBuyTargetPercent" th:field="*{additionalBuyTargetPercent}" class="input">
                 <p class="valid-warning" th:if="${hasError}" th:errors="*{validAdditionalBuyTargetPercent}"></p>
                 <p class="valid-warning" th:if="${hasError}" th:errors="*{validStopLossAndAdditionalBuyTarget}"></p>
-            </div>
-            <div class="mb-2">
-                <label for="entryCandleMinutes" class="mb-2">매수 기준가 분봉</label>
-                <input id="entryCandleMinutes" th:field="*{entryCandleMinutes}" class="input">
-                <p class="valid-warning" th:if="${hasError}" th:errors="*{validEntryCandleMinutes}"></p>
-            </div>
-            <div class="mb-2">
-                <label for="kneeEntryPercent" class="mb-2">무릎 퍼센트</label>
-                <input id="kneeEntryPercent" th:field="*{kneeEntryPercent}" class="input">
-                <p class="valid-warning" th:if="${hasError}" th:errors="*{validKneeEntryPercent}"></p>
-                <p class="valid-warning" th:if="${hasError}" th:errors="*{validEntryPercents}"></p>
-            </div>
-            <div class="mb-4">
-                <label for="shoulderEntryPercent" class="mb-2">어깨 퍼센트</label>
-                <input id="shoulderEntryPercent" th:field="*{shoulderEntryPercent}" class="input">
-                <p class="valid-warning" th:if="${hasError}" th:errors="*{validShoulderEntryPercent}"></p>
-                <p class="valid-warning" th:if="${hasError}" th:errors="*{validEntryPercents}"></p>
             </div>
         </div>
         <button type="submit" class="btn-point w-100">저장</button>

@@ -16,17 +16,24 @@ import main.arbitrage.domain.user.entity.User;
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor
 public class AutoTradingStrategyForm {
-  private Boolean lpFlag;
-  private Boolean autoFlag;
-  private String symbol;
-  private Float stopLossPercent;
-  private Float minimumProfitTargetPercent;
-  private Float fixedProfitTargetPercent;
-  private Integer divisionCount;
-  private Float additionalBuyTargetPercent;
-  private Integer entryCandleMinutes;
-  private Integer kneeEntryPercent;
-  private Integer shoulderEntryPercent;
+  // Flag설정
+  private Boolean lpFlag; // 청산방지 플래그
+  private Boolean autoFlag; // 자동거래 플래그
+
+  // 아래 설정은 자동거래 플래그가 false일 시 동작하지 않습니다.
+
+  // 매매 기본 설정
+  private String symbol; // 거래심볼
+  private Integer entryCandleMinutes; // 기준 분봉 개수
+  private Integer divisionCount; // 분할 횟수
+
+  // 매매 값 설정
+  private Integer kneeEntryPercent; // 구매 퍼센트 (무릎에 사서)
+  private Integer shoulderEntryPercent; // 판매 퍼센트 (어깨에 팔아라)
+  private Float minimumProfitTargetPercent; // 최소 이거는 먹고 팔아라
+  private Float fixedProfitTargetPercent; // 난 어깨에 팔기 싫다. 무조건 해당 퍼센트만 먹겠다. 미설정시 0기입
+  private Float stopLossPercent; // 손절가 (음수)
+  private Float additionalBuyTargetPercent; // 추가 매수 퍼센트
 
   @AssertTrue(message = "청산 방지를 사용하지 않으면 자동거래를 진행할 수 없습니다.")
   public boolean isValidFlag() {
@@ -96,7 +103,7 @@ public class AutoTradingStrategyForm {
     return entryCandleMinutes >= 240 && entryCandleMinutes <= 21600;
   }
 
-  @AssertTrue(message = "무릎 진입 퍼센트는 10에서 100 사이의 값이어야 합니다.")
+  @AssertTrue(message = "무릎 퍼센트는 10에서 100 사이의 값이어야 합니다.")
   public boolean isValidKneeEntryPercent() {
     if (!autoFlag) return true;
 
@@ -105,7 +112,7 @@ public class AutoTradingStrategyForm {
     return kneeEntryPercent >= 10 && kneeEntryPercent <= 100;
   }
 
-  @AssertTrue(message = "어깨 진입 퍼센트는 0에서 100 사이의 값이어야 합니다.")
+  @AssertTrue(message = "어깨 퍼센트는 0에서 100 사이의 값이어야 합니다.")
   public boolean isValidShoulderEntryPercent() {
     if (!autoFlag) return true;
 
@@ -133,7 +140,7 @@ public class AutoTradingStrategyForm {
         || (fixedProfitTargetPercent > 0 && minimumProfitTargetPercent <= fixedProfitTargetPercent);
   }
 
-  @AssertTrue(message = "어깨 진입 퍼센트는 무릎 진입 퍼센트보다 작을 수 없습니다.")
+  @AssertTrue(message = "어깨 퍼센트는 무릎 퍼센트보다 작을 수 없습니다.")
   public boolean isValidEntryPercents() {
     if (!autoFlag) return true;
 

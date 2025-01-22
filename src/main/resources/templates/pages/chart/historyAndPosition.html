@@ -11,6 +11,20 @@
                     <span class="text-color">Order History</span>
                 </div>
             </li>
+            <li id="position-info-wrap" class="d-block">
+                <th:block th:replace="~{fragments/info :: bottom('해당 포지션은 거래소를 통해 가져온 데이터로 보여집니다.')}">
+                </th:block>
+            </li>
+            <li id="history-info-wrap" class="d-none">
+                <th:block th:replace="~{fragments/info :: bottom('
+                    수익률은 수수료를 포함한 수익률입니다.,
+                    [ 수익률 계산공식 ],
+                    구매총액 = 구매 금액 + 구매 수수료 (구매 당시 환율),
+                    판매총액 = 판매 금액 - 판매 수수료 (판매 당시 환율),
+                    수익률 = (판매총액 - 구매 총액) ÷ 구매총액 × 100
+                    ')}">
+                </th:block>
+            </li>
         </ul>
         <!-- position -->
         <div id="position-wrap" class="d-block">
@@ -72,6 +86,9 @@
             $('#order-history').removeClass('active')
             blockToNone($('#order-history-wrap'))
             noneToBlock($('#position-wrap'))
+
+            blockToNone($('#history-info-wrap'))
+            noneToBlock($('#position-info-wrap'))
         })
 
         $('#order-history').click(function () {
@@ -79,6 +96,9 @@
             $('#position').removeClass('active')
             blockToNone($('#position-wrap'))
             noneToBlock($('#order-history-wrap'))
+
+            blockToNone($('#position-info-wrap'))
+            noneToBlock($('#history-info-wrap'))
         })
 
         if (orders.length > 0) {

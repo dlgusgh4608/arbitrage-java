@@ -1,16 +1,24 @@
 <!-- 거래 가능 -->
-<article
-    sec:authorize="isAuthenticated()"
-    th:if="${!symbolInfo.isEmpty() && !userTradeInfo.isEmpty()}"
-    class="w-100 p-3 shadow rounded order-form ele-bg-color"
->
-    <div class="d-flex mb-3">
-        <button class="order-modal-btn" id="edit-margin-mode">
-            CROSSED
-        </button>
-        <button class="order-modal-btn" id="update-leverage-modal">
-            x1
-        </button>
+<article sec:authorize="isAuthenticated()" th:if="${!symbolInfo.isEmpty() && !userTradeInfo.isEmpty()}"
+    class="w-100 p-3 shadow rounded order-form ele-bg-color">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="d-flex">
+            <button class="order-modal-btn" id="edit-margin-mode">
+                CROSSED
+            </button>
+            <button class="order-modal-btn" id="update-leverage-modal">
+                x1
+            </button>
+        </div>
+        <th:block th:replace="~{fragments/info :: bottom('
+            구매 개수는 지갑 잔액 및 레버리지를 통해 계산됩니다.,
+            판매 개수는 거래소 포지션을 통해 계산됩니다.,
+            환율에 따라 변동될 수 있습니다.,
+            [ 주의사항 ],
+            1.거래가 진행되고있을때 레버리지 및 마진모드를 변경하지 마십시오.,
+            2.본 사이트를 이용한 거래가 아닌 거래소를 통한 직접거래를 진행할 시 발생하는 문제에 대하여 책임지지 않습니다.
+            ')}">
+        </th:block>
     </div>
     <ul class="nav nav-underline mb-3">
         <li class="nav-item order-type-wrap">
@@ -89,11 +97,8 @@
 </article>
 
 <!-- 거래 불가 env를 다시 등록 -->
-<article
-    sec:authorize="isAuthenticated()"
-    th:unless="${!symbolInfo.isEmpty() && !userTradeInfo.isEmpty()}"
-    class="d-flex align-items-center w-100 p-3 shadow rounded order-form ele-bg-color order-disabled"
->
+<article sec:authorize="isAuthenticated()" th:unless="${!symbolInfo.isEmpty() && !userTradeInfo.isEmpty()}"
+    class="d-flex align-items-center w-100 p-3 shadow rounded order-form ele-bg-color order-disabled">
     <div class="w-100 text-center">
         <a th:href="@{/user/env-register}" class="text-point-color">ENV</a>
         <span class="text-color">를 먼저 등록해주세요.</span>

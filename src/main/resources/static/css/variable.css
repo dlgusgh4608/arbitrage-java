@@ -12,7 +12,7 @@
     /* 대표 컬러 */
     --bg-color: #FAFAFA;
     --ele-bg-color: #FFFFFF;
-    --tooltip-bg-color: rgba(0, 0, 0, 0.7);
+    --tooltip-bg-color: rgba(0, 0, 0, .9);
     --tooltip-text-color: #E9ECEF;
     --text-color: #212529;
 
@@ -27,13 +27,16 @@
     --gray7: #495057;
     --gray8: #343A40;
     --gray9: #212529;
+
+    --logo-url: url('../images/logo-black.png');
+    --m-logo-url: url('../images/m-logo-black.png');
 }
 
 [data-theme="dark"] {
     /* 대표 컬러 */
     --bg-color: #121212;
     --ele-bg-color: #1E1E1E;
-    --tooltip-bg-color: rgba(255, 255, 255, 0.7);
+    --tooltip-bg-color: rgba(255, 255, 255, .9);
     --tooltip-text-color: #212529;
     --text-color: #E9ECEF;
 
@@ -48,6 +51,9 @@
     --gray7: #E9ECEF;
     --gray8: #F1F3F5;
     --gray9: #F8F9FA;
+
+    --logo-url: url('../images/logo-white.png');
+    --m-logo-url: url('../images/m-logo-white.png');
 }
 
 /* classes */

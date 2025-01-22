@@ -12,7 +12,6 @@ if (light) {
     $('#themeIcon').append(getSvgHtml(false))
     $('html').removeAttr('data-theme')
     $('html').removeAttr('data-bs-theme')
-    $('#header-logo').attr('src', "/images/logo-black.png")
 } else {
     // 기본값을 다크모드로 설정
     $('html').attr('data-theme', 'dark')
@@ -20,7 +19,6 @@ if (light) {
     localStorage.setItem('theme', 'dark')
 
     $('#themeIcon').append(getSvgHtml(true))
-    $('#header-logo').attr('src', "/images/logo-white.png")
 }
 
 export function isLight() {
@@ -38,14 +36,12 @@ function toggleDarkMode() {
         localStorage.setItem('theme', 'dark')
 
         $('#themeIcon').html(getSvgHtml(true))
-        $('#header-logo').attr('src', "/images/logo-white.png")
     } else {
         $html.removeAttr('data-theme')
         $html.removeAttr('data-bs-theme')
         localStorage.setItem('theme', 'light')
 
         $('#themeIcon').html(getSvgHtml(false))
-        $('#header-logo').attr('src', "/images/logo-black.png")
     }
 }
 
@@ -61,7 +57,7 @@ async function fetcher(method = 'GET', url = '', data = {}) {
         credentials: 'include'
     }
 
-    if(method.toLocaleUpperCase() === 'GET') delete payload.body
+    if (method.toLocaleUpperCase() === 'GET') delete payload.body
 
     try {
         const response = await fetch(url, payload)

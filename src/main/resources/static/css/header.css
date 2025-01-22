@@ -1,4 +1,9 @@
 .h-logo {
+    background-image: var(--logo-url);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 200px;
     height: 48px;
 }
 
@@ -52,4 +57,11 @@
 
 .header-logout-svg-wrap>span {
     margin-left: -5px;
+}
+
+@media(max-width: 768px) {
+    .h-logo {
+        width: 48px;
+        background-image: var(--m-logo-url);
+    }
 }
