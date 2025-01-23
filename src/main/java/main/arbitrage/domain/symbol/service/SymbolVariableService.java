@@ -118,4 +118,14 @@ public class SymbolVariableService implements CommandLineRunner {
           SymbolErrorCode.INITIALIZED_FAILED, String.format("심볼 '%s' 검색 중 오류 발생", name), e);
     }
   }
+
+  public boolean isSupportedSymbol(String symbolName) {
+    try {
+      return getSupportedSymbolNames().contains(symbolName.toUpperCase());
+    } catch (SymbolException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new SymbolException(SymbolErrorCode.INITIALIZED_FAILED, "심볼 지원 여부 확인중 오류", e);
+    }
+  }
 }
