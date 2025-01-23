@@ -6,6 +6,8 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.sql.Timestamp;
 import lombok.AccessLevel;
@@ -15,6 +17,7 @@ import lombok.NoArgsConstructor;
 import main.arbitrage.domain.autoTradingStrategy.exception.AutoTradingStrategyErrorCode;
 import main.arbitrage.domain.autoTradingStrategy.exception.AutoTradingStrategyException;
 import main.arbitrage.domain.symbol.entity.Symbol;
+import main.arbitrage.domain.user.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -26,6 +29,11 @@ public class AutoTradingStrategy {
   @Id
   @Column(name = "user_id")
   private Long userId;
+
+  @OneToOne(fetch = FetchType.LAZY)
+  @MapsId
+  @JoinColumn(name = "user_id")
+  private User user;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "symbol_id", nullable = false)
@@ -144,7 +152,7 @@ public class AutoTradingStrategy {
 
   @Builder
   public AutoTradingStrategy(
-      Long userId,
+      User user,
       Symbol symbol,
       float stopLossPercent,
       float minimumProfitTargetPercent,
@@ -165,7 +173,7 @@ public class AutoTradingStrategy {
         kneeEntryPercent,
         shoulderEntryPercent);
 
-    this.userId = userId;
+    this.user = user;
     this.symbol = symbol;
     this.stopLossPercent = stopLossPercent;
     this.minimumProfitTargetPercent = minimumProfitTargetPercent;

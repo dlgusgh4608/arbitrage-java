@@ -7,6 +7,7 @@ import main.arbitrage.domain.autoTradingStrategy.exception.AutoTradingStrategyEr
 import main.arbitrage.domain.autoTradingStrategy.exception.AutoTradingStrategyException;
 import main.arbitrage.domain.autoTradingStrategy.repository.AutoTradingStrategyRepository;
 import main.arbitrage.domain.symbol.entity.Symbol;
+import main.arbitrage.domain.user.entity.User;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -15,7 +16,7 @@ public class AutoTradingStrategyService {
   private final AutoTradingStrategyRepository autoTradingStrategyRepository;
 
   public AutoTradingStrategy create(
-      Long userId,
+      User user,
       Symbol symbol,
       float stopLossPercent,
       float minimumProfitTargetPercent,
@@ -28,7 +29,7 @@ public class AutoTradingStrategyService {
     try {
       return autoTradingStrategyRepository.save(
           AutoTradingStrategy.builder()
-              .userId(userId)
+              .user(user)
               .symbol(symbol)
               .stopLossPercent(stopLossPercent)
               .minimumProfitTargetPercent(minimumProfitTargetPercent)
