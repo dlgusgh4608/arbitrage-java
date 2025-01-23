@@ -1,7 +1,9 @@
 package main.arbitrage.domain.userEnv.service;
 
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import main.arbitrage.application.auto.dto.AutomaticUserInfoDTO;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.exception.UserEnvErrorCode;
 import main.arbitrage.domain.userEnv.exception.UserEnvException;
@@ -38,6 +40,14 @@ public class UserEnvService {
   public void create(UserEnv userEnv) {
     try {
       userEnvRepository.save(userEnv);
+    } catch (Exception e) {
+      throw new UserEnvException(UserEnvErrorCode.UNKNOWN, e);
+    }
+  }
+
+  public List<AutomaticUserInfoDTO> findAutomaticUsers() {
+    try {
+      return userEnvRepository.findAutomaticUsers();
     } catch (Exception e) {
       throw new UserEnvException(UserEnvErrorCode.UNKNOWN, e);
     }
