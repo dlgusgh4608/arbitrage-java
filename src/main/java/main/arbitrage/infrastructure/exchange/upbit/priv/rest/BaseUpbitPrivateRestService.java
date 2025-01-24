@@ -20,7 +20,7 @@ import main.arbitrage.infrastructure.exchange.upbit.exception.UpbitErrorCode;
 import main.arbitrage.infrastructure.exchange.upbit.exception.UpbitException;
 import okhttp3.OkHttpClient;
 
-public abstract class BaseUpbitPrivateRestService implements ExchangeRestService {
+public class BaseUpbitPrivateRestService implements ExchangeRestService {
   protected final String accessKey;
   protected final String secretKey;
   protected final OkHttpClient okHttpClient;

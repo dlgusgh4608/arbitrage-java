@@ -17,7 +17,7 @@ import main.arbitrage.infrastructure.exchange.binance.exception.BinanceException
 import okhttp3.OkHttpClient;
 import org.springframework.security.crypto.codec.Hex;
 
-public abstract class BaseBinancePrivateRestService implements ExchangeRestService {
+public class BaseBinancePrivateRestService implements ExchangeRestService {
   protected final String accessKey;
   protected final String secretKey;
   protected final OkHttpClient okHttpClient;

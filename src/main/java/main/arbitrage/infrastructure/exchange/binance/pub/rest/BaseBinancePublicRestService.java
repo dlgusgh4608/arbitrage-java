@@ -10,7 +10,7 @@ import main.arbitrage.infrastructure.exchange.binance.exception.BinanceErrorCode
 import main.arbitrage.infrastructure.exchange.binance.exception.BinanceException;
 import okhttp3.OkHttpClient;
 
-public abstract class BaseBinancePublicRestService implements ExchangeRestService {
+public class BaseBinancePublicRestService implements ExchangeRestService {
   protected final OkHttpClient okHttpClient;
   protected final ObjectMapper objectMapper;
   protected final SymbolVariableService symbolVariableService;

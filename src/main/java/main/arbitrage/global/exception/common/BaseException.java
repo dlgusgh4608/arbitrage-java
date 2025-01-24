@@ -3,7 +3,7 @@ package main.arbitrage.global.exception.common;
 import lombok.Getter;
 
 @Getter
-public abstract class BaseException extends RuntimeException {
+public class BaseException extends RuntimeException {
   private final BaseErrorCode errorCode;
   private String serverMessage = "";
 
