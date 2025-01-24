@@ -1,93 +1,68 @@
 package main.arbitrage.infrastructure.exchange.binance.priv.websocket;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.transaction.Transactional;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
-import main.arbitrage.application.order.dto.OrderCalcResultDTO;
-import main.arbitrage.domain.buyOrder.entity.BuyOrder;
+import main.arbitrage.application.auto.dto.AutomaticUserInfoDTO;
 import main.arbitrage.domain.buyOrder.service.BuyOrderService;
-import main.arbitrage.domain.exchangeRate.entity.ExchangeRate;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
 import main.arbitrage.domain.sellOrder.service.SellOrderService;
-import main.arbitrage.domain.symbol.entity.Symbol;
+import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.global.util.math.MathUtil;
-import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.EventType;
+import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.ExecutionType;
+import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.OrderType;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Side;
+import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Status;
 import main.arbitrage.infrastructure.exchange.binance.dto.event.BinanceOrderTradeUpdateEvent;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
 import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
-import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitOrderResponse;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
 import main.arbitrage.infrastructure.websocket.common.WebSocketClient;
 import main.arbitrage.infrastructure.websocket.handler.BinanceUserStreamHandler;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
-/*
- * Long userId
- * Symbol Entity -> 거래하려하는 Symbol을 가져와야함.
- * ExchangeRate Entity
- * 우선 임의의 값으로 넘겨받아 처리한 후 아래 Entity 생성하기.
- * ----
- * UserAutomatic Entity 생성.
- *  userId(Long)
- *  symbol(Symbol),
- *  stopLoss(Integer),
- *  targetProfitRate(integer),
- *  stairs(integer)[분할]
- *  additionalTarget(integer)[추가매수 타겟]
- */
-
 @Slf4j
-public class BinanceUserStream implements WebSocketClient {
+public class BinanceUserStream extends AutomaticOrder implements WebSocketClient {
   private static final String BASE_URL = "wss://fstream.binance.com/ws/";
-  private final Long userId;
-  private final Symbol symbol;
   private final String socketName;
-  private final BinancePrivateRestService binanceService;
-  private final UpbitPrivateRestService upbitService;
   private final BinanceUserStreamHandler binanceUserStreamHandler;
-  private final BuyOrderService buyOrderService;
-  private final SellOrderService sellOrderService;
-  private final ExchangeRateService exchangeRateService;
 
+  // binance order의 정보를 종합 계산하기 위한 Map
   private final Map<String, List<BinanceOrderTradeUpdateEvent>> orderMap =
       new ConcurrentHashMap<>();
+
+  // binance order의 Ticker를 관리하기 위한 Map
   private final Map<String, ScheduledFuture<?>> orderTickerMap = new ConcurrentHashMap<>();
-  private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-  private static final long ORDER_TICKER_TIMEOUT = 1500; // 1.5sec
+
+  // Ticker의 Timer ms
+  private static final long ORDER_TICKER_TIMEOUT = 3000; // 3sec
 
   private boolean isRunning = false;
   private WebSocketSession session;
 
   public BinanceUserStream(
-      Long userId, // 추후에 UserAutomatic로 변경
-      Symbol symbol, // 추후에 UserAutomatic로 변경
+      AutomaticUserInfoDTO automaticUser,
       BinanceUserStreamHandler binanceUserStreamHandler,
       ExchangePrivateRestPair exchangePrivateServicePair,
+      SymbolVariableService symbolVariableService,
       BuyOrderService buyOrderService,
       SellOrderService sellOrderService,
       ExchangeRateService exchangeRateService) {
-    this.userId = userId;
-    this.symbol = symbol;
-    this.socketName = "UserStream[" + userId + "]";
+    super(
+        automaticUser,
+        symbolVariableService,
+        buyOrderService,
+        sellOrderService,
+        exchangeRateService,
+        exchangePrivateServicePair.getBinance(),
+        exchangePrivateServicePair.getUpbit());
+    this.socketName = "UserStream[" + automaticUser.userId() + "]";
     this.binanceUserStreamHandler = binanceUserStreamHandler;
-    this.binanceService = exchangePrivateServicePair.getBinance();
-    this.upbitService = exchangePrivateServicePair.getUpbit();
-    this.buyOrderService = buyOrderService;
-    this.sellOrderService = sellOrderService;
-    this.exchangeRateService = exchangeRateService;
   }
 
   @Override
@@ -97,7 +72,7 @@ public class BinanceUserStream implements WebSocketClient {
 
       StandardWebSocketClient client = new StandardWebSocketClient();
 
-      String listenKey = binanceService.createListenKey();
+      String listenKey = createListenKey();
 
       String websocketURL = BASE_URL.concat(listenKey);
       session =
@@ -110,6 +85,8 @@ public class BinanceUserStream implements WebSocketClient {
               .get();
 
       isRunning = true;
+      // 자동거래가 활성화 되어있을시 unLock
+      if (automaticUser.autoFlag() == true) unlock();
     } catch (Exception e) {
       System.out.println(e);
       throw new RuntimeException(e);
@@ -135,31 +112,84 @@ public class BinanceUserStream implements WebSocketClient {
   }
 
   private void handleMessage(JsonNode data) {
+    // eventType을 enum으로 하기엔 사용하지 않는 eventType이 많이 존재하기에 String으로 처리
+    String eventType = data.get("e").asText();
+
+    switch (eventType) {
+      case "ACCOUNT_UPDATE" -> {
+        break;
+      }
+      case "ORDER_TRADE_UPDATE" -> {
+        JsonNode order = data.get("o");
+        switchOrderTrade(
+            BinanceOrderTradeUpdateEvent.builder()
+                .eventTime(data.get("E").asLong())
+                .clientId(order.get("c").asText())
+                .orderType(order.get("o").asText())
+                .executionType(order.get("x").asText())
+                .status(order.get("X").asText())
+                .side(order.get("S").asText())
+                .symbol(
+                    symbolVariableService.findSymbolByName(
+                        order.get("s").asText().replace("USDT", "")))
+                .price(order.get("L").asDouble())
+                .quantity(order.get("l").asDouble())
+                .isMaker(order.get("m").asBoolean())
+                .commission(order.get("n").floatValue())
+                .build());
+        break;
+      }
+      case "listenKeyExpired" -> {
+        break;
+      }
+      default -> {
+        break;
+      }
+    }
+  }
+
+  // 청산될시 이벤트 (얻느라 힘들었다 .....)
+  // BinanceOrderTradeUpdateEvent(eventTime=1737618483293, clientId=autoclose-1737618483209916950,
+  // orderType=LIQUIDATION, executionType=NEW, status=NEW, side=BUY, symbol=ETH, price=0.0,
+  // quantity=0.0, isMaker=false, commission=0.0)
+
+  // BinanceOrderTradeUpdateEvent(eventTime=1737618483293, clientId=autoclose-1737618483209916950,
+  // orderType=LIQUIDATION, executionType=TRADE, status=FILLED, side=BUY, symbol=ETH, price=3228.75,
+  // quantity=0.009, isMaker=false, commission=0.0)
+  private boolean validateOrder(BinanceOrderTradeUpdateEvent payload) {
+    // 지원 심볼 여부
+    if (payload.getSymbol() == null) return false;
+
+    // 취소 주문 확인
+    if (payload.getExecutionType().equals(ExecutionType.CANCELED.name())) return false;
+
+    // 오더 타입이 청산인지 확인
+    if (payload.getOrderType().equals(OrderType.LIQUIDATION.name())) return true;
+
+    return true;
+    // 해당 거래가 자동거래인지 확안
+    // return KeyGenUtil.validate(payload.getClientId());
+  }
+
+  private void switchOrderTrade(BinanceOrderTradeUpdateEvent orderTradeUpdateEvent) {
+    if (!validateOrder(orderTradeUpdateEvent)) return;
+
+    System.out.println(orderTradeUpdateEvent);
+
     try {
-      EventType eventType = EventType.valueOf(data.get("e").asText());
+      Status status = Status.valueOf(orderTradeUpdateEvent.getStatus());
 
-      switch (eventType) {
-        case ACCOUNT_UPDATE -> {
+      switch (status) {
+        case NEW -> {
+          newOrderTrade(orderTradeUpdateEvent);
           break;
         }
-        case ORDER_TRADE_UPDATE -> {
-          JsonNode order = data.get("o");
-
-          switchOrderTrade(
-              BinanceOrderTradeUpdateEvent.builder()
-                  .eventTime(data.get("E").asLong())
-                  .clientId(order.get("c").asText())
-                  .status(order.get("X").asText())
-                  .side(order.get("S").asText())
-                  .symbol(order.get("s").asText())
-                  .price(order.get("L").asDouble())
-                  .quantity(order.get("l").asDouble())
-                  .isMaker(order.get("m").asBoolean())
-                  .commission(order.get("n").floatValue())
-                  .build());
+        case PARTIALLY_FILLED -> {
+          partiallyFilledOrderTrade(orderTradeUpdateEvent);
           break;
         }
-        case listenKeyExpired -> {
+        case FILLED -> {
+          filledOrderTrade(orderTradeUpdateEvent);
           break;
         }
         default -> {
@@ -167,107 +197,62 @@ public class BinanceUserStream implements WebSocketClient {
         }
       }
     } catch (Exception e) {
-      System.out.println("invalid event type" + data.get("e").asText());
+      log.error("invalid Status\tstatus: {}", orderTradeUpdateEvent.getStatus());
     }
   }
 
-  private void switchOrderTrade(BinanceOrderTradeUpdateEvent orderTradeUpdateEvent) {
-    switch (orderTradeUpdateEvent.getStatus()) {
-      case "FILLED" -> filledOrderTrade(orderTradeUpdateEvent.getClientId(), orderTradeUpdateEvent);
-      case "PARTIALLY_FILLED" ->
-          partiallyFilledOrderTrade(orderTradeUpdateEvent.getClientId(), orderTradeUpdateEvent);
-      default -> {
-        break;
-      }
+  // 새 주문
+  private void newOrderTrade(BinanceOrderTradeUpdateEvent payload) {
+    String clientId = payload.getClientId();
+    orderMap.put(clientId, new ArrayList<>());
+    setTicker(payload.getSymbol().getName(), clientId);
+  }
+
+  // 부분 체결
+  private void partiallyFilledOrderTrade(BinanceOrderTradeUpdateEvent payload) {
+    String clientId = payload.getClientId();
+    List<BinanceOrderTradeUpdateEvent> oldOrder = orderMap.get(clientId);
+
+    // 동시성 문제로 binance cancel을 하는 중에 체결이 발생함.
+    if (oldOrder == null) {
+      List<BinanceOrderTradeUpdateEvent> newOrder = new ArrayList<>();
+      newOrder.add(payload);
+      orderMap.put(clientId, newOrder);
+      setTicker(payload.getSymbol().getName(), clientId);
+      return;
     }
+
+    // oldOrder가 null이 아님으로 List를 반환받았으니
+    // 정상적인 거래 flow로 add
+    oldOrder.add(payload);
   }
 
   // 완전 체결
-  private void filledOrderTrade(String clientId, BinanceOrderTradeUpdateEvent payload) {
+  private void filledOrderTrade(BinanceOrderTradeUpdateEvent payload) {
+    String clientId = payload.getClientId();
     List<BinanceOrderTradeUpdateEvent> oldOrder = orderMap.get(clientId);
 
-    // 이전 주문이 있으면 이전 부분체결 주문에서 걸린 Timer를 제거하고 계산후 진행.
-    // 이전 주문이 없으면 그냥 진행.
-    if (oldOrder != null) {
-      ScheduledFuture<?> currentTicker = orderTickerMap.get(clientId);
+    // 타이머 종료 및 Map에서 데이터 삭제
+    orderMap.remove(clientId);
+    orderTickerMap.remove(clientId);
+    ScheduledFuture<?> currentTicker = orderTickerMap.get(clientId);
+    if (currentTicker != null) currentTicker.cancel(false);
 
-      if (currentTicker != null) currentTicker.cancel(false);
+    // 한번에 체결되지 않았으며, Ticker(ORDER_TICKER_TIMEOUT)의 시간이 경과하지 않았지만
+    // 주문이 전부 체결되었을때 실행
+    if (oldOrder != null && oldOrder.size() != 0) {
 
       oldOrder.add(payload);
 
       BinanceOrderTradeUpdateEvent calculatedPayload = calculateOrderTrade(oldOrder);
 
-      orderMap.remove(clientId);
-      orderTickerMap.remove(clientId);
-
       orderForSide(calculatedPayload); // 진행
-    } else {
-      orderForSide(payload); // 진행
+      return;
     }
-  }
 
-  // 부분 체결
-  private void partiallyFilledOrderTrade(String clientId, BinanceOrderTradeUpdateEvent payload) {
-    List<BinanceOrderTradeUpdateEvent> oldOrder = orderMap.get(clientId);
-
-    // 이전 주문이 있으면 Map in List에 add
-    // 이전 주문이 없으면 List add, Map put, setTicker(ORDER_TICKER_TIMEOUT)
-    if (oldOrder != null) {
-      oldOrder.add(payload);
-    } else {
-      List<BinanceOrderTradeUpdateEvent> newOrder = new ArrayList<>();
-      newOrder.add(payload);
-      orderMap.put(clientId, newOrder);
-      setTicker(clientId);
-    }
-  }
-
-  @Transactional
-  private void sellUpbit(BinanceOrderTradeUpdateEvent orderTradeUpdateEvent) {
-    List<BuyOrder> openOrders = buyOrderService.getAndExistOpenOrders(userId, symbol);
-    ExchangeRate exchangeRate = exchangeRateService.getNonNullUsdToKrw();
-    List<OrderCalcResultDTO> results = new ArrayList<>();
-    BigDecimal qty = BigDecimal.valueOf(orderTradeUpdateEvent.getQuantity());
-
-    double upbitQty = sellOrderService.calculateSellQty(results, openOrders, qty);
-
-    String uuid =
-        upbitService.order(
-            symbol.getName(),
-            UpbitOrderEnums.Side.ask,
-            UpbitOrderEnums.OrdType.market,
-            null,
-            upbitQty);
-
-    UpbitOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
-
-    for (OrderCalcResultDTO orderCalcResult : results) {
-      if (orderCalcResult.isClose()) {
-        orderCalcResult.getBuyOrder().close();
-      }
-      sellOrderService.createLimitOrder(
-          orderCalcResult, orderTradeUpdateEvent, upbitOrderRes, exchangeRate);
-    }
-  }
-
-  @Transactional
-  private void buyUpbit(BinanceOrderTradeUpdateEvent orderTradeUpdateEvent) {
-    ExchangeRate exchangeRate = exchangeRateService.getNonNullUsdToKrw();
-    String uuid =
-        upbitService.order(
-            symbol.getName(),
-            UpbitOrderEnums.Side.bid,
-            UpbitOrderEnums.OrdType.price,
-            Math.round(
-                orderTradeUpdateEvent.getPrice()
-                    * orderTradeUpdateEvent.getQuantity()
-                    * exchangeRate.getRate()),
-            null);
-
-    UpbitOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
-
-    buyOrderService.createLimitOrder(
-        userId, symbol, exchangeRate, orderTradeUpdateEvent, upbitOrderRes);
+    // cancel을 하는 도중 주문이 들어와 동시성 문제가 발생했을때
+    // 주문이 한번에 다 체결된 경우
+    orderForSide(payload); // 진행
   }
 
   private void orderForSide(BinanceOrderTradeUpdateEvent orderTradeUpdateEvent) {
@@ -293,6 +278,7 @@ public class BinanceUserStream implements WebSocketClient {
 
     return BinanceOrderTradeUpdateEvent.builder()
         .clientId(firstOrderTrade.getClientId())
+        .orderType(firstOrderTrade.getOrderType())
         .status(firstOrderTrade.getStatus())
         .side(firstOrderTrade.getSide())
         .symbol(firstOrderTrade.getSymbol())
@@ -303,23 +289,47 @@ public class BinanceUserStream implements WebSocketClient {
         .build();
   }
 
-  // 주문 타이머
-  private void setTicker(String clientId) {
-    ScheduledFuture<?> ticker =
-        scheduler.schedule(
-            () -> {
-              List<BinanceOrderTradeUpdateEvent> orders = orderMap.get(clientId);
-              if (orders != null) {
-                BinanceOrderTradeUpdateEvent payload = calculateOrderTrade(orders);
+  // 해당 TIcker는 BinanceUserStream과 같은 Thread를 사용합니다.
+  private void setTicker(String symbolName, String clientId) {
+    System.out.println(symbolName);
+    System.out.println(clientId);
 
+    if (executorService == null) return;
+
+    // orderMap은 newOrderTrade와 partiallyFilledOrderTrade method에서 생성하며
+    // 이는 동시성 문제를 해결하기 위함입니다.
+    ScheduledFuture<?> ticker =
+        executorService.schedule(
+            () -> {
+              try {
+                Thread.sleep(ORDER_TICKER_TIMEOUT); // 3sec
+                List<BinanceOrderTradeUpdateEvent> orders = orderMap.get(clientId);
                 orderMap.remove(clientId);
                 orderTickerMap.remove(clientId);
 
-                orderForSide(payload);
+                // 만약 orders가 null이면 완전체결이 되어 orderMap과 orderTickerMap을 remove한 상태
+                // 만약 isEmpty에 걸리면 주문이 체결되지 않은 상태
+                if (orders != null && orders.size() != 0) {
+                  System.out.println("이거 탐?");
+                  try {
+                    cancelBinance(symbolName, clientId);
+                  } catch (Exception e) {
+                    System.out.println("이미 캔슬된 주문입니다.");
+                  }
+
+                  BinanceOrderTradeUpdateEvent payload = calculateOrderTrade(orders);
+                  orderForSide(payload);
+                }
+              } catch (Exception e) {
+                log.error(
+                    "[ {}, {} ]: Ticker thread error",
+                    Thread.currentThread().getName(),
+                    socketName,
+                    e);
               }
             },
-            ORDER_TICKER_TIMEOUT,
-            TimeUnit.MICROSECONDS);
+            0,
+            TimeUnit.MILLISECONDS);
 
     orderTickerMap.put(clientId, ticker);
   }

@@ -12,12 +12,14 @@ public class BinanceEnums {
     GTD
   }
 
+  // https://developers.binance.com/docs/derivatives/usds-margined-futures/user-data-streams/Event-Order-Update
   public enum Status {
     NEW,
     PARTIALLY_FILLED,
     FILLED,
     CANCELED,
-    REJECTED
+    EXPIRED,
+    EXPIRED_IN_MATCH
   }
 
   public enum Side {
@@ -30,9 +32,24 @@ public class BinanceEnums {
     CROSSED
   }
 
-  public enum EventType {
-    ACCOUNT_UPDATE,
-    ORDER_TRADE_UPDATE,
-    listenKeyExpired,
+  // https://developers.binance.com/docs/derivatives/usds-margined-futures/user-data-streams/Event-Order-Update
+  public enum OrderType {
+    LIMIT,
+    MARKET,
+    STOP,
+    STOP_MARKET,
+    TAKE_PROFIT,
+    TAKE_PROFIT_MARKET,
+    TRAILING_STOP_MARKET,
+    LIQUIDATION
+  }
+
+  public enum ExecutionType {
+    NEW,
+    CANCELED,
+    CALCULATED,
+    EXPIRED,
+    TRADE,
+    AMENDMENT
   }
 }

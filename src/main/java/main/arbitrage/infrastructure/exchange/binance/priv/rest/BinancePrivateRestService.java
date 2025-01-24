@@ -60,7 +60,7 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
           objectMapper
               .getTypeFactory()
               .constructCollectionType(List.class, BinanceAccountResponse.class));
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new BinanceException(BinanceErrorCode.API_ERROR, e);
     }
   }
@@ -123,8 +123,39 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
       if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
 
       return objectMapper.readValue(responseBody, BinanceOrderResponse.class);
-    } catch (IOException e) {
-      throw new BinanceException(BinanceErrorCode.API_ERROR, paramString, e);
+    } catch (Exception e) {
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, paramString, e);
+    }
+  }
+
+  public BinanceOrderResponse cancelOrder(String symbolName, String clientId) {
+    String paramString = String.format("symbol: %s, clientId: %s", symbolName, clientId);
+    try {
+      String symbol = convertSymbol(symbolName);
+      Map<String, Object> params = new LinkedHashMap<>();
+      params.put("timestamp", System.currentTimeMillis());
+      params.put("symbol", symbol);
+      params.put("origClientOrderId", clientId);
+
+      String queryString = generateToken(params);
+
+      Request request =
+          new Request.Builder()
+              .url(DEFAULT_URL + "/v1/order" + "?" + queryString)
+              .addHeader("Content-Type", "application/json")
+              .addHeader("X-MBX-APIKEY", accessKey)
+              .delete()
+              .build();
+
+      Response response = okHttpClient.newCall(request).execute();
+
+      String responseBody = response.body().string();
+
+      if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
+
+      return objectMapper.readValue(responseBody, BinanceOrderResponse.class);
+    } catch (Exception e) {
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, paramString, e);
     }
   }
 
@@ -160,8 +191,8 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
       if (responseList.isEmpty()) return null;
 
       return responseList.get(0);
-    } catch (IOException e) {
-      throw new BinanceException(BinanceErrorCode.API_ERROR, e);
+    } catch (Exception e) {
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, e);
     }
   }
 
@@ -198,8 +229,8 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
       if (responseList.isEmpty()) return null;
 
       return responseList.get(0);
-    } catch (IOException e) {
-      throw new BinanceException(BinanceErrorCode.API_ERROR, e);
+    } catch (Exception e) {
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, e);
     }
   }
 
@@ -230,8 +261,8 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
       if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
 
       return objectMapper.readValue(responseBody, BinanceChangeLeverageResponse.class);
-    } catch (IOException e) {
-      throw new BinanceException(BinanceErrorCode.API_ERROR, e);
+    } catch (Exception e) {
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, e);
     }
   }
 
@@ -269,8 +300,8 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
       return responseList.get(0);
 
-    } catch (IOException e) {
-      throw new BinanceException(BinanceErrorCode.API_ERROR, e);
+    } catch (Exception e) {
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, e);
     }
   }
 
@@ -302,7 +333,7 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
       return true;
     } catch (IOException e) {
-      throw new BinanceException(BinanceErrorCode.API_ERROR, e);
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, e);
     }
   }
 
@@ -329,8 +360,8 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
       if (!response.isSuccessful()) validateResponse(json);
 
       return json.get("listenKey").asText();
-    } catch (IOException e) {
-      throw new BinanceException(BinanceErrorCode.API_ERROR, e);
+    } catch (Exception e) {
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, e);
     }
   }
 
@@ -356,8 +387,8 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
       if (!response.isSuccessful()) validateResponse(json);
 
       return json.get("listenKey").asText();
-    } catch (IOException e) {
-      throw new BinanceException(BinanceErrorCode.API_ERROR, e);
+    } catch (Exception e) {
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, e);
     }
   }
 }

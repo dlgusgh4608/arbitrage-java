@@ -36,8 +36,8 @@ public class UserEnvQueryRepositoryImpl implements UserEnvQueryRepository {
         .innerJoin(userEnv.user, user)
         .leftJoin(autoTradingStrategy)
         .on(autoTradingStrategy.user.eq(user))
-        .leftJoin(symbol)
-        .on(autoTradingStrategy.symbol.eq(symbol))
+        .leftJoin(autoTradingStrategy.symbol, symbol)
+        .fetchJoin()
         .where(user.lpFlag.isTrue())
         .fetch();
   }

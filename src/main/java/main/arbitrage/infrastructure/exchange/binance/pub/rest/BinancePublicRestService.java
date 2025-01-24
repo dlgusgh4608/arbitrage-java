@@ -78,7 +78,6 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
               symbolName, new BinanceExchangeInfoResponse(maxQty, minQty, stepSize, minUsdt));
         }
       }
-
       return exchangeHashMap;
     } catch (IOException e) {
       throw new BinanceException(BinanceErrorCode.API_ERROR, e);
