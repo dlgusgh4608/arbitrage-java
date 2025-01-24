@@ -2,6 +2,9 @@ package main.arbitrage.domain.symbol.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.exception.SymbolErrorCode;
@@ -16,7 +19,7 @@ public class SymbolVariableService implements CommandLineRunner {
   private final List<String> DEFAULT_SYMBOLS = List.of("BTC", "ETH");
 
   private final SymbolRepository symbolRepository;
-  private static final List<Symbol> symbols = new ArrayList<>();
+  private Map<String, Symbol> supportedSymbolMap = new ConcurrentHashMap<>();
   private static volatile boolean initialized = false;
 
   @Override
@@ -46,8 +49,9 @@ public class SymbolVariableService implements CommandLineRunner {
   private void initializeSymbols() {
     try {
       DEFAULT_SYMBOLS.forEach(this::initializeSymbol);
-      symbols.clear();
-      symbols.addAll(symbolRepository.findAll());
+      supportedSymbolMap =
+          symbolRepository.findByUseTrue().stream()
+              .collect(Collectors.toConcurrentMap(Symbol::getName, symbol -> symbol));
     } catch (Exception e) {
       throw new SymbolException(SymbolErrorCode.INITIALIZED_FAILED, "심볼 로딩 오류", e);
     }
@@ -66,8 +70,7 @@ public class SymbolVariableService implements CommandLineRunner {
 
   public List<Symbol> getAllSymbol() {
     try {
-      initializeIfNeeded();
-      return new ArrayList<>(symbols);
+      return symbolRepository.findAll();
     } catch (SymbolException e) {
       throw e;
     } catch (Exception e) {
@@ -78,7 +81,7 @@ public class SymbolVariableService implements CommandLineRunner {
   public List<Symbol> getSupportedSymbols() {
     try {
       initializeIfNeeded();
-      return symbols.stream().filter(Symbol::isUse).toList();
+      return new ArrayList<>(supportedSymbolMap.values());
     } catch (SymbolException e) {
       throw e;
     } catch (Exception e) {
@@ -88,7 +91,8 @@ public class SymbolVariableService implements CommandLineRunner {
 
   public List<String> getSupportedSymbolNames() {
     try {
-      return getSupportedSymbols().stream().map(symbol -> symbol.getName().toUpperCase()).toList();
+      initializeIfNeeded();
+      return new ArrayList<>(supportedSymbolMap.keySet());
     } catch (SymbolException e) {
       throw e;
     } catch (Exception e) {
@@ -103,14 +107,22 @@ public class SymbolVariableService implements CommandLineRunner {
       }
 
       initializeIfNeeded();
-      return symbols.stream()
-          .filter(symbol -> symbol.getName().toUpperCase().equalsIgnoreCase(name.toUpperCase()))
-          .findFirst()
-          .orElseThrow(
-              () ->
-                  new SymbolException(
-                      SymbolErrorCode.NOT_FOUND_SYMBOL, String.format("심볼 '%s'을 찾을 수 없습니다", name)));
 
+      return supportedSymbolMap.get(name);
+    } catch (Exception e) {
+      throw new SymbolException(
+          SymbolErrorCode.INITIALIZED_FAILED, String.format("심볼 '%s' 검색 중 오류 발생", name), e);
+    }
+  }
+
+  public Symbol findAndExistSymbolByName(String name) {
+    try {
+      Symbol symbol = findSymbolByName(name);
+      if (symbol == null)
+        throw new SymbolException(
+            SymbolErrorCode.NOT_FOUND_SYMBOL, String.format("심볼 '%s'을 찾을 수 없습니다", name));
+
+      return symbol;
     } catch (SymbolException e) {
       throw e;
     } catch (Exception e) {
@@ -119,9 +131,9 @@ public class SymbolVariableService implements CommandLineRunner {
     }
   }
 
-  public boolean isSupportedSymbol(String symbolName) {
+  public boolean isSupportedSymbol(String name) {
     try {
-      return getSupportedSymbolNames().contains(symbolName.toUpperCase());
+      return findSymbolByName(name) == null ? false : true;
     } catch (SymbolException e) {
       throw e;
     } catch (Exception e) {

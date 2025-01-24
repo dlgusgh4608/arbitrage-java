@@ -30,7 +30,7 @@ public class BaseBinancePublicRestService implements ExchangeRestService {
   public String convertSymbol(String symbol) {
     String upperSymbol = symbol.toUpperCase().replace("USDT", "");
 
-    if (!symbolVariableService.getSupportedSymbolNames().contains(upperSymbol))
+    if (!symbolVariableService.isSupportedSymbol(upperSymbol))
       throw new BinanceException(BinanceErrorCode.BAD_SYMBOL);
 
     return upperSymbol + "USDT";

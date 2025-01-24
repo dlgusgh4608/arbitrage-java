@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceExchangeInfoResponse;
@@ -46,8 +45,6 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
 
       JsonNode symbols = json.get("symbols");
 
-      List<String> supportedSymbolNames = symbolVariableService.getSupportedSymbolNames();
-
       Map<String, BinanceExchangeInfoResponse> exchangeHashMap = new HashMap<>();
 
       String MARKET_LOT_SIZE = "MARKET_LOT_SIZE"; // 시장가 체결 필터
@@ -57,11 +54,7 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
         String symbolName = symbol.get("baseAsset").asText();
         String symbolFullName = symbol.get("symbol").asText();
 
-        if (supportedSymbolNames.stream()
-            .map(s -> s.concat("USDT"))
-            .toList()
-            .contains(symbolFullName)) {
-
+        if (symbolVariableService.isSupportedSymbol(symbolFullName.replace("USDT", ""))) {
           JsonNode filters = symbol.get("filters");
 
           Double maxQty = null;
