@@ -9,8 +9,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BuyOrderRepository extends JpaRepository<BuyOrder, Long>, BuyOrderQueryRepository {
-  List<BuyOrder> findByUserIdAndSymbolAndIsCloseFalseOrderByCreatedAtDesc(
-      Long userId, Symbol symbol);
+  // List<BuyOrder> findByUserIdAndSymbolAndIsCloseFalseOrderByCreatedAtDesc(
+  //     Long userId, Symbol symbol);
+
+  @Override
+  List<BuyOrder> findBuyOrderByUserIdAndSymbolIdAndIsCloseFalse(long userId, long symbolId);
 
   @Override
   List<BuyOrder> findBuyOrdersByUserIdAndSymbolId(long userId, long symbolId, Pageable pageable);

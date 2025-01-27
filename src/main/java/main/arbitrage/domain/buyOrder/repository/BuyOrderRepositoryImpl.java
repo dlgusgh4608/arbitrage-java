@@ -19,14 +19,13 @@ public class BuyOrderRepositoryImpl implements BuyOrderQueryRepository {
   private final QSellOrder sellOrder = QSellOrder.sellOrder;
   private final QExchangeRate exchangeRate = QExchangeRate.exchangeRate;
 
-  private JPAQuery<BuyOrder> findByOrderQuery(long userId, Pageable pageable) {
+  private JPAQuery<BuyOrder> findByOrderQuery(long userId) {
     return queryFactory
         .selectFrom(buyOrder)
         .innerJoin(buyOrder.exchangeRate, exchangeRate)
         .fetchJoin()
         .where(buyOrder.userId.eq(userId))
-        .offset(pageable.getOffset())
-        .limit(pageable.getPageSize());
+        .orderBy(buyOrder.createdAt.desc());
   }
 
   private void appendSellOrders(List<BuyOrder> buyOrders) {
@@ -46,7 +45,11 @@ public class BuyOrderRepositoryImpl implements BuyOrderQueryRepository {
   public List<BuyOrder> findBuyOrdersByUserIdAndSymbolId(
       long userId, long symbolId, Pageable pageable) {
     List<BuyOrder> buyOrders =
-        findByOrderQuery(userId, pageable).where(buyOrder.symbol.id.eq(symbolId)).fetch();
+        findByOrderQuery(userId)
+          .where(buyOrder.symbol.id.eq(symbolId))
+          .offset(pageable.getOffset())
+          .limit(pageable.getPageSize())
+          .fetch();
 
     appendSellOrders(buyOrders);
 
@@ -55,9 +58,20 @@ public class BuyOrderRepositoryImpl implements BuyOrderQueryRepository {
 
   @Override
   public List<BuyOrder> findBuyOrderByUserId(long userId, Pageable pageable) {
-    List<BuyOrder> buyOrders = findByOrderQuery(userId, pageable).fetch();
+    List<BuyOrder> buyOrders = findByOrderQuery(userId)
+      .offset(pageable.getOffset())
+      .limit(pageable.getPageSize())
+      .fetch();
     appendSellOrders(buyOrders);
 
+    return buyOrders;
+  }
+
+  @Override
+  public List<BuyOrder> findBuyOrderByUserIdAndSymbolIdAndIsCloseFalse(long userId, long symbolId) {
+    List<BuyOrder> buyOrders = findByOrderQuery(userId).where(buyOrder.symbol.id.eq(symbolId)).where(buyOrder.isClose.isFalse()).fetch();
+    appendSellOrders(buyOrders);
+    
     return buyOrders;
   }
 }

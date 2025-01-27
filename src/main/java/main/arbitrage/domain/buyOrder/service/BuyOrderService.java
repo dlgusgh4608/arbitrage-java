@@ -114,8 +114,8 @@ public class BuyOrderService {
 
   public List<BuyOrder> getOpenOrders(Long userId, Symbol symbol) {
     try {
-      return buyOrderRepository.findByUserIdAndSymbolAndIsCloseFalseOrderByCreatedAtDesc(
-          userId, symbol);
+      return buyOrderRepository.findBuyOrderByUserIdAndSymbolIdAndIsCloseFalse(
+          userId, symbol.getId());
     } catch (Exception e) {
       throw new BuyOrderException(BuyOrderErrorCode.UNKNOWN, e);
     }
@@ -124,8 +124,8 @@ public class BuyOrderService {
   public List<BuyOrder> getAndExistOpenOrders(Long userId, Symbol symbol) {
     try {
       List<BuyOrder> buyOrders =
-          buyOrderRepository.findByUserIdAndSymbolAndIsCloseFalseOrderByCreatedAtDesc(
-              userId, symbol);
+          buyOrderRepository.findBuyOrderByUserIdAndSymbolIdAndIsCloseFalse(
+              userId, symbol.getId());
 
       if (buyOrders.isEmpty()) {
         throw new BuyOrderException(BuyOrderErrorCode.NOT_FOUND);

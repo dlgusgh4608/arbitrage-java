@@ -79,8 +79,6 @@ public class AutomaticOrder {
 
   // 업비트 주문 관리
   protected void buyUpbit(BinanceOrderTradeUpdateEvent orderTradeUpdateEvent) {
-    System.out.println("buyUpbit");
-    System.out.println(orderTradeUpdateEvent);
     ExchangeRate exchangeRate = exchangeRateService.getNonNullUsdToKrw();
     Symbol symbol = orderTradeUpdateEvent.getSymbol();
     String uuid =
@@ -102,24 +100,15 @@ public class AutomaticOrder {
 
   @Transactional
   protected void sellUpbit(BinanceOrderTradeUpdateEvent orderTradeUpdateEvent) {
-    System.out.println("sellUpbit");
-    System.out.println(orderTradeUpdateEvent);
     Symbol symbol = orderTradeUpdateEvent.getSymbol();
     List<BuyOrder> openOrders =
         buyOrderService.getAndExistOpenOrders(automaticUser.userId(), symbol);
-    System.out.println(openOrders.size());
 
     ExchangeRate exchangeRate = exchangeRateService.getNonNullUsdToKrw();
     List<OrderCalcResultDTO> results = new ArrayList<>();
     BigDecimal qty = BigDecimal.valueOf(orderTradeUpdateEvent.getQuantity());
 
-    System.out.println("hello");
-    System.out.println(qty);
     double upbitQty = sellOrderService.calculateSellQty(results, openOrders, qty);
-
-    System.out.println("world");
-
-    System.out.println(upbitQty);
 
     String uuid =
         upbitService.order(
@@ -128,8 +117,6 @@ public class AutomaticOrder {
             UpbitOrderEnums.OrdType.market,
             null,
             upbitQty);
-
-    System.out.println(uuid);
 
     UpbitOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
 

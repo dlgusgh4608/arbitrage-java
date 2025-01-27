@@ -222,25 +222,15 @@ public class SellOrderService {
   public double calculateSellQty(
       List<OrderCalcResultDTO> results, List<BuyOrder> openOrders, BigDecimal qty) {
     try {
-      System.out.println(qty);
-
-      System.out.println("1");
       if (qty.equals(BigDecimal.ZERO)) throw new SellOrderException(SellOrderErrorCode.INVALID_QTY);
-      System.out.println("2");
       BigDecimal upbitTotalQty = BigDecimal.ZERO;
-      System.out.println("3");
+
       for (BuyOrder buyOrder : openOrders) {
         // qty가 0이면 break
         if (qty.signum() == 0) break;
 
-        // 아래 두놈중 하나
         BigDecimal restBinanceQty = buyOrder.getRestBinanceQty();
-        System.out.println("test1");
         BigDecimal restUpbitQty = buyOrder.getRestUpbitQty();
-        System.out.println("test2");
-
-        System.out.println("restBinanceQty" + restBinanceQty);
-        System.out.println("restUpbitQty" + restUpbitQty);
 
         if (qty.compareTo(restBinanceQty) >= 0) {
           // 남은 수량이 현재 주문의 잔여 수량보다 크거나 같은 경우
@@ -275,9 +265,6 @@ public class SellOrderService {
           qty = BigDecimal.ZERO;
         }
       }
-
-      System.out.println("upbitTotalQty" + upbitTotalQty.doubleValue());
-      System.out.println("qty" + qty);
 
       if (qty.signum() < 0) throw new SellOrderException(SellOrderErrorCode.QTY_TO_LARGER);
 

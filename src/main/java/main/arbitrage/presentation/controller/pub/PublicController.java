@@ -1,9 +1,20 @@
 package main.arbitrage.presentation.controller.pub;
 
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import java.util.Collections;
 import java.util.List;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.collector.service.CollectorScheduleService;
 import main.arbitrage.application.order.service.OrderApplicationService;
@@ -21,15 +32,6 @@ import main.arbitrage.presentation.dto.response.UserTokenResponseCookie;
 import main.arbitrage.presentation.dto.view.OAuthSignupView;
 import main.arbitrage.presentation.dto.view.PriceView;
 import main.arbitrage.presentation.dto.view.UserTradeInfo;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping(PublicControllerUrlConstants.DEFAULT_URL)
@@ -144,7 +146,7 @@ public class PublicController {
 
     UserTradeInfo userTradeInfo =
         authContext != null
-            ? orderApplicationService.getTradeInfo(symbol, authContext.getUserId())
+            ? orderApplicationService.getTradeInfo(upperCaseSymbol, authContext.getUserId())
             : null;
 
     if (userTradeInfo != null) model.addAttribute("userTradeInfo", userTradeInfo);

@@ -88,7 +88,7 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
       // 자동거래가 활성화 되어있을시 unLock
       if (automaticUser.autoFlag() == true) unlock();
     } catch (Exception e) {
-      System.out.println(e);
+      log.error("알 수 없는 에러입니다.", e);
       throw new RuntimeException(e);
     }
   }
@@ -174,8 +174,6 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
   private void switchOrderTrade(BinanceOrderTradeUpdateEvent orderTradeUpdateEvent) {
     if (!validateOrder(orderTradeUpdateEvent)) return;
 
-    System.out.println(orderTradeUpdateEvent);
-
     try {
       Status status = Status.valueOf(orderTradeUpdateEvent.getStatus());
 
@@ -197,7 +195,7 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
         }
       }
     } catch (Exception e) {
-      log.error("invalid Status\tstatus: {}", orderTradeUpdateEvent.getStatus());
+      log.error("invalid Status\tstatus: {}", orderTradeUpdateEvent.getStatus(), e);
     }
   }
 
@@ -291,9 +289,6 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
 
   // 해당 TIcker는 BinanceUserStream과 같은 Thread를 사용합니다.
   private void setTicker(String symbolName, String clientId) {
-    System.out.println(symbolName);
-    System.out.println(clientId);
-
     if (executorService == null) return;
 
     // orderMap은 newOrderTrade와 partiallyFilledOrderTrade method에서 생성하며
@@ -310,11 +305,10 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
                 // 만약 orders가 null이면 완전체결이 되어 orderMap과 orderTickerMap을 remove한 상태
                 // 만약 isEmpty에 걸리면 주문이 체결되지 않은 상태
                 if (orders != null && orders.size() != 0) {
-                  System.out.println("이거 탐?");
                   try {
                     cancelBinance(symbolName, clientId);
                   } catch (Exception e) {
-                    System.out.println("이미 캔슬된 주문입니다.");
+                    log.error("이미 캔슬된 주문입니다.", e);
                   }
 
                   BinanceOrderTradeUpdateEvent payload = calculateOrderTrade(orders);

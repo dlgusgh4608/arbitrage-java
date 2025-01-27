@@ -9,4 +9,6 @@ public interface BuyOrderQueryRepository {
       long userId, long symbolId, Pageable pageable);
 
   public List<BuyOrder> findBuyOrderByUserId(long userId, Pageable pageable);
+
+  public List<BuyOrder> findBuyOrderByUserIdAndSymbolIdAndIsCloseFalse(long userId, long symbolId);
 }

@@ -95,7 +95,6 @@ public class PrivateController {
 
       return "pages/setting";
     } catch (Exception e) {
-      System.out.println(e.getMessage());
       bindingResult.reject("serverError", e.getMessage());
       return "pages/setting";
     }
