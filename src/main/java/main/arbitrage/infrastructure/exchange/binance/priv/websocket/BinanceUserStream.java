@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.application.auto.dto.AutomaticUserInfoDTO;
 import main.arbitrage.domain.buyOrder.service.BuyOrderService;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
+import main.arbitrage.domain.price.service.PriceService;
 import main.arbitrage.domain.sellOrder.service.SellOrderService;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.global.util.math.MathUtil;
@@ -52,13 +53,15 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
       SymbolVariableService symbolVariableService,
       BuyOrderService buyOrderService,
       SellOrderService sellOrderService,
-      ExchangeRateService exchangeRateService) {
+      ExchangeRateService exchangeRateService,
+      PriceService priceService) {
     super(
         automaticUser,
         symbolVariableService,
         buyOrderService,
         sellOrderService,
         exchangeRateService,
+        priceService,
         exchangePrivateServicePair.getBinance(),
         exchangePrivateServicePair.getUpbit());
     this.socketName = "UserStream[" + automaticUser.userId() + "]";
@@ -148,7 +151,7 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
     }
   }
 
-  // 청산될시 이벤트 (얻느라 힘들었다 .....)
+  // 청산될시 이벤트 (실제로 청산 당해봄)
   // BinanceOrderTradeUpdateEvent(eventTime=1737618483293, clientId=autoclose-1737618483209916950,
   // orderType=LIQUIDATION, executionType=NEW, status=NEW, side=BUY, symbol=ETH, price=0.0,
   // quantity=0.0, isMaker=false, commission=0.0)
@@ -302,17 +305,19 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
                 orderMap.remove(clientId);
                 orderTickerMap.remove(clientId);
 
-                // 만약 orders가 null이면 완전체결이 되어 orderMap과 orderTickerMap을 remove한 상태
-                // 만약 isEmpty에 걸리면 주문이 체결되지 않은 상태
-                if (orders != null && orders.size() != 0) {
+                // null이면 이미 완전체결 이후라 취소 할 필요 없음.
+                if (orders != null) {
                   try {
                     cancelBinance(symbolName, clientId);
                   } catch (Exception e) {
                     log.error("이미 캔슬된 주문입니다.", e);
                   }
 
-                  BinanceOrderTradeUpdateEvent payload = calculateOrderTrade(orders);
-                  orderForSide(payload);
+                  // null이 아니고 isEmpty가 false, 즉 체결된게 하나라도 있으면 거래 진행
+                  if (!orders.isEmpty()) {
+                    BinanceOrderTradeUpdateEvent payload = calculateOrderTrade(orders);
+                    orderForSide(payload);
+                  }
                 }
               } catch (Exception e) {
                 log.error(

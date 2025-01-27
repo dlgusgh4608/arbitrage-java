@@ -140,6 +140,10 @@ public class BuyOrder {
     this.sellOrders = sellOrders;
   }
 
+  public void addSellOrder(SellOrder sellOrder) {
+    this.sellOrders.add(sellOrder);
+  }
+
   public BigDecimal getRestBinanceQty() {
     BigDecimal totalBinanceQty = BigDecimal.valueOf(this.binanceQuantity);
     BigDecimal soldQty =

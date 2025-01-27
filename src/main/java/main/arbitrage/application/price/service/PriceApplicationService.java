@@ -1,11 +1,11 @@
 package main.arbitrage.application.price.service;
 
-import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.domain.price.service.PriceService;
 import main.arbitrage.presentation.dto.view.PriceView;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service

@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import main.arbitrage.application.auto.dto.AutoTradingStandardValueDTO;
 import main.arbitrage.domain.price.buffer.PriceBuffer;
 import main.arbitrage.domain.price.entity.Price;
 import main.arbitrage.domain.price.exception.PriceErrorCode;
 import main.arbitrage.domain.price.exception.PriceException;
 import main.arbitrage.domain.price.repository.PriceRepository;
+import main.arbitrage.domain.symbol.entity.Symbol;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -67,5 +69,9 @@ public class PriceService {
     } catch (Exception e) {
       throw new PriceException(PriceErrorCode.UNKNOWN, e);
     }
+  }
+
+  public AutoTradingStandardValueDTO getAutoTradingValue(Symbol symbol, int minutes) {
+    return priceRepository.getAutoTradingStandardValue(symbol, minutes);
   }
 }

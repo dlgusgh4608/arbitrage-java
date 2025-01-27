@@ -1,6 +1,5 @@
 package main.arbitrage.application.order.service;
 
-import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +38,7 @@ import main.arbitrage.presentation.dto.response.OrderResponse;
 import main.arbitrage.presentation.dto.response.SellOrderResponse;
 import main.arbitrage.presentation.dto.view.UserTradeInfo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor

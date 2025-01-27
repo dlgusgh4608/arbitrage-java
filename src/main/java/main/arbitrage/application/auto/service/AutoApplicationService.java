@@ -13,6 +13,7 @@ import main.arbitrage.domain.autoTradingStrategy.entity.AutoTradingStrategy;
 import main.arbitrage.domain.autoTradingStrategy.service.AutoTradingStrategyService;
 import main.arbitrage.domain.buyOrder.service.BuyOrderService;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
+import main.arbitrage.domain.price.service.PriceService;
 import main.arbitrage.domain.sellOrder.service.SellOrderService;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
@@ -42,6 +43,7 @@ public class AutoApplicationService {
   private final ExchangeRateService exchangeRateService;
   private final BuyOrderService buyOrderService;
   private final SellOrderService sellOrderService;
+  private final PriceService priceService;
   private final Map<Long, BinanceUserStream> userStreams = new HashMap<>();
 
   // private final List<AutomaticOrder> autoMaticOrders = new ArrayList<>();
@@ -72,7 +74,8 @@ public class AutoApplicationService {
               symbolVariableService,
               buyOrderService,
               sellOrderService,
-              exchangeRateService);
+              exchangeRateService,
+              priceService);
 
       userStreams.put(automaticUser.userId(), userStream);
 
