@@ -40,4 +40,23 @@ public final class MathUtil {
   public static float calculatePremium(double upbit, double binance, float exchangeRate) {
     return roundTo((upbit / exchangeRate / binance - 1) * 100, 4).floatValue();
   }
+
+  public static float calculatePercentValue(float min, float max, int percent) {
+    return min + ((max - min) * (percent / 100));
+  }
+
+  public static int getDecimalPlaces(String value) {
+    int dotIndex = value.indexOf(".");
+    if (dotIndex == -1) return 0;
+
+    return value.length() - dotIndex - 1;
+  }
+
+  public static int getDecimalPlaces(Double value) {
+    String stringValue = String.valueOf(value);
+    int dotIndex = stringValue.indexOf(".");
+    if (dotIndex == -1) return 0;
+
+    return stringValue.length() - dotIndex - 1;
+  }
 }

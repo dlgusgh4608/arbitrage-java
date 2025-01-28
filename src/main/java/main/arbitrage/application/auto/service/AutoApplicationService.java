@@ -21,7 +21,9 @@ import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.user.service.UserService;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
 import main.arbitrage.global.util.aes.AESCrypto;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceExchangeInfoResponse;
 import main.arbitrage.infrastructure.exchange.binance.priv.websocket.BinanceUserStream;
+import main.arbitrage.infrastructure.exchange.binance.pub.rest.BinancePublicRestService;
 import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
 import main.arbitrage.infrastructure.websocket.handler.BinanceUserStreamHandler;
@@ -44,19 +46,29 @@ public class AutoApplicationService {
   private final BuyOrderService buyOrderService;
   private final SellOrderService sellOrderService;
   private final PriceService priceService;
+  private final BinancePublicRestService binancePublicRestService;
   private final Map<Long, BinanceUserStream> userStreams = new HashMap<>();
-
-  // private final List<AutomaticOrder> autoMaticOrders = new ArrayList<>();
-
-  // private final Map<Long, AutomaticOrder> test = new HashMap<>();
+  private Map<String, BinanceExchangeInfoResponse> binanceExchangeInfoMap = new HashMap<>();
 
   @EventListener
-  public void helloworld(PremiumDTO dto) {
-    userStreams.values().forEach(v -> v.run(dto.getSymbol()));
+  public void premiumConsumer(PremiumDTO dto) {
+    userStreams.values().forEach(v -> v.run(dto));
   }
 
+  @EventListener
+  public void exchangeInfoConsumer(
+      Map<String, BinanceExchangeInfoResponse> binanceExchangeInfoMap) {
+    this.binanceExchangeInfoMap = binanceExchangeInfoMap;
+  }
+
+  /*
+   * 자동거래의 Thread를 생성하는 로직
+   * 1. UserStream(청산 방지 및 자동거래)
+   * 2. PremiumDTO의 event를 broadcasting하여 자동거래를 진행
+   */
   @PostConstruct
   public void init() {
+    binanceExchangeInfoMap = binancePublicRestService.getExchangeInfo();
     List<AutomaticUserInfoDTO> automaticUsers = userEnvService.findAutomaticUsers();
     for (AutomaticUserInfoDTO automaticUser : automaticUsers) {
       ExchangePrivateRestPair exchangePrivateServicePair =
@@ -66,9 +78,12 @@ public class AutoApplicationService {
               aesCrypto.decrypt(automaticUser.binanceAccessKey()),
               aesCrypto.decrypt(automaticUser.binanceSecretKey()));
 
+      String symbolName = automaticUser.autoTradingStrategy().getSymbol().getName();
+
       BinanceUserStream userStream =
           new BinanceUserStream(
               automaticUser,
+              binanceExchangeInfoMap.get(symbolName),
               binanceUserStreamHandler,
               exchangePrivateServicePair,
               symbolVariableService,

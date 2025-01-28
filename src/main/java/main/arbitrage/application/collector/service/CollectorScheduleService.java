@@ -49,13 +49,6 @@ public class CollectorScheduleService {
   private final ApplicationEventPublisher applicationEventPublisher;
   private Map<String, BinanceExchangeInfoResponse> binanceExchangeInfoMap = new HashMap<>();
 
-  // private ExchangeRate exchangeRate;
-
-  // @EventListener
-  // public void customExchangeRate(ExchangeRate rate) {
-  //   exchangeRate = rate;
-  // }
-
   @PostConstruct
   private void initialize() {
     exchangePublicWebsocketFactory.initialize();
@@ -84,6 +77,7 @@ public class CollectorScheduleService {
   @Scheduled(cron = "0 0 0 * * *") // 하루
   protected void updateExchangeInfo() {
     binanceExchangeInfoMap = binancePublicRestService.getExchangeInfo();
+    applicationEventPublisher.publishEvent(binanceExchangeInfoMap);
   }
 
   private void processAllSymbols(ExchangeRate exchangeRate) {

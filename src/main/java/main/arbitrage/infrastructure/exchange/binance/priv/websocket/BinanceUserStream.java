@@ -21,6 +21,7 @@ import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Ord
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Side;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Status;
 import main.arbitrage.infrastructure.exchange.binance.dto.event.BinanceOrderTradeUpdateEvent;
+import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceExchangeInfoResponse;
 import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
 import main.arbitrage.infrastructure.websocket.common.WebSocketClient;
 import main.arbitrage.infrastructure.websocket.handler.BinanceUserStreamHandler;
@@ -48,6 +49,7 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
 
   public BinanceUserStream(
       AutomaticUserInfoDTO automaticUser,
+      BinanceExchangeInfoResponse exchangeInfo,
       BinanceUserStreamHandler binanceUserStreamHandler,
       ExchangePrivateRestPair exchangePrivateServicePair,
       SymbolVariableService symbolVariableService,
@@ -57,6 +59,7 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
       PriceService priceService) {
     super(
         automaticUser,
+        exchangeInfo,
         symbolVariableService,
         buyOrderService,
         sellOrderService,
