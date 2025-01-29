@@ -141,7 +141,7 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
                 .price(order.get("L").asDouble())
                 .quantity(order.get("l").asDouble())
                 .isMaker(order.get("m").asBoolean())
-                .commission(order.get("n").floatValue())
+                .commission(MathUtil.roundTo(order.get("n").asDouble(), 8).floatValue())
                 .build());
         break;
       }
