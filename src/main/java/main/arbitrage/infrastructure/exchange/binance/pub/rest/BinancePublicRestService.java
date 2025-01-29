@@ -49,6 +49,7 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
 
       String MARKET_LOT_SIZE = "MARKET_LOT_SIZE"; // 시장가 체결 필터
       String MIN_NOTIONAL = "MIN_NOTIONAL"; // 최소 주문금액 필터
+      String PRICE_FILTER = "PRICE_FILTER"; // 가격 필터
 
       for (JsonNode symbol : symbols) {
         String symbolName = symbol.get("baseAsset").asText();
@@ -61,6 +62,7 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
           Double minQty = null;
           Double stepSize = null;
           Double minUsdt = null;
+          Double tickSize = null;
 
           for (JsonNode filter : filters) {
             String filterType = filter.get("filterType").asText();
@@ -71,11 +73,14 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
               stepSize = filter.get("stepSize").asDouble();
             } else if (MIN_NOTIONAL.equals(filterType)) {
               minUsdt = filter.get("notional").asDouble();
+            } else if (PRICE_FILTER.equals(filterType)) {
+              tickSize = filter.get("tickSize").asDouble();
             }
           }
 
           exchangeHashMap.put(
-              symbolName, new BinanceExchangeInfoResponse(maxQty, minQty, stepSize, minUsdt));
+              symbolName,
+              new BinanceExchangeInfoResponse(maxQty, minQty, stepSize, minUsdt, tickSize));
         }
       }
       return exchangeHashMap;

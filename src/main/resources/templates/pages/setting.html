@@ -54,6 +54,24 @@
             <div class="mb-2">
                 <div class="d-flex align-items-center mb-2">
                     <th:block th:replace="~{fragments/info :: bottom('
+                        레버리지를 결정하는 값입니다.,
+                        자동거래를 활성화 한 이후 해당 값을 저장시,
+                        바이낸스의 레버리지 값이 변경되니 주의해서 설정해주시기 바랍니다.,
+                        진행중인 거래가 있을때 해당 값을 변경시 생기는 문제에 대해서는 책임지지 않습니다.,
+                        해당 값과 분할 매수횟수를 통해 매수금액이 결정됩니다.,
+                        ex. usdt 20 leverage 5 일경우 usdt는 100이 있다 취급,
+                        1. 1보다 작을 수 없습니다.,
+                        2. 10보다 클 수 없습니다.
+                    ')}">
+                    </th:block>
+                    <label for="leverage" class="ms-2">레버리지</label>
+                </div>
+                <input id="leverage" th:field="*{leverage}" class="input">
+                <p class="valid-warning" th:if="${hasError}" th:errors="*{validLeverage}"></p>
+            </div>
+            <div class="mb-2">
+                <div class="d-flex align-items-center mb-2">
+                    <th:block th:replace="~{fragments/info :: bottom('
                         고점과 저점을 결정하는 값입니다.,
                         고점과 저점을 통해 무릎과 어깨가 계산됩니다.,
                         입력하는 값의 1/2의 시간마다 업데이트 됩니다.,

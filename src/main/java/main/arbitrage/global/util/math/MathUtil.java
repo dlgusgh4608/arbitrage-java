@@ -42,7 +42,7 @@ public final class MathUtil {
   }
 
   public static float calculatePercentValue(float min, float max, int percent) {
-    return min + ((max - min) * (percent / 100));
+    return min + ((max - min) * (percent / 100f));
   }
 
   public static int getDecimalPlaces(String value) {

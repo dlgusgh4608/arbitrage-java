@@ -24,6 +24,7 @@ public class AutoTradingStrategyForm {
 
   // 매매 기본 설정
   private String symbol; // 거래심볼
+  private Integer leverage;
   private Integer entryCandleMinutes; // 기준 분봉 개수
   private Integer divisionCount; // 분할 횟수
 
@@ -47,6 +48,15 @@ public class AutoTradingStrategyForm {
     if (symbol == null) return false;
 
     return !symbol.trim().isEmpty();
+  }
+
+  @AssertTrue(message = "레버리지는 필수 입력값이며, 1보다 크고 10과 같거나 작아야합니다.")
+  public boolean isValidLeverage() {
+    if (!autoFlag) return true;
+
+    if (leverage == null) return false;
+
+    return leverage >= 1 && leverage <= 10;
   }
 
   @AssertTrue(message = "손절 퍼센트는 필수 입력값이며, 양수가 될 수 없습니다.")
@@ -155,6 +165,7 @@ public class AutoTradingStrategyForm {
         .lpFlag(user.isLpFlag())
         .autoFlag(user.isAutoFlag())
         .symbol(autoTradingStrategy.getSymbol().getName())
+        .leverage(autoTradingStrategy.getLeverage())
         .stopLossPercent(autoTradingStrategy.getStopLossPercent())
         .minimumProfitTargetPercent(autoTradingStrategy.getMinimumProfitTargetPercent())
         .fixedProfitTargetPercent(autoTradingStrategy.getFixedProfitTargetPercent())

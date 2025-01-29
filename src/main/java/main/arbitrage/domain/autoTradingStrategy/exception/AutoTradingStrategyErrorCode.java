@@ -45,7 +45,10 @@ public enum AutoTradingStrategyErrorCode implements BaseErrorCode {
   SHOULDER_ENTRY_PERCENT_NEGATIVE("TS16", "어깨 퍼센트는 음수일 수 없습니다.", HttpStatus.BAD_REQUEST),
   SHOULDER_ENTRY_PERCENT_LESS_THAN_KNEE(
       "TS17", "어깨 퍼센트는 무릎 퍼센트보다 작을 수 없습니다.", HttpStatus.BAD_REQUEST),
-  SHOULDER_ENTRY_PERCENT_TOO_HIGH("TS18", "어깨 퍼센트는 100% 이하여야 합니다.", HttpStatus.BAD_REQUEST);
+  SHOULDER_ENTRY_PERCENT_TOO_HIGH("TS18", "어깨 퍼센트는 100% 이하여야 합니다.", HttpStatus.BAD_REQUEST),
+
+  LEVERAGE_TOO_LOW("TS19", "레버리지는 1 이상이어야 합니다.", HttpStatus.BAD_REQUEST),
+  LEVERAGE_TOO_HIGH("TS20", "레버리지는 10 이하이어야 합니다.", HttpStatus.BAD_REQUEST);
 
   private final String code;
   private final String clientMessage;

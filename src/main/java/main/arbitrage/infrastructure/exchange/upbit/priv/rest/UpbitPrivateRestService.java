@@ -155,7 +155,9 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
 
   public UpbitOrderResponse order(String uuid, int repeat) {
     try {
+      System.out.println(Thread.currentThread().getName());
       if (repeat < 2) return null;
+      Thread.sleep(1000);
 
       Map<String, Object> map = Map.of("uuid", uuid);
 
@@ -177,7 +179,6 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
       UpbitOrderResponse dto = objectMapper.readValue(responseBody, UpbitOrderResponse.class);
 
       if (dto.state().equals(State.wait) || dto.state().equals(State.watch)) {
-        Thread.sleep(1000);
         return order(uuid, repeat - 1);
       }
 

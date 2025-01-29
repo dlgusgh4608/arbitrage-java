@@ -39,6 +39,9 @@ public class AutoTradingStrategy {
   @JoinColumn(name = "symbol_id", nullable = false)
   private Symbol symbol;
 
+  @Column(name = "leverage", nullable = false, columnDefinition = "SMALLINT")
+  private int leverage;
+
   /*
    * 손절 퍼센트
    *
@@ -154,6 +157,7 @@ public class AutoTradingStrategy {
   public AutoTradingStrategy(
       User user,
       Symbol symbol,
+      int leverage,
       float stopLossPercent,
       float minimumProfitTargetPercent,
       float fixedProfitTargetPercent,
@@ -165,6 +169,7 @@ public class AutoTradingStrategy {
 
     validateAll(
         stopLossPercent,
+        leverage,
         minimumProfitTargetPercent,
         fixedProfitTargetPercent,
         divisionCount,
@@ -175,6 +180,7 @@ public class AutoTradingStrategy {
 
     this.user = user;
     this.symbol = symbol;
+    this.leverage = leverage;
     this.stopLossPercent = stopLossPercent;
     this.minimumProfitTargetPercent = minimumProfitTargetPercent;
     this.fixedProfitTargetPercent = fixedProfitTargetPercent;
@@ -187,6 +193,7 @@ public class AutoTradingStrategy {
 
   private void validateAll(
       float stopLossPercent,
+      int leverage,
       float minimumProfitTargetPercent,
       float fixedProfitTargetPercent,
       int divisionCount,
@@ -194,6 +201,7 @@ public class AutoTradingStrategy {
       int entryCandleMinutes,
       int kneeEntryPercent,
       int shoulderEntryPercent) {
+    validateLeverage(leverage);
     validateStopLossPercent(stopLossPercent, additionalBuyTargetPercent);
     validateMinimumProfitTargetPercent(minimumProfitTargetPercent, fixedProfitTargetPercent);
     validateFixedProfitTargetPercent(fixedProfitTargetPercent, minimumProfitTargetPercent);
@@ -202,6 +210,16 @@ public class AutoTradingStrategy {
     validateEntryCandleMinutes(entryCandleMinutes);
     validateKneeEntryPercent(kneeEntryPercent);
     validateShoulderEntryPercent(shoulderEntryPercent, kneeEntryPercent);
+  }
+
+  private void validateLeverage(int leverage) {
+    if (leverage < 1) {
+      throw new AutoTradingStrategyException(AutoTradingStrategyErrorCode.LEVERAGE_TOO_LOW);
+    }
+
+    if (leverage > 10) {
+      throw new AutoTradingStrategyException(AutoTradingStrategyErrorCode.LEVERAGE_TOO_HIGH);
+    }
   }
 
   private void validateStopLossPercent(float stopLossPercent, float additionalBuyTargetPercent) {
@@ -298,6 +316,7 @@ public class AutoTradingStrategy {
 
   public void update(
       Symbol symbol,
+      int leverage,
       float stopLossPercent,
       float minimumProfitTargetPercent,
       float fixedProfitTargetPercent,
@@ -308,6 +327,7 @@ public class AutoTradingStrategy {
       int shoulderEntryPercent) {
     validateAll(
         stopLossPercent,
+        leverage,
         minimumProfitTargetPercent,
         fixedProfitTargetPercent,
         divisionCount,

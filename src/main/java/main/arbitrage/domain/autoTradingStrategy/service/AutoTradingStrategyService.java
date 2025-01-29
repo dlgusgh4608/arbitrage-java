@@ -18,6 +18,7 @@ public class AutoTradingStrategyService {
   public AutoTradingStrategy create(
       User user,
       Symbol symbol,
+      int leverage,
       float stopLossPercent,
       float minimumProfitTargetPercent,
       float fixedProfitTargetPercent,
@@ -31,6 +32,7 @@ public class AutoTradingStrategyService {
           AutoTradingStrategy.builder()
               .user(user)
               .symbol(symbol)
+              .leverage(leverage)
               .stopLossPercent(stopLossPercent)
               .minimumProfitTargetPercent(minimumProfitTargetPercent)
               .fixedProfitTargetPercent(fixedProfitTargetPercent)

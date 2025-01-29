@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.Executors;
@@ -11,6 +12,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.application.auto.dto.AutoTradingStandardValueDTO;
 import main.arbitrage.application.auto.dto.AutomaticUserInfoDTO;
 import main.arbitrage.application.auto.dto.WalletDTO;
@@ -38,23 +40,32 @@ import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestSe
 
 // 해당 class는 UserStream의 주문, 돈, Key 관리를 담당.
 // 자동거래가 on일경우에만 쓰레드를 할당하여 자동거래가 돌아감
+@Slf4j
 public class AutomaticOrder {
   protected ScheduledExecutorService executorService; // Thread(중요)
   private ScheduledFuture<?> scheduler; // Thread(중요)
 
-  protected AutomaticUserInfoDTO automaticUser;
-  protected BinanceExchangeInfoResponse exchangeInfo;
+  private final WalletDTO initialWallet = new WalletDTO();
+  private final WalletDTO currentWallet = new WalletDTO();
 
-  private WalletDTO initialWallet;
-  private WalletDTO currentWallet;
+  AutoTradingStandardValueDTO standardValue;
+
+  // 초기화 해야하는 아이들
+  protected AutomaticUserInfoDTO automaticUser;
+  private BinanceExchangeInfoResponse exchangeInfo;
   private Symbol symbol;
-  private float avgExchangeRate;
-  private float targetProfitRate;
-  private float kneeValue;
-  private float shoulderValue;
-  private float minimumProfitRate;
-  private float minimumMovePrice;
-  private int decimalPlaces;
+  private Integer leverage;
+  private Float avgExchangeRate;
+  private Float kneeValue;
+  private Float shoulderValue;
+  private Float fixedProfitRate;
+  private Float minimumProfitRate;
+  private Float minimumMovePrice;
+  private Integer decimalPlacesOfStepSize;
+  private Integer decimalPlacesOfTickSize;
+  private final LinkedList<BuyOrder> openOrders = new LinkedList<>();
+  private final Queue<Double> priceQueue = new LinkedBlockingDeque<>(5); // 최대 5
+  private Double prevBinancePrice;
 
   protected final SymbolVariableService symbolVariableService;
 
@@ -67,17 +78,13 @@ public class AutomaticOrder {
   private final BinancePrivateRestService binanceService; // binance주문
   private final UpbitPrivateRestService upbitService; // upbit주문
 
-  private final LinkedList<BuyOrder> openOrders = new LinkedList<>();
-  private final Queue<Double> priceQueue = new LinkedBlockingDeque<>(5); // 최대 5
-  private double prevBinancePrice;
-
   private boolean isLock = true;
 
-  private static final int UPBIT_MINIMUM_PRICE = 5000;
+  private static final double SAFETY_WALLET_PERCENT = 0.95;
 
   public AutomaticOrder(
       AutomaticUserInfoDTO automaticUser,
-      BinanceExchangeInfoResponse exchangeInfo,
+      Map<String, BinanceExchangeInfoResponse> exchangeInfoMap,
       SymbolVariableService symbolVariableService,
       BuyOrderService buyOrderService,
       SellOrderService sellOrderService,
@@ -87,7 +94,6 @@ public class AutomaticOrder {
       UpbitPrivateRestService upbitService) {
 
     this.automaticUser = automaticUser;
-    this.exchangeInfo = exchangeInfo;
     this.symbolVariableService = symbolVariableService;
     this.buyOrderService = buyOrderService;
     this.sellOrderService = sellOrderService;
@@ -98,16 +104,36 @@ public class AutomaticOrder {
 
     if (automaticUser.autoFlag()) {
       this.symbol = automaticUser.autoTradingStrategy().getSymbol();
+      this.exchangeInfo = exchangeInfoMap.get(symbol.getName());
       this.executorService = Executors.newSingleThreadScheduledExecutor();
       this.openOrders.addAll(buyOrderService.getOpenOrders(automaticUser.userId(), symbol));
+      updateLeverage(automaticUser.autoTradingStrategy().getLeverage());
       setStandardSchedule();
       updateWallet();
     }
   }
 
+  public void updateAutomaticValue(
+      Map<String, BinanceExchangeInfoResponse> exchangeInfoMap,
+      AutomaticUserInfoDTO automaticUser) {
+    this.automaticUser = automaticUser;
+    this.symbol = automaticUser.autoTradingStrategy().getSymbol();
+    this.exchangeInfo = exchangeInfoMap.get(symbol.getName());
+    if (executorService == null) {
+      this.executorService = Executors.newSingleThreadScheduledExecutor();
+    }
+    this.openOrders.clear();
+    this.openOrders.addAll(buyOrderService.getOpenOrders(automaticUser.userId(), symbol));
+    updateLeverage(automaticUser.autoTradingStrategy().getLeverage());
+    setStandardSchedule();
+    updateWallet();
+    unlock();
+  }
+
+  // todo: 로깅 추가.
   public void run(PremiumDTO dto) {
     if (isLock) return; // 잠금임
-    if (executorService.isShutdown()) return; // 쓰레드 없음
+    if (executorService == null || executorService.isShutdown()) return; // 쓰레드 없음
     if (!symbol.getName().equals(dto.getSymbol())) return; // 내가 지정한 심볼이 아님
 
     executorService.execute(
@@ -132,13 +158,19 @@ public class AutomaticOrder {
                                   openOrder.getBinancePrice(),
                                   avgExchangeRate);
 
-                          // 익절
-                          if (targetProfitRate < premiumOfStandardExchangeRate - premiumOfOrder)
-                            return true;
+                          double profitRate = premiumOfStandardExchangeRate - premiumOfOrder;
+
+                          // 고정 익절값으로 익절
+                          if (fixedProfitRate != 0.0 && fixedProfitRate < profitRate) return true;
+
+                          // 유동 익절값으로 익절
+                          if (fixedProfitRate == 0.0
+                              && minimumProfitRate < profitRate
+                              && shoulderValue < premiumOfStandardExchangeRate) return true;
 
                           // 손절
-                          if (automaticUser.autoTradingStrategy().getStopLossPercent()
-                              > premiumOfStandardExchangeRate - premiumOfOrder) return true;
+                          if (automaticUser.autoTradingStrategy().getStopLossPercent() > profitRate)
+                            return true;
 
                           return false;
                         })
@@ -146,23 +178,80 @@ public class AutomaticOrder {
 
             // 익절, 손절중 하나
             if (buyOrderOptional.isPresent()) {
-              // Thread에 계속 요청을 못보내도록 잠금
               lock();
               BuyOrder buyOrder = buyOrderOptional.get();
 
               double qty = buyOrder.getRestBinanceQty().doubleValue();
 
-              double currentPrice =
-                  MathUtil.roundTo(binancePrice - moveValue, decimalPlaces).doubleValue();
+              double targetPrice =
+                  MathUtil.floorTo(binancePrice - moveValue, decimalPlacesOfTickSize).doubleValue();
 
-              buyBinance(symbol.getName(), qty, currentPrice);
+              buyBinance(symbol.getName(), qty, targetPrice);
             }
           }
 
           // 매수
-          // 실시간으로 레버리지 계산을 하려면 테이블을 수정해야하네??!?!?!??!?!?!?!?!?아아아아아악
-          if (kneeValue > premiumOfStandardExchangeRate) {}
+          if (kneeValue > premiumOfStandardExchangeRate) {
+            double safeWalletPercent = SAFETY_WALLET_PERCENT - Math.abs(dto.getPremium()) / 100;
+
+            double totalPriceOfWallet = calculateTotalPrice(safeWalletPercent, dto.getUsdToKrw());
+
+            // 주문할 총액이 최소 주문금액보다 작은지 확인 업비트 5,000원이고 바이낸스는 보통 5,000원 보단 크다.
+            if (totalPriceOfWallet < exchangeInfo.minUsdt()) return;
+
+            double targetPrice =
+                MathUtil.floorTo(binancePrice + moveValue, decimalPlacesOfTickSize).doubleValue();
+
+            double targetQuantity =
+                MathUtil.floorTo(totalPriceOfWallet / targetPrice, decimalPlacesOfStepSize)
+                    .doubleValue();
+
+            if (openOrders.size() > 0) {
+              Optional<BuyOrder> buyOrderOptional =
+                  openOrders.stream()
+                      .filter(
+                          openOrder -> {
+                            float premiumOfOrder =
+                                MathUtil.calculatePremium(
+                                    openOrder.getUpbitPrice(),
+                                    openOrder.getBinancePrice(),
+                                    avgExchangeRate);
+
+                            // 추가매수가에 도달했는지 판단
+                            if (automaticUser.autoTradingStrategy().getAdditionalBuyTargetPercent()
+                                > premiumOfStandardExchangeRate - premiumOfOrder) return true;
+
+                            return false;
+                          })
+                      .findFirst();
+
+              if (buyOrderOptional.isPresent()) {
+                lock();
+                sellBinance(symbol.getName(), targetQuantity, targetPrice);
+              }
+            } else {
+              lock();
+              sellBinance(symbol.getName(), targetQuantity, targetPrice);
+            }
+          }
         });
+  }
+
+  private double calculateTotalPrice(double safeWalletPercent, float exchangeRate) {
+    double initialKrw = initialWallet.getKrw();
+    double initialUsdt = initialWallet.getUsdt();
+    double currentKrw = currentWallet.getKrw();
+    double currentUsdt = currentWallet.getUsdt();
+
+    double totalPriceOfInitialWallet =
+        Math.min(MathUtil.krwToUsd(initialKrw, exchangeRate), initialUsdt)
+            * safeWalletPercent
+            / automaticUser.autoTradingStrategy().getDivisionCount();
+
+    double totalPriceOfCurrentWallet =
+        Math.min(MathUtil.krwToUsd(currentKrw, exchangeRate), currentUsdt) * safeWalletPercent;
+
+    return Math.min(totalPriceOfCurrentWallet, totalPriceOfInitialWallet);
   }
 
   // 업비트 주문 관리
@@ -187,6 +276,8 @@ public class AutomaticOrder {
             automaticUser.userId(), symbol, exchangeRate, orderTradeUpdateEvent, upbitOrderRes);
 
     openOrders.addLast(buyOrder);
+    updateWallet();
+    unlock();
   }
 
   protected void sellUpbit(BinanceOrderTradeUpdateEvent orderTradeUpdateEvent) {
@@ -220,11 +311,13 @@ public class AutomaticOrder {
           sellOrderService.createLimitOrder(
               orderCalcResult, orderTradeUpdateEvent, upbitOrderRes, exchangeRate));
     }
+    updateWallet();
+    unlock();
   }
 
   // 바이낸스 주문 관리
   private void sellBinance(String symbolName, double qty, double price) {
-    binanceService.order(symbolName, BinanceEnums.Side.BUY, BinanceEnums.Type.LIMIT, qty, price);
+    binanceService.order(symbolName, BinanceEnums.Side.SELL, BinanceEnums.Type.LIMIT, qty, price);
   }
 
   private void buyBinance(String symbolName, double qty, double price) {
@@ -232,7 +325,12 @@ public class AutomaticOrder {
   }
 
   protected BinanceOrderResponse cancelBinance(String symbolName, String clientId) {
-    return binanceService.cancelOrder(symbolName, clientId);
+    try {
+      return binanceService.cancelOrder(symbolName, clientId);
+    } catch (Exception e) {
+      log.error("이미 캔슬된 주문입니다.", e);
+      return null;
+    }
   }
 
   // UserStream Key관리
@@ -250,20 +348,12 @@ public class AutomaticOrder {
     UpbitAccountResponse upbitAccount = upbitService.getKRW().get();
 
     currentWallet.setKrw(Double.valueOf(upbitAccount.balance()));
-    currentWallet.setUsdt(Double.valueOf(binanceAccount.balance()));
+    currentWallet.setUsdt(Double.valueOf(binanceAccount.balance()) * leverage);
 
     updateInitialWallet();
   }
 
   private void updateInitialWallet() {
-    // openOrder가 없을시 지금 잔액이 최초 잔액임
-    if (openOrders.isEmpty()) {
-      initialWallet.setKrw(currentWallet.getKrw());
-      initialWallet.setUsdt(currentWallet.getUsdt());
-
-      return;
-    }
-
     // openOrder가 있으면 잔액 계산해서 최초 잔액 집어넣기
     double krw = currentWallet.getKrw();
     double usdt = currentWallet.getUsdt();
@@ -289,6 +379,7 @@ public class AutomaticOrder {
     isLock = false;
   }
 
+  // 스케줄 생성
   private void setStandardSchedule() {
     // scheduler가 null이면 이전 scheduler를 종료하고 다시 set
     if (scheduler != null) scheduler.cancel(true);
@@ -296,7 +387,7 @@ public class AutomaticOrder {
     scheduler =
         executorService.scheduleAtFixedRate(
             () -> {
-              AutoTradingStandardValueDTO standardValue =
+              standardValue =
                   priceService.getAutoTradingValue(
                       automaticUser.autoTradingStrategy().getSymbol(),
                       automaticUser.autoTradingStrategy().getEntryCandleMinutes());
@@ -318,43 +409,73 @@ public class AutomaticOrder {
                       standardValue.maxPremium(),
                       automaticUser.autoTradingStrategy().getShoulderEntryPercent());
 
+              // 고정 수익률 (0일 시 무시)
+              fixedProfitRate = automaticUser.autoTradingStrategy().getFixedProfitTargetPercent();
+
               // 최소 수익률
               minimumProfitRate =
                   automaticUser.autoTradingStrategy().getMinimumProfitTargetPercent();
 
-              // 목표 수익률
-              targetProfitRate =
-                  kneeValue - shoulderValue < minimumProfitRate
-                      ? minimumProfitRate
-                      : kneeValue - shoulderValue;
-
-              // 최소 가격 움직임(소수점 자리수)
-              decimalPlaces = MathUtil.getDecimalPlaces(exchangeInfo.stepSize());
+              // 최소 주문 개수
+              decimalPlacesOfStepSize = MathUtil.getDecimalPlaces(exchangeInfo.stepSize());
 
               // 최소 가격 움직임
+              decimalPlacesOfTickSize = MathUtil.getDecimalPlaces(exchangeInfo.tickSize());
+
+              // 최소 가격 움직임 * 3
               minimumMovePrice =
-                  MathUtil.roundTo(exchangeInfo.stepSize() * 3, decimalPlaces).floatValue();
+                  MathUtil.roundTo(exchangeInfo.tickSize() * 3, decimalPlacesOfTickSize)
+                      .floatValue();
             },
             0,
             automaticUser.autoTradingStrategy().getEntryCandleMinutes() / 2,
             TimeUnit.MINUTES);
   }
 
+  // 평균 이동값
   private Double getMoveValue(double binancePrice) {
+    if (prevBinancePrice == null) {
+      prevBinancePrice = binancePrice;
+      return null;
+    }
+
     priceQueue.offer(Math.abs(binancePrice - prevBinancePrice));
     prevBinancePrice = binancePrice;
 
-    if (priceQueue.size() != 5) return null;
+    if (priceQueue.size() < 5) return null;
     double average = priceQueue.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
     priceQueue.poll(); // avg구하고 queue 삭제
 
     return minimumMovePrice > average ? minimumMovePrice : average;
   }
 
+  // 바이낸스 레버리지 관리
+  private void updateLeverage(int leverage) {
+    this.leverage = binanceService.changeLeverage(symbol.getName(), leverage).leverage();
+  }
+
   // 종료
   public void shutdown() {
+    lock();
     if (!executorService.isShutdown()) {
-      executorService.shutdown();
+      executorService.shutdownNow();
+      executorService = null;
+      scheduler = null;
+      automaticUser = null;
+      exchangeInfo = null;
+      symbol = null;
+      avgExchangeRate = null;
+      kneeValue = null;
+      shoulderValue = null;
+      minimumProfitRate = null;
+      fixedProfitRate = null;
+      minimumMovePrice = null;
+      decimalPlacesOfStepSize = null;
+      decimalPlacesOfTickSize = null;
+      prevBinancePrice = null;
+      openOrders.clear();
+      priceQueue.clear();
+      prevBinancePrice = null;
     }
   }
 }

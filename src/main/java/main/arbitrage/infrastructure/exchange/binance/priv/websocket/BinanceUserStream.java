@@ -49,7 +49,7 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
 
   public BinanceUserStream(
       AutomaticUserInfoDTO automaticUser,
-      BinanceExchangeInfoResponse exchangeInfo,
+      Map<String, BinanceExchangeInfoResponse> exchangeInfoMap,
       BinanceUserStreamHandler binanceUserStreamHandler,
       ExchangePrivateRestPair exchangePrivateServicePair,
       SymbolVariableService symbolVariableService,
@@ -59,7 +59,7 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
       PriceService priceService) {
     super(
         automaticUser,
-        exchangeInfo,
+        exchangeInfoMap,
         symbolVariableService,
         buyOrderService,
         sellOrderService,
@@ -244,7 +244,7 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
 
     // 한번에 체결되지 않았으며, Ticker(ORDER_TICKER_TIMEOUT)의 시간이 경과하지 않았지만
     // 주문이 전부 체결되었을때 실행
-    if (oldOrder != null && oldOrder.size() != 0) {
+    if (oldOrder != null) {
 
       oldOrder.add(payload);
 
@@ -270,7 +270,7 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
   // 주문 계산
   private BinanceOrderTradeUpdateEvent calculateOrderTrade(
       List<BinanceOrderTradeUpdateEvent> orderTrades) {
-    BinanceOrderTradeUpdateEvent firstOrderTrade = orderTrades.get(0);
+    BinanceOrderTradeUpdateEvent lastOrderTrade = orderTrades.get(orderTrades.size() - 1);
     int orderTradeLength = orderTrades.size();
 
     double sumQty =
@@ -281,14 +281,15 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
         orderTrades.stream().mapToDouble(BinanceOrderTradeUpdateEvent::getCommission).sum();
 
     return BinanceOrderTradeUpdateEvent.builder()
-        .clientId(firstOrderTrade.getClientId())
-        .orderType(firstOrderTrade.getOrderType())
-        .status(firstOrderTrade.getStatus())
-        .side(firstOrderTrade.getSide())
-        .symbol(firstOrderTrade.getSymbol())
+        .eventTime(lastOrderTrade.getEventTime())
+        .clientId(lastOrderTrade.getClientId())
+        .orderType(lastOrderTrade.getOrderType())
+        .status(lastOrderTrade.getStatus())
+        .side(lastOrderTrade.getSide())
+        .symbol(lastOrderTrade.getSymbol())
         .price(MathUtil.roundTo(sumPrice / orderTradeLength, 8).doubleValue())
         .quantity(MathUtil.roundTo(sumQty, 8).doubleValue())
-        .isMaker(firstOrderTrade.getIsMaker())
+        .isMaker(lastOrderTrade.getIsMaker())
         .commission(MathUtil.roundTo(sumCommission, 8).floatValue())
         .build();
   }
@@ -303,6 +304,8 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
         executorService.schedule(
             () -> {
               try {
+                lock();
+
                 Thread.sleep(ORDER_TICKER_TIMEOUT); // 3sec
                 List<BinanceOrderTradeUpdateEvent> orders = orderMap.get(clientId);
                 orderMap.remove(clientId);
@@ -310,16 +313,15 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
 
                 // null이면 이미 완전체결 이후라 취소 할 필요 없음.
                 if (orders != null) {
-                  try {
-                    cancelBinance(symbolName, clientId);
-                  } catch (Exception e) {
-                    log.error("이미 캔슬된 주문입니다.", e);
-                  }
+                  cancelBinance(symbolName, clientId);
 
-                  // null이 아니고 isEmpty가 false, 즉 체결된게 하나라도 있으면 거래 진행
+                  // null이 아니고 isEmpty가 false, 체결된게 하나라도 있으면 거래 진행
+                  // null이 아니고 isEmpty가 true, 체결된게 하나도 없으면 잠금해제
                   if (!orders.isEmpty()) {
                     BinanceOrderTradeUpdateEvent payload = calculateOrderTrade(orders);
                     orderForSide(payload);
+                  } else {
+                    unlock();
                   }
                 }
               } catch (Exception e) {
@@ -334,5 +336,10 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
             TimeUnit.MILLISECONDS);
 
     orderTickerMap.put(clientId, ticker);
+  }
+
+  public void streamShutdown() {
+    shutdown();
+    disconnect();
   }
 }

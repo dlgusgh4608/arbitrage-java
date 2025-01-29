@@ -91,7 +91,7 @@ public class PrivateController {
 
     try {
       model.addAttribute(
-          "formDto", autoApplicationService.updateAutoTradingStrategy(autoTradingStrategyForm));
+          "formDto", autoApplicationService.updateAutoTradingSetting(autoTradingStrategyForm));
 
       return "pages/setting";
     } catch (Exception e) {

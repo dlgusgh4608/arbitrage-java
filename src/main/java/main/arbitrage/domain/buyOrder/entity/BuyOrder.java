@@ -129,6 +129,7 @@ public class BuyOrder {
     this.binanceQuantity = binanceQuantity;
     this.binanceCommission = binanceCommission;
     this.binanceEventTime = new Timestamp(binanceEventTime);
+    this.isMaker = isMaker;
     this.isClose = isClose;
   }
 
