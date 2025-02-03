@@ -176,41 +176,42 @@ public class SellOrderService {
     double upbitExecRate =
         orderCalcResult.getUpbitQty().doubleValue() / buyOrder.getUpbitQuantity();
 
-    // [매수] 구매당시 가격으로 판매한 개수만큼 총액과 수수료를 구함 (바이낸스)
-    double binanceTotalPriceToKrwOfBuy =
+    // 바이낸스(Short) - 매도가 먼저 발생
+    double binanceSellPrice =
         buyOrder.getBinancePrice()
             * buyOrder.getBinanceQuantity()
             * exchangeRateOfBuy
             * binanceExecRate;
-    float binanceCommissionToKrwOfBuy =
-        buyOrder.getBinanceCommission() * (float) exchangeRateOfBuy * (float) binanceExecRate;
+    float binanceSellCommission =
+        buyOrder.getBinanceCommission() * exchangeRateOfBuy * (float) binanceExecRate;
 
-    // [매수] 구매당시 가격으로 판매한 개수만큼 총액과 수수료를 구함 (업비트)
-    double upbitTotalPriceOfBuy =
-        buyOrder.getUpbitPrice() * buyOrder.getUpbitQuantity() * upbitExecRate;
-    float upbitCommissionOfBuy = buyOrder.getUpbitCommission() * (float) upbitExecRate;
+    // 바이낸스(Short) - 나중에 매수로 청산
+    double binanceBuyPrice = binanceTotalPriceOfSell * exchangeRateOfSell;
+    float binanceBuyCommission = binanceCommissionOfSell * exchangeRateOfSell;
 
-    // [매도] 현재 환율로 총액과 수수료를 구함 (바이낸스)
-    double binanceTotalPriceToKrwOfSell = binanceTotalPriceOfSell * exchangeRateOfSell;
-    float binanceCommissionToKrwOfSell = binanceCommissionOfSell * exchangeRateOfSell;
+    // 업비트(Long) - 매수가 먼저 발생
+    double upbitBuyPrice = buyOrder.getUpbitPrice() * buyOrder.getUpbitQuantity() * upbitExecRate;
+    float upbitBuyCommission = buyOrder.getUpbitCommission() * (float) upbitExecRate;
 
-    // [매수, 매도] 수수료 제외 총 금액
-    double totalBuyCost = binanceTotalPriceToKrwOfBuy + upbitTotalPriceOfBuy;
-    double totalSellCost = binanceTotalPriceToKrwOfSell + upbitTotalPriceOfSell;
+    // 업비트(Long) - 나중에 매도로 청산
+    double upbitSellPrice = upbitTotalPriceOfSell;
+    float upbitSellCommission = upbitCommissionOfSell;
 
-    // [매수, 매도] 수수료 포함 총 금액
-    double totalBuyCostWithFees = totalBuyCost + binanceCommissionToKrwOfBuy + upbitCommissionOfBuy;
+    // 순수 거래금액 (수수료 제외)
+    double totalBuyPrice = binanceBuyPrice + upbitBuyPrice;
+    double totalSellPrice = binanceSellPrice + upbitSellPrice;
 
-    double totalSellCostWithFees =
-        totalSellCost - binanceCommissionToKrwOfSell - upbitCommissionOfSell;
+    // 수수료를 포함한 실제 거래금액
+    double totalBuyPriceWithFees = totalBuyPrice + binanceBuyCommission + upbitBuyCommission;
+    double totalSellPriceWithFees = totalSellPrice - binanceSellCommission - upbitSellCommission;
 
-    // [매수, 매도] 수익률 ((매도 총액 - 매수 총액) / 매수 총액) * 100
+    // 수익률 계산
     float profitRate =
-        MathUtil.roundTo(((totalSellCost - totalBuyCost) / totalBuyCost) * 100, 4).floatValue();
+        MathUtil.roundTo(((totalSellPrice - totalBuyPrice) / totalBuyPrice) * 100, 4).floatValue();
 
     float profitRateWithFees =
         MathUtil.roundTo(
-                ((totalSellCostWithFees - totalBuyCostWithFees) / totalBuyCostWithFees) * 100, 4)
+                ((totalSellPriceWithFees - totalBuyPriceWithFees) / totalBuyPriceWithFees) * 100, 4)
             .floatValue();
 
     return ProfitRateDTO.builder()
