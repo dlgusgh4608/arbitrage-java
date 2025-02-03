@@ -108,7 +108,7 @@ public class SymbolVariableService implements CommandLineRunner {
 
       initializeIfNeeded();
 
-      return supportedSymbolMap.get(name);
+      return supportedSymbolMap.get(name.toUpperCase());
     } catch (Exception e) {
       throw new SymbolException(
           SymbolErrorCode.INITIALIZED_FAILED, String.format("심볼 '%s' 검색 중 오류 발생", name), e);
