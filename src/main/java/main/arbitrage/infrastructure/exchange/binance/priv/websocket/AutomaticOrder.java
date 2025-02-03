@@ -138,6 +138,8 @@ public class AutomaticOrder {
 
     executorService.execute(
         () -> {
+          System.out.println(dto);
+
           double binancePrice = dto.getBinance();
 
           Double moveValue = getMoveValue(binancePrice);

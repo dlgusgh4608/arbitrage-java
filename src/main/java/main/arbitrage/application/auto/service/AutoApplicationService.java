@@ -162,7 +162,7 @@ public class AutoApplicationService {
       return AutoTradingStrategyForm.fromEntity(user, autoTradingStrategy.get());
     }
 
-    return null;
+    return AutoTradingStrategyForm.fromEntity(user);
   }
 
   @Transactional

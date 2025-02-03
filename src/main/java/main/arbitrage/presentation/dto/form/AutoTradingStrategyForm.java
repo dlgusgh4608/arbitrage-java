@@ -131,13 +131,13 @@ public class AutoTradingStrategyForm {
     return shoulderEntryPercent >= 0 && shoulderEntryPercent <= 100;
   }
 
-  @AssertTrue(message = "손절 퍼센트는 추가 매수 퍼센트보다 작을 수 없습니다.")
+  @AssertTrue(message = "손절 퍼센트는 추가 매수 퍼센트보다 작아야 합니다")
   public boolean isValidStopLossAndAdditionalBuyTarget() {
     if (!autoFlag) return true;
 
     if (stopLossPercent == null || additionalBuyTargetPercent == null) return false;
 
-    return stopLossPercent > additionalBuyTargetPercent;
+    return stopLossPercent < additionalBuyTargetPercent;
   }
 
   @AssertTrue(message = "최소 목표 수익 퍼센트는 고정 목표 수익 퍼센트보다 클 수 없습니다.")
@@ -174,6 +174,13 @@ public class AutoTradingStrategyForm {
         .entryCandleMinutes(autoTradingStrategy.getEntryCandleMinutes())
         .kneeEntryPercent(autoTradingStrategy.getKneeEntryPercent())
         .shoulderEntryPercent(autoTradingStrategy.getShoulderEntryPercent())
+        .build();
+  }
+
+  public static AutoTradingStrategyForm fromEntity(User user) {
+    return AutoTradingStrategyForm.builder()
+        .lpFlag(user.isLpFlag())
+        .autoFlag(user.isAutoFlag())
         .build();
   }
 }
