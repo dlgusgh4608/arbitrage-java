@@ -27,6 +27,7 @@ import main.arbitrage.domain.sellOrder.service.SellOrderService;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.global.util.math.MathUtil;
+import main.arbitrage.global.util.regex.KeyGenUtil;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums;
 import main.arbitrage.infrastructure.exchange.binance.dto.event.BinanceOrderTradeUpdateEvent;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceAccountResponse;
@@ -138,8 +139,6 @@ public class AutomaticOrder {
 
     executorService.execute(
         () -> {
-          System.out.println(dto);
-
           double binancePrice = dto.getBinance();
 
           Double moveValue = getMoveValue(binancePrice);
@@ -319,11 +318,23 @@ public class AutomaticOrder {
 
   // 바이낸스 주문 관리
   private void sellBinance(String symbolName, double qty, double price) {
-    binanceService.order(symbolName, BinanceEnums.Side.SELL, BinanceEnums.Type.LIMIT, qty, price);
+    binanceService.order(
+        KeyGenUtil.generate(),
+        symbolName,
+        BinanceEnums.Side.SELL,
+        BinanceEnums.Type.LIMIT,
+        qty,
+        price);
   }
 
   private void buyBinance(String symbolName, double qty, double price) {
-    binanceService.order(symbolName, BinanceEnums.Side.BUY, BinanceEnums.Type.LIMIT, qty, price);
+    binanceService.order(
+        KeyGenUtil.generate(),
+        symbolName,
+        BinanceEnums.Side.BUY,
+        BinanceEnums.Type.LIMIT,
+        qty,
+        price);
   }
 
   protected BinanceOrderResponse cancelBinance(String symbolName, String clientId) {

@@ -128,6 +128,62 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
     }
   }
 
+  public BinanceOrderResponse order(
+      String clientId, String market, Side side, Type type, Double volume, Double price) {
+
+    String paramString =
+        String.format(
+            "market=%s,side=%s,type=%s,price=%s,volume=%s", market, side, type, price, volume);
+
+    try {
+      if (market == null || side == null || type == null || volume == null) {
+        throw new BinanceException(BinanceErrorCode.BAD_PARAMS, paramString);
+      }
+
+      if (type.equals(Type.LIMIT) && price == null) {
+        throw new BinanceException(BinanceErrorCode.BAD_PARAMS, String.format(paramString));
+      }
+
+      String symbol = convertSymbol(market);
+
+      BinancePostOrderRequest requestDto =
+          BinancePostOrderRequest.builder()
+              .newClientOrderId(clientId)
+              .type(type)
+              .symbol(symbol)
+              .side(side)
+              .price(price)
+              .quantity(volume)
+              .build();
+
+      Map<String, Object> map = objectMapper.convertValue(requestDto, LinkedHashMap.class);
+
+      String queryString = generateToken(map);
+
+      RequestBody body = RequestBody.create(new byte[0], null);
+
+      String url = DEFAULT_URL + "/v1/order" + "?" + queryString;
+
+      Request request =
+          new Request.Builder()
+              .url(url)
+              .addHeader("Content-Type", "application/json")
+              .addHeader("X-MBX-APIKEY", accessKey)
+              .post(body)
+              .build();
+
+      Response response = okHttpClient.newCall(request).execute();
+
+      String responseBody = response.body().string();
+
+      if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
+
+      return objectMapper.readValue(responseBody, BinanceOrderResponse.class);
+    } catch (Exception e) {
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, paramString, e);
+    }
+  }
+
   public BinanceOrderResponse cancelOrder(String symbolName, String clientId) {
     String paramString = String.format("symbol: %s, clientId: %s", symbolName, clientId);
     try {

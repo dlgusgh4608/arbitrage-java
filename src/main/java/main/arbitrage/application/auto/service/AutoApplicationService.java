@@ -80,6 +80,7 @@ public class AutoApplicationService {
   @Scheduled(fixedDelay = 1000 * 60 * 30) // 30min
   public void listenKeyUpdate() {
     for (BinanceUserStream userStream : userStreams.values()) {
+      System.out.println("update listen key");
       userStream.updateListenKey();
     }
   }

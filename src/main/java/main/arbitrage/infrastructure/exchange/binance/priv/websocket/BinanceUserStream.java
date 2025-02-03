@@ -16,6 +16,7 @@ import main.arbitrage.domain.price.service.PriceService;
 import main.arbitrage.domain.sellOrder.service.SellOrderService;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.global.util.math.MathUtil;
+import main.arbitrage.global.util.regex.KeyGenUtil;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.ExecutionType;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.OrderType;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Side;
@@ -172,9 +173,8 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
     // 오더 타입이 청산인지 확인
     if (payload.getOrderType().equals(OrderType.LIQUIDATION.name())) return true;
 
-    return true;
-    // 해당 거래가 자동거래인지 확안
-    // return KeyGenUtil.validate(payload.getClientId());
+    // 해당 거래가 자동거래인지 확인
+    return KeyGenUtil.validate(payload.getClientId());
   }
 
   private void switchOrderTrade(BinanceOrderTradeUpdateEvent orderTradeUpdateEvent) {
