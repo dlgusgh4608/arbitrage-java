@@ -63,10 +63,10 @@ server:
   port: ${SERVER_PORT:8000}
 
 jwt:
-  secret: ${JWT_SECRET:fhasdjkfhasdjkfhasdjk}
+  secret: ${JWT_SECRET:fhasdjkfhasdjkfhasdjkjfhdsajkfhskajdfhjksadhfkjsdahfjksadhfkjdsa}
 
 mail:
-  secret: ${MAIL_SECRET:fhasdjkfhasdjkfhasdjk}
+  secret: ${MAIL_SECRET:fhasdjkfhasdjkfhasdjkjfhdsajkfhskajdfhjksadhfkjsdahfjksadhfkjdsa}
 
 token:
   access: 1800000 # 30minutes
