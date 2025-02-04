@@ -43,8 +43,6 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
 
       JsonNode json = objectMapper.readTree(responseBody);
 
-      System.out.println(json.toString());
-
       JsonNode symbols = json.get("symbols");
 
       Map<String, BinanceExchangeInfoResponse> exchangeHashMap = new HashMap<>();
@@ -52,6 +50,8 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
       String MARKET_LOT_SIZE = "MARKET_LOT_SIZE"; // 시장가 체결 필터
       String MIN_NOTIONAL = "MIN_NOTIONAL"; // 최소 주문금액 필터
       String PRICE_FILTER = "PRICE_FILTER"; // 가격 필터
+
+      if (symbols == null) return null;
 
       for (JsonNode symbol : symbols) {
         String symbolName = symbol.get("baseAsset").asText();
