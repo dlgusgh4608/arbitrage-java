@@ -32,7 +32,7 @@
                             </li>
                             <li>보안인증 완료 후 [Open API 관리] 메뉴 선택</li>
                             <li>[자산 조회, 주문 조회, 주문 하기] 권한 체크</li>
-                            <li>IP 주소에 123.456.78.9 등록 후 발급</li>
+                            <li th:text="${'IP 주소에 ' + ipAddress + ' 등록 후 발급'}"></li>
                         </ol>
                     </div>
                 </div>
@@ -74,7 +74,7 @@
                             <li>[System generated] 버튼 클릭</li>
                             <li>API 이름 입력 및 [Read Only] 권한만 체크</li>
                             <li>[Enable Reading, Enable Futures] 권한 체크</li>
-                            <li>IP Address에 123.456.78.9 등록 후 발급</li>
+                            <li th:text="${'IP Address에 ' + ipAddress + ' 등록 후 발급'}"></li>
                         </ol>
                     </div>
                 </div>

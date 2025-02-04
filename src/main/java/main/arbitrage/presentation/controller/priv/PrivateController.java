@@ -9,6 +9,7 @@ import main.arbitrage.presentation.controller.priv.constant.PrivateControllerUrl
 import main.arbitrage.presentation.dto.form.AutoTradingStrategyForm;
 import main.arbitrage.presentation.dto.form.UserEnvForm;
 import main.arbitrage.presentation.dto.view.UserProfileView;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,11 +26,15 @@ public class PrivateController {
   private final SymbolVariableService symbolVariableService;
   private final UserApplicationService userApplicationService;
 
+  @Value("${ip-address}")
+  private String IP_ADDRESS;
+
   @GetMapping(PrivateControllerUrlConstants.USER_ENV_REGISTER)
   public String envRegisterGet(Model model) {
     UserEnvForm userEnvForm = new UserEnvForm();
 
     model.addAttribute("formDto", userEnvForm);
+    model.addAttribute("ipAddress", IP_ADDRESS);
 
     return "pages/envRegister";
   }

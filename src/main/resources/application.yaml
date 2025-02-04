@@ -71,3 +71,5 @@ mail:
 token:
   access: 1800000 # 30minutes
   refresh: 604800000 # 7days
+
+ip-address: ${IP_ADDRESS}
