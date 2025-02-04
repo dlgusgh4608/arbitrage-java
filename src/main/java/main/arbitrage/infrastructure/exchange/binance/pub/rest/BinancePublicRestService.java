@@ -43,6 +43,8 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
 
       JsonNode json = objectMapper.readTree(responseBody);
 
+      System.out.println(json.toString());
+
       JsonNode symbols = json.get("symbols");
 
       Map<String, BinanceExchangeInfoResponse> exchangeHashMap = new HashMap<>();
