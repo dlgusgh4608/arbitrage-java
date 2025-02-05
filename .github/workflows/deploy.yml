@@ -11,9 +11,17 @@ on:
   push:
     branches: [ "main" ]
 
+env:
+  BUILD_FILE: arbitrage-java-0.0.1.jar
+  S3_BUCKET: arbitrage-java-bucket
+
+
+permissions:
+  id-token: write  # OIDC 필수 권한
+  contents: read
+    
 jobs:
   build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -27,11 +35,12 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
-    # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
+      # https://github.com/marketplace/actions/build-with-gradle
     - name: Gradle셋업
       uses: gradle/actions/setup-gradle@v4
 
+      # https://github.com/marketplace/actions/setup-redis-with-password
+      # Redis의 env 기본값을 넣음
     - name: Redis셋업
       uses: getong/redis-action@v1
       with:
@@ -40,6 +49,8 @@ jobs:
         container port: 6379
         password: '123456'
 
+      # https://github.com/marketplace/actions/setup-postgresql
+      # postgreSQL의 env 기본값을 넣음
     - name: PG셋업
       uses: harmon758/postgresql-action@v1
       with:
@@ -51,6 +62,22 @@ jobs:
     - name: Gradle 권한 변경 및 빌드
       run: chmod +x ./gradlew && ./gradlew clean build
 
+      # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
+    - name: AWS CLI 셋업
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::430118849354:role/github-action-ci-cd
+        aws-region: ap-northeast-2
+
+    - name: S3로 업로드
+      run: |
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          aws s3 cp build/libs/${{ env.BUILD_FILE }} s3://${{ env.S3_BUCKET }}/builds/$TIMESTAMP/
+
+
+
+
+    # 아래는 Github에서 주는 기본 예시인데 혹시몰라서 안지움
     # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
     # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
     #

@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'main'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1'
 
 java {
     toolchain {
@@ -103,6 +103,10 @@ sourceSets {
 // gradle clean 시 QClass 디렉토리 삭제
 clean {
     delete file(generated)
+}
+// plain jar생성 안함
+jar {
+    enabled = false
 }
 
 tasks.named('test') {
