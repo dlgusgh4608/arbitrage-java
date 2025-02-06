@@ -12,7 +12,6 @@ on:
     branches: [ "main" ]
 
 env:
-  BUILD_FILE: arbitrage-java-0.0.1.jar
   S3_BUCKET: arbitrage-java-bucket
   CODEDEPLOY_APP: arbitrage-code-deploy
   CODEDEPLOY_GROUP: arbitrage-code-deploy-group
@@ -61,6 +60,23 @@ jobs:
     - name: Gradle 권한 변경 및 빌드
       run: chmod +x ./gradlew && ./gradlew clean build
 
+      # deploy폴더 만들기
+      # build완료된 jar파일을 deploy로 복사
+      # appspec.yml을 deploy로 복사
+      # scripts 폴더를 deploy로 복사
+      # deploy폴더로 이동 후 안의 내용 전부를 커밋해시.zip으로 생성
+      # 폴더 뒤로 이동
+    - name: 빌드 결과물 폴더로 취합
+      run: |
+        mkdir deploy 
+        cp build/libs/*.jar deploy/
+        cp appspec.yml deploy/
+        cp -r scripts/ deploy/
+
+        cd deploy
+        zip -r ../$GITHUB_SHA.zip .
+        cd ..
+
       # https://github.com/marketplace/actions/configure-aws-credentials-action-for-github-actions
     - name: AWS CLI 셋업
       uses: aws-actions/configure-aws-credentials@v4
@@ -68,20 +84,20 @@ jobs:
         role-to-assume: arn:aws:iam::430118849354:role/HelloWorld@GithubAction_with_OIDC_from_Arbitrage-Java
         aws-region: ap-northeast-2
 
-    - name: TIMESTAMP생성
+    # - name: S3로 업로드
+    #   run: |
+    #       aws s3 cp build/libs/${{ env.BUILD_FILE }} s3://${{ env.S3_BUCKET }}/builds/${{ env.TIMESTAMP }}/
+
+    - name: S3 업로드
       run: |
-        echo "TIMESTAMP=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
-        
-    - name: S3로 업로드
-      run: |
-          aws s3 cp build/libs/${{ env.BUILD_FILE }} s3://${{ env.S3_BUCKET }}/builds/${{ env.TIMESTAMP }}/
+          aws s3 cp $GITHUB_SHA.zip s3://${{ env.S3_BUCKET }}/
 
     - name: CodeDeploy 트리거
       run: |
           aws deploy create-deployment \
             --application-name ${{ env.CODEDEPLOY_APP }} \
             --deployment-group-name ${{ env.CODEDEPLOY_GROUP }} \
-            --s3-location bucket=${{ env.S3_BUCKET }},bundleType=zip,key=builds/${{ env.TIMESTAMP }}/${{ env.BUILD_FILE }}
+            --s3-location bucket=${{ env.S3_BUCKET }},bundleType=zip,key=builds/$GITHUB_SHA.zip
 
 
 
