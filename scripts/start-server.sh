@@ -4,7 +4,7 @@ JAR_NAME="arbitrage-java.jar"
 
 echo "Starting application..."
 if [ -f "$APP_DIR/$JAR_NAME" ]; then
-  nohup java -jar "$APP_DIR/$JAR_NAME" > /dev/null 2>&1 &
+  nohup java -jar "$APP_DIR/$JAR_NAME" &
 else
   echo "Error: JAR file not found at $APP_DIR/$JAR_NAME"
   exit 1
