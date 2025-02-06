@@ -68,10 +68,13 @@ jobs:
         role-to-assume: arn:aws:iam::430118849354:role/HelloWorld@GithubAction_with_OIDC_from_Arbitrage-Java
         aws-region: ap-northeast-2
 
+    - name: TIMESTAMP생성
+      run: |
+        echo "TIMESTAMP=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+        
     - name: S3로 업로드
       run: |
-          echo "TIMESTAMP=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
-          aws s3 cp build/libs/${{ env.BUILD_FILE }} s3://${{ env.S3_BUCKET }}/builds/${{ env.TIMESTAMP }}/
+          aws s3 cp build/libs/${{ env.BUILD_FILE }} s3://${{ env.S3_BUCKET }}/builds/${{ env.TIMESTAMP }}}/
 
     - name: CodeDeploy 트리거
       run: |
