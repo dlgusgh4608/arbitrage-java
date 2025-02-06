@@ -70,15 +70,15 @@ jobs:
 
     - name: S3로 업로드
       run: |
-          TIMESTAMP=$(date +%Y%m%d%H%M%S)
-          aws s3 cp build/libs/${{ env.BUILD_FILE }} s3://${{ env.S3_BUCKET }}/builds/$TIMESTAMP/
+          echo "TIMESTAMP=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+          aws s3 cp build/libs/${{ env.BUILD_FILE }} s3://${{ env.S3_BUCKET }}/builds/${{ env.TIMESTAMP }}/
 
     - name: CodeDeploy 트리거
       run: |
           aws deploy create-deployment \
             --application-name ${{ env.CODEDEPLOY_APP }} \
             --deployment-group-name ${{ env.CODEDEPLOY_GROUP }} \
-            --s3-location bucket=${{ env.S3_BUCKET }},bundleType=zip,key=builds/$TIMESTAMP/${{ env.BUILD_FILE }}
+            --s3-location bucket=${{ env.S3_BUCKET }},bundleType=zip,key=builds/${{ env.TIMESTAMP }}/${{ env.BUILD_FILE }}
 
 
 
