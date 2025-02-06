@@ -14,6 +14,8 @@ on:
 env:
   BUILD_FILE: arbitrage-java-0.0.1.jar
   S3_BUCKET: arbitrage-java-bucket
+  CODEDEPLOY_APP: arbitrage-code-deploy
+  CODEDEPLOY_GROUP: arbitrage-code-deploy-group
 
 
 permissions:
@@ -44,7 +46,7 @@ jobs:
         redis version: 'latest'
         host port: 6379
         container port: 6379
-        password: '123456'
+        redis password: '123456'
 
       # https://github.com/marketplace/actions/setup-postgresql
       # postgreSQL의 env 기본값을 넣음
@@ -63,13 +65,20 @@ jobs:
     - name: AWS CLI 셋업
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: arn:aws:iam::430118849354:role/github-action-ci-cd
+        role-to-assume: arn:aws:iam::430118849354:role/HelloWorld@GithubAction_with_OIDC_from_Arbitrage-Java
         aws-region: ap-northeast-2
 
     - name: S3로 업로드
       run: |
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
           aws s3 cp build/libs/${{ env.BUILD_FILE }} s3://${{ env.S3_BUCKET }}/builds/$TIMESTAMP/
+
+    - name: CodeDeploy 트리거
+      run: |
+          aws deploy create-deployment \
+            --application-name ${{ env.CODEDEPLOY_APP }} \
+            --deployment-group-name ${{ env.CODEDEPLOY_GROUP }} \
+            --s3-location bucket=${{ env.S3_BUCKET }},bundleType=zip,key=builds/$TIMESTAMP/${{ env.BUILD_FILE }}
 
 
 
