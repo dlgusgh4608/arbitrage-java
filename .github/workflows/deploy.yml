@@ -84,10 +84,6 @@ jobs:
         role-to-assume: arn:aws:iam::430118849354:role/HelloWorld@GithubAction_with_OIDC_from_Arbitrage-Java
         aws-region: ap-northeast-2
 
-    # - name: S3로 업로드
-    #   run: |
-    #       aws s3 cp build/libs/${{ env.BUILD_FILE }} s3://${{ env.S3_BUCKET }}/builds/${{ env.TIMESTAMP }}/
-
     - name: S3 업로드
       run: |
           aws s3 cp $GITHUB_SHA.zip s3://${{ env.S3_BUCKET }}/
@@ -97,7 +93,7 @@ jobs:
           aws deploy create-deployment \
             --application-name ${{ env.CODEDEPLOY_APP }} \
             --deployment-group-name ${{ env.CODEDEPLOY_GROUP }} \
-            --s3-location bucket=${{ env.S3_BUCKET }},bundleType=zip,key=builds/$GITHUB_SHA.zip
+            --s3-location bucket=${{ env.S3_BUCKET }},bundleType=zip,key=$GITHUB_SHA.zip
 
 
 
