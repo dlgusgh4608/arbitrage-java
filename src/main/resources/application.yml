@@ -1,6 +1,8 @@
 spring:
   application:
     name: arbitrage
+  profiles:
+    active: ${ENV:development}
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -17,7 +19,7 @@ spring:
     database: postgresql
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: ${SHOW_SQL}
   thymeleaf:
     cache: false
     prefix: classpath:templates/

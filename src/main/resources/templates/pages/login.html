@@ -24,16 +24,18 @@
                 </div>
                 <button type="submit" class="btn-point w-100">로그인</button>
                 <script th:inline="javascript">
-                    const hasErrors = /*[[${#fields.hasErrors('*')}]]*/ false;
-
-                    if (hasErrors) emailRegister()
-
-                    const hasServerError = /*[[${#fields.hasGlobalErrors()}]]*/ false;
-                    if (hasServerError) alert("아이디 혹은 비밀번호가 잘못되었습니다.")
+                    const globalErrors = /*[[${#fields.hasGlobalErrors()} ? ${#fields.globalErrors()} : null]]*/ null;
+                    if (globalErrors) {
+                        emailRegister()
+                        alert(globalErrors[0])
+                    }
                 </script>
             </form>
         </article>
     </section>
+    <script th:inline="javascript">
+
+    </script>
 </main>
 
 </html>

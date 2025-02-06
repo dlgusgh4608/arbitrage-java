@@ -56,12 +56,11 @@
 
                 <button type="submit" class="btn-point w-100">가입하기</button>
                 <script th:inline="javascript">
-                    const hasErrors = /*[[${#fields.hasErrors('*')}]]*/ false;
-
-                    if (hasErrors) emailRegister()
-
-                    const hasServerError = /*[[${#fields.hasGlobalErrors()}]]*/ false;
-                    if (hasServerError) alert("알 수 없는 오류입니다. 다시 시도해주세요.")
+                    const globalErrors = /*[[${#fields.hasGlobalErrors()} ? ${#fields.globalErrors()} : null]]*/ null;
+                    if (globalErrors) {
+                        emailRegister()
+                        alert(globalErrors[0])
+                    }
                 </script>
             </form>
         </article>
@@ -69,7 +68,7 @@
     <script th:inline="javascript">
         let codeOk = false
 
-        const oauth = [[${ oauth }]]
+        const oauth = /* [[${ oauth }]] */ null;
 
         if (oauth) {
             emailRegister()

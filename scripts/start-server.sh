@@ -1,4 +1,11 @@
 #!/bin/bash
 APP_DIR="/home/ubuntu/app"
+JAR_NAME="arbitrage-java.jar"
 
-echo "start server"
+echo "Starting application..."
+if [ -f "$APP_DIR/$JAR_NAME" ]; then
+  nohup java -jar "$APP_DIR/$JAR_NAME" > /dev/null 2>&1 &
+else
+  echo "Error: JAR file not found at $APP_DIR/$JAR_NAME"
+  exit 1
+fi
