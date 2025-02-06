@@ -6,7 +6,7 @@ import {
     position
 } from './handler/index.js'
 
-const URL = `ws://localhost:8000/ws/chart/${symbol}`
+const URL = `ws/chart/${symbol}`
 
 const client = new WebsocketClient(URL)
 
