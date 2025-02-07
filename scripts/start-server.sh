@@ -5,6 +5,7 @@ LOG="/home/ubuntu/log/start_process.log"
 
 NOW=$(date '+%Y-%m-%d %T')
 
+
 echo "[$NOW] start_server process start" >> $LOG
 if [ -f $JAR ]; then
   nohup java -jar $JAR &

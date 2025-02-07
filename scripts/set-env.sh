@@ -5,6 +5,7 @@ LOG="/home/ubuntu/log/set_env_process.log"
 
 NOW=$(date '+%Y-%m-%d %T')
 
+
 if [ -f "$ENV_POINT" ]; then
     cp $ENV_POINT $APP_DIR
 else
