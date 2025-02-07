@@ -8,6 +8,8 @@ NOW=$(date '+%Y-%m-%d %T')
 
 echo "[$NOW] start beforeInstall script" >> $LOG
 
+rm -rf $APP_DIR
+
 mkdir -p $APP_DIR
 mkdir -p $LOG_DIR
 
