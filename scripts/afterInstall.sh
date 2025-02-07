@@ -13,6 +13,8 @@ else
   exit 1
 fi
 
+cd $APP_DIR
+
 nohup java -jar $JAR &
 
 echo "[$NOW] end afterInstall process" >> $LOG
