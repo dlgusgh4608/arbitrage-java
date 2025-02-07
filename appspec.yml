@@ -14,11 +14,11 @@ permissions:
 # https://docs.aws.amazon.com/ko_kr/codedeploy/latest/userguide/reference-appspec-file-structure-hooks.html  -> "인 플레이스(in-place) 배포"를 검색
 # /opt/codedeploy-agent/deployment-root/ download bundle 폴더 위치
 hooks:
-  AfterInstall:
-    - location: scripts/afterInstall.sh
+  BeforeInstall:
+    - location: scripts/beforeInstall.sh
       timeout: 60
       runas: ubuntu
-  ApplicationStart:
-    - location: scripts/applicationStart.sh
+  AfterInstall:
+    - location: scripts/afterInstall.sh
       timeout: 60
       runas: ubuntu

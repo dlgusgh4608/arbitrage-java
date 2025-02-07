@@ -1,21 +1,18 @@
 #!/bin/bash
 APP_DIR="/home/ubuntu/app"
-LOG_DIR="/home/ubuntu/log"
-ENV_POINT="/home/ubuntu/.env"
+JAR="$APP_DIR/arbitrageJava.jar"
 LOG="/home/ubuntu/log/afterInstall.log"
 
 NOW=$(date '+%Y-%m-%d %T')
 
-echo "[$NOW] start afterInstall script" >> $LOG
-
-mkdir -p $APP_DIR
-mkdir -p $LOG_DIR
-
-if [ -f "$ENV_POINT" ]; then
-    cp $ENV_POINT $APP_DIR
+echo "[$NOW] start afterInstall process" >> $LOG
+if [ -f $JAR ]; then
+  pkill -f "java -jar $JAR" || echo "[$NOW] Process not running" >> $LOG
 else
-    echo "[$NOW] .env file is not found in root" >> $LOG
-    exit 1
+  echo "[$NOW] Error: JAR file not found at $JAR"
+  exit 1
 fi
 
-echo "[$NOW] end afterInstall script" >> $LOG
+nohup java -jar $JAR &
+
+echo "[$NOW] end afterInstall process" >> $LOG
