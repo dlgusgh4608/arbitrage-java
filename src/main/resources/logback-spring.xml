@@ -48,7 +48,8 @@
 	<!-- prod Profile에서의 로그 설정 -->
     <springProfile name="production">
         <root level="INFO">
-            <appender-ref ref="CONSOLE" />
+            <!-- console을 활성화하면 nohup.out파일에 이중으로 log가 기록됨. -->
+            <!-- <appender-ref ref="CONSOLE" /> -->
             <appender-ref ref="FILE" />
         </root>
     </springProfile>
