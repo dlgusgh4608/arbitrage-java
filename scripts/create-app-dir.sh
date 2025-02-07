@@ -4,4 +4,4 @@ LOG_DIR="/home/ubuntu/log"
 
 
 mkdir -p $APP_DIR
-mkdir -o $LOG_DIR
+mkdir -p $LOG_DIR
