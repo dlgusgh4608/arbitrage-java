@@ -14,18 +14,18 @@ permissions:
 # https://docs.aws.amazon.com/ko_kr/codedeploy/latest/userguide/reference-appspec-file-structure-hooks.html  -> "인 플레이스(in-place) 배포"를 검색
 hooks:
   ApplicationStop:
-    - location: scripts/create-app-dir.sh
+    - location: scripts/create-dir.sh
       timeout: 60
       runas: ubuntu
   BeforeInstall:
-    - location: scripts/set-env.sh
+    - location: scripts/set-prod-env.sh
       timeout: 60
       runas: ubuntu
   AfterInstall:
-    - location: scripts/stop-server.sh
+    - location: scripts/stop.sh
       timeout: 60
       runas: ubuntu
   ApplicationStart:
-    - location: scripts/start-server.sh
+    - location: scripts/start.sh
       timeout: 60
       runas: ubuntu
