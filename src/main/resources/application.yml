@@ -63,6 +63,9 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
 server:
   port: ${SERVER_PORT:8000}
+  tomcat:
+    remoteip:
+      protocol-header: x-forwarded-proto
 
 jwt:
   secret: ${JWT_SECRET:fhasdjkfhasdjkfhasdjkjfhdsajkfhskajdfhjksadhfkjsdahfjksadhfkjdsa}
