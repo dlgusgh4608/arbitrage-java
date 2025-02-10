@@ -64,8 +64,7 @@ spring:
 server:
   port: ${SERVER_PORT:8000}
   tomcat:
-    remoteip:
-      protocol-header: x-forwarded-proto
+    use-relative-redirects: true
 
 jwt:
   secret: ${JWT_SECRET:fhasdjkfhasdjkfhasdjkjfhdsajkfhskajdfhjksadhfkjsdahfjksadhfkjdsa}
