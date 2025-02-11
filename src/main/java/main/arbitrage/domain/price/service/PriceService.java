@@ -20,7 +20,6 @@ import org.springframework.stereotype.Service;
 public class PriceService {
   private final PriceBuffer priceBuffer;
   private final PriceRepository priceRepository;
-  private final Runtime runtime = Runtime.getRuntime();
 
   public void saveToPG() {
     try {
@@ -29,18 +28,6 @@ public class PriceService {
       List<Price> dataToSave = priceBuffer.getBufferedData();
       priceRepository.bulkInsert(dataToSave);
       log.info("Saved {} symbol price records to database", dataToSave.size());
-
-      final long mb = 1024 * 1024;
-
-      log.info("========================== Memory Info ==========================");
-      log.info("Free memory: {} MB", runtime.freeMemory() / mb);
-      log.info("Allocated memory: {} MB", runtime.totalMemory() / mb);
-      log.info("Max memory: {} MB", runtime.maxMemory() / mb);
-      log.info(
-          "Total free memory: {} MB",
-          (runtime.freeMemory() + (runtime.maxMemory() - runtime.totalMemory())) / mb);
-      log.info("=================================================================");
-
       priceBuffer.clear();
     } catch (Exception e) {
       throw new PriceException(PriceErrorCode.UNKNOWN, e);

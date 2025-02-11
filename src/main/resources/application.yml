@@ -16,10 +16,10 @@ spring:
     hikari:
       maximum-pool-size: 4
   jpa:
-    database: postgresql
     hibernate:
       ddl-auto: update
     show-sql: ${SHOW_SQL:false}
+    open-in-view: false
   thymeleaf:
     cache: false
     prefix: classpath:templates/

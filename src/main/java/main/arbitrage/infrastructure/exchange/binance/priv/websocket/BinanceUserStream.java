@@ -46,6 +46,7 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
   private static final long ORDER_TICKER_TIMEOUT = 3000; // 3sec
 
   private boolean isRunning = false;
+  private boolean reconnectFlag = true;
   private WebSocketSession session;
 
   public BinanceUserStream(
@@ -72,12 +73,23 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
     this.binanceUserStreamHandler = binanceUserStreamHandler;
   }
 
+  public void reconnect() {
+    if (!reconnectFlag) return;
+
+    isRunning = false;
+    session = null;
+
+    connect();
+  }
+
   @Override
   public void connect() {
     try {
       if (isRunning) throw new IllegalStateException(socketName + "UserStream is already running!");
 
       StandardWebSocketClient client = new StandardWebSocketClient();
+
+      reconnectFlag = true;
 
       String listenKey = createListenKey();
 
@@ -111,11 +123,6 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
         log.error("{}\tError closing Binance UserStream", socketName, e);
       }
     }
-  }
-
-  @Override
-  public boolean isConnected() {
-    return session != null && session.isOpen() && isRunning;
   }
 
   private void handleMessage(JsonNode data) {
@@ -339,6 +346,8 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
   }
 
   public void streamShutdown() {
+    reconnectFlag = false;
+
     shutdown();
     disconnect();
   }

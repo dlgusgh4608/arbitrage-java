@@ -35,6 +35,13 @@ public class BinanceWebSocket extends ExchangeWebsocketClient {
     symbols = symbolVariableService.getSupportedSymbolNames();
   }
 
+  private void reconnect() {
+    session = null;
+    isRunning = false;
+
+    connect();
+  }
+
   @Override
   public void connect() {
     if (isRunning) {
@@ -46,7 +53,11 @@ public class BinanceWebSocket extends ExchangeWebsocketClient {
       WS_URL = WS_URL.concat(params);
       session =
           client
-              .execute(binancePublicWebsocketHandler.setMessageHandler(this::handleMessage), WS_URL)
+              .execute(
+                  binancePublicWebsocketHandler
+                      .setMessageHandler(this::handleMessage)
+                      .setReconnectHandler(this::reconnect),
+                  WS_URL)
               .get();
       isRunning = true;
     } catch (InterruptedException | ExecutionException e) {
@@ -61,16 +72,10 @@ public class BinanceWebSocket extends ExchangeWebsocketClient {
       try {
         session.close();
         isRunning = false;
-        log.info("Binance WebSocket Disconnected");
       } catch (IOException e) {
         log.error("Error closing Binance WebSocket", e);
       }
     }
-  }
-
-  @Override
-  public boolean isConnected() {
-    return session != null && session.isOpen() && isRunning;
   }
 
   @Override

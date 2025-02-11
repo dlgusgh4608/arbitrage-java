@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -23,6 +21,7 @@ public class BaseWebsocketHandler<T> extends AbstractWebSocketHandler {
   protected final ConcurrentHashMap<String, WebSocketSession> sessionMap =
       new ConcurrentHashMap<>();
   protected Consumer<JsonNode> messageHandler;
+  protected Runnable reconnectHandler = () -> {};
 
   public BaseWebsocketHandler(String socketName, ObjectMapper objectMapper) {
     this.socketName = socketName;
@@ -58,9 +57,13 @@ public class BaseWebsocketHandler<T> extends AbstractWebSocketHandler {
   }
 
   @Override
-  public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+  public void afterConnectionClosed(WebSocketSession session, CloseStatus status)
+      throws IOException {
     log.info(
         "[{}]WebSocket connection closed\tid: {}, status: {}", socketName, session.getId(), status);
+
+    sessionMap.remove(session.getId());
+    reconnectHandler.run();
   }
 
   public BaseWebsocketHandler<T> setMessageHandler(Consumer<JsonNode> messageHandler) {
@@ -68,20 +71,19 @@ public class BaseWebsocketHandler<T> extends AbstractWebSocketHandler {
     return this;
   }
 
+  public BaseWebsocketHandler<T> setReconnectHandler(Runnable reconnectMethod) {
+    this.reconnectHandler = reconnectMethod;
+    return this;
+  }
+
   public void sendMessage(T dto) {
     if (dto == null) return;
 
     TextMessage message = new TextMessage(objectMapper.valueToTree(dto).toString());
-    List<String> sessionsToRemove = new ArrayList<>();
 
     for (Map.Entry<String, WebSocketSession> entry : sessionMap.entrySet()) {
       WebSocketSession session = entry.getValue();
       String sessionId = entry.getKey();
-
-      if (session == null || !session.isOpen()) {
-        sessionsToRemove.add(sessionId);
-        continue;
-      }
 
       synchronized (session) {
         try {
@@ -92,7 +94,6 @@ public class BaseWebsocketHandler<T> extends AbstractWebSocketHandler {
               socketName,
               sessionId,
               e.getMessage());
-          sessionsToRemove.add(sessionId);
           try {
             session.close();
           } catch (IOException ex) {
@@ -101,7 +102,5 @@ public class BaseWebsocketHandler<T> extends AbstractWebSocketHandler {
         }
       }
     }
-
-    sessionsToRemove.forEach(sessionMap::remove);
   }
 }

@@ -51,7 +51,7 @@ public class RestPrivateController {
   }
 
   @PatchMapping(PrivateRestControllerUrlConstants.MARGIN_MODE)
-  public ResponseEntity<?> patchLeverage(@Valid @RequestBody UpdateMarginTypeRequest req) {
+  public ResponseEntity<?> patchMarginMode(@Valid @RequestBody UpdateMarginTypeRequest req) {
     return ResponseEntity.ok(orderApplicationService.updateMarginType(req));
   }
 

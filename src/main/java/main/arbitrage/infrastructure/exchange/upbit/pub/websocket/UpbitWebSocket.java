@@ -36,6 +36,13 @@ public class UpbitWebSocket extends ExchangeWebsocketClient {
     symbols = symbolVariableService.getSupportedSymbolNames();
   }
 
+  private void reconnect() {
+    session = null;
+    isRunning = false;
+
+    connect();
+  }
+
   @Override
   public void connect() {
     if (isRunning) {
@@ -46,7 +53,11 @@ public class UpbitWebSocket extends ExchangeWebsocketClient {
       StandardWebSocketClient client = new StandardWebSocketClient();
       session =
           client
-              .execute(upbitPublicWebsocketHandler.setMessageHandler(this::handleMessage), WS_URL)
+              .execute(
+                  upbitPublicWebsocketHandler
+                      .setMessageHandler(this::handleMessage)
+                      .setReconnectHandler(this::reconnect),
+                  WS_URL)
               .get();
       isRunning = true;
 
@@ -68,11 +79,6 @@ public class UpbitWebSocket extends ExchangeWebsocketClient {
         log.error("Error closing Upbit WebSocket", e);
       }
     }
-  }
-
-  @Override
-  public boolean isConnected() {
-    return session != null && session.isOpen() && isRunning;
   }
 
   @Override
@@ -155,6 +161,8 @@ public class UpbitWebSocket extends ExchangeWebsocketClient {
 
   private void sendPing() {
     try {
+      if (session == null) return;
+
       session.sendMessage(new TextMessage("PING"));
     } catch (IOException e) {
       log.error("Failed to send ping message", e);

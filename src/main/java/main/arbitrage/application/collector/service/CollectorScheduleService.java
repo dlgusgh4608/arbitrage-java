@@ -1,12 +1,14 @@
 package main.arbitrage.application.collector.service;
 
 import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.application.collector.dto.ChartBySymbolDTO;
@@ -28,7 +30,6 @@ import main.arbitrage.infrastructure.exchange.factory.ExchangePublicWebsocketFac
 import main.arbitrage.infrastructure.websocket.handler.ChartWebsocketHandler;
 import main.arbitrage.infrastructure.websocket.handler.PremiumWebsocketHandler;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,18 +49,23 @@ public class CollectorScheduleService {
   private final Map<String, Price> priceMap = new ConcurrentHashMap<>();
   private final ApplicationEventPublisher applicationEventPublisher;
   private Map<String, BinanceExchangeInfoResponse> binanceExchangeInfoMap = new HashMap<>();
+  private ExecutorService threadPools;
+  private List<Symbol> supportedSymbols = new ArrayList<>();
 
   @PostConstruct
   private void initialize() {
     exchangePublicWebsocketFactory.initialize();
     binanceExchangeInfoMap = binancePublicRestService.getExchangeInfo();
+    supportedSymbols = symbolVariableService.getSupportedSymbols();
+    threadPools = Executors.newFixedThreadPool((int) supportedSymbols.size() / 2);
   }
 
   @Scheduled(fixedRate = 300) // .3초
   protected void calculatePremium() {
     ExchangeRate exchangeRate = exchangeRateService.getUsdToKrw();
     if (exchangeRate == null) return;
-    processAllSymbols(exchangeRate);
+    supportedSymbols.forEach(s -> this.processSymbol(s, exchangeRate));
+    // processAllSymbols(exchangeRate);
   }
 
   @Scheduled(cron = "*/5 * * * * *") // 5초
@@ -80,19 +86,8 @@ public class CollectorScheduleService {
     applicationEventPublisher.publishEvent(binanceExchangeInfoMap);
   }
 
-  private void processAllSymbols(ExchangeRate exchangeRate) {
-    // supported symbol은 upbit와 binance가 실행될때 동일하게 들어감.
-    List<CompletableFuture<Void>> futures =
-        symbolVariableService.getSupportedSymbols().stream()
-            .map(symbol -> calculateAndEmitAsync(exchangeRate, symbol))
-            .toList();
-
-    CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-  }
-
-  @Async
-  private CompletableFuture<Void> calculateAndEmitAsync(ExchangeRate exchangeRate, Symbol symbol) {
-    return CompletableFuture.runAsync(
+  private void processSymbol(Symbol symbol, ExchangeRate exchangeRate) {
+    threadPools.execute(
         () -> {
           try {
             String symbolName = symbol.getName();
@@ -156,6 +151,85 @@ public class CollectorScheduleService {
           }
         });
   }
+
+  // private void processAllSymbols(ExchangeRate exchangeRate) {
+  //   // supported symbol은 upbit와 binance가 실행될때 동일하게 들어감.
+  //   List<CompletableFuture<Void>> futures =
+  //       symbolVariableService.getSupportedSymbols().stream()
+  //           .map(symbol -> calculateAndEmitAsync(exchangeRate, symbol))
+  //           .toList();
+
+  //   CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+  // }
+
+  // @Async
+  // private CompletableFuture<Void> calculateAndEmitAsync(ExchangeRate exchangeRate, Symbol symbol)
+  // {
+  //   return CompletableFuture.runAsync(
+  //       () -> {
+  //         try {
+  //           String symbolName = symbol.getName();
+
+  //           TradePair tradePair = exchangePublicWebsocketFactory.collectTrades(symbolName);
+  //           OrderbookPair orderbookPair =
+  //               exchangePublicWebsocketFactory.collectOrderbooks(symbolName);
+
+  //           TradeDto upbitTrade = tradePair.getUpbit();
+  //           TradeDto binanceTrade = tradePair.getBinance();
+
+  //           if (!tradeValidator.isValidTradePair(upbitTrade, binanceTrade)) {
+  //             log.warn("Invalid trade pair for symbol: {}", symbolName);
+  //             return;
+  //           }
+
+  //           float exchangeRateValue = exchangeRate.getRate();
+  //           double upbitPrc = upbitTrade.getPrice();
+  //           double binancePrc = binanceTrade.getPrice();
+  //           long upbitTradeAt = upbitTrade.getTimestamp();
+  //           long binanceTradeAt = binanceTrade.getTimestamp();
+
+  //           float premiumValue = MathUtil.calculatePremium(upbitPrc, binancePrc,
+  // exchangeRateValue);
+
+  //           PremiumDTO premium =
+  //               PremiumDTO.builder()
+  //                   .symbol(symbolName)
+  //                   .premium(premiumValue)
+  //                   .upbit(upbitPrc)
+  //                   .binance(binancePrc)
+  //                   .usdToKrw(exchangeRateValue)
+  //                   .upbitTradeAt(upbitTradeAt)
+  //                   .binanceTradeAt(binanceTradeAt)
+  //                   .build();
+
+  //           Price price =
+  //               Price.builder()
+  //                   .symbol(symbol)
+  //                   .exchangeRate(exchangeRate)
+  //                   .premium(premium.getPremium())
+  //                   .upbit(upbitPrc)
+  //                   .binance(binancePrc)
+  //                   .upbitTradeAt(upbitTradeAt)
+  //                   .binanceTradeAt(binanceTradeAt)
+  //                   .build();
+
+  //           priceMap.put(symbolName, price); // domain 안의 buffer에 put -> 1분간격으로 db에 업로드
+  //           emitPremium(premium);
+
+  //           // 차트 데이터 빌드 후 websocket으로 전송 -> 따로 저장 안함.
+  //           ChartBySymbolDTO chartBySymbolDto =
+  //               ChartBySymbolDTO.builder()
+  //                   .symbol(symbolName)
+  //                   .premium(premium)
+  //                   .orderbookPair(orderbookPair)
+  //                   .build();
+
+  //           emitChartBySymbol(chartBySymbolDto);
+  //         } catch (Exception e) {
+  //           log.error("Error processing symbol {}: ", symbol, e);
+  //         }
+  //       });
+  // }
 
   private void emitChartBySymbol(ChartBySymbolDTO chartBySymbolDto) {
     chartWebsocketHandler.sendMessage(chartBySymbolDto);

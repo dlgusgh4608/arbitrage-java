@@ -2,8 +2,6 @@ package main.arbitrage.infrastructure.websocket.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.application.collector.dto.ChartBySymbolDTO;
@@ -29,20 +27,12 @@ public class ChartWebsocketHandler extends BaseWebsocketHandler<ChartBySymbolDTO
     if (data == null) return;
 
     TextMessage message = new TextMessage(objectMapper.valueToTree(data).toString());
-    List<String> sessionsToRemove = new ArrayList<>();
 
     for (Map.Entry<String, WebSocketSession> entry : sessionMap.entrySet()) {
       WebSocketSession session = entry.getValue();
       String sessionId = entry.getKey();
 
-      if (session == null || !session.isOpen()) {
-        sessionsToRemove.add(sessionId);
-        continue;
-      }
-
-      if (!extractSymbol(session).equals(data.getSymbol())) {
-        continue;
-      }
+      if (!extractSymbol(session).equals(data.getSymbol())) continue;
 
       synchronized (session) {
         try {
@@ -53,7 +43,6 @@ public class ChartWebsocketHandler extends BaseWebsocketHandler<ChartBySymbolDTO
               socketName,
               sessionId,
               e.getMessage());
-          sessionsToRemove.add(sessionId);
           try {
             session.close();
           } catch (IOException ex) {
@@ -62,7 +51,5 @@ public class ChartWebsocketHandler extends BaseWebsocketHandler<ChartBySymbolDTO
         }
       }
     }
-
-    sessionsToRemove.forEach(sessionMap::remove);
   }
 }
