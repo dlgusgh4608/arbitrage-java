@@ -15,6 +15,7 @@ fi
 
 cd $APP_DIR
 
-nohup java -jar $JAR > /dev/null 2 > 1 &
+nohup java -jar $JAR > /dev/null 2>&1 &
 
 echo "[$NOW] end afterInstall process" >> $LOG
+exit 0
