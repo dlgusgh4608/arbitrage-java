@@ -9,14 +9,14 @@ import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.auto.dto.AutomaticUserInfoDTO;
 import main.arbitrage.application.collector.dto.PremiumDTO;
 import main.arbitrage.auth.security.SecurityUtil;
-import main.arbitrage.domain.autoTradingStrategy.entity.AutoTradingStrategy;
-import main.arbitrage.domain.autoTradingStrategy.service.AutoTradingStrategyService;
 import main.arbitrage.domain.buyOrder.service.BuyOrderService;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
 import main.arbitrage.domain.price.service.PriceService;
 import main.arbitrage.domain.sellOrder.service.SellOrderService;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
+import main.arbitrage.domain.tradingStrategy.entity.TradingStrategy;
+import main.arbitrage.domain.tradingStrategy.service.TradingStrategyService;
 import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.user.service.UserService;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
@@ -28,7 +28,7 @@ import main.arbitrage.infrastructure.exchange.binance.pub.rest.BinancePublicRest
 import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
 import main.arbitrage.infrastructure.websocket.handler.BinanceUserStreamHandler;
-import main.arbitrage.presentation.dto.form.AutoTradingStrategyForm;
+import main.arbitrage.presentation.dto.form.TradingStrategyForm;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -37,7 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class AutoApplicationService {
-  private final AutoTradingStrategyService autoTradingStrategyService;
+  private final TradingStrategyService autoTradingStrategyService;
   private final AESCrypto aesCrypto;
   private final ExchangePrivateRestFactory exchangePrivateRestFactory;
   private final SymbolVariableService symbolVariableService;
@@ -122,8 +122,7 @@ public class AutoApplicationService {
             null));
   }
 
-  private void createUserStream(
-      User user, UserEnv userEnv, AutoTradingStrategy autoTradingStrategy) {
+  private void createUserStream(User user, UserEnv userEnv, TradingStrategy tradingStrategy) {
     createUserStream(
         new AutomaticUserInfoDTO(
             user.getId(),
@@ -132,14 +131,11 @@ public class AutoApplicationService {
             userEnv.getUpbitSecretKey(),
             userEnv.getBinanceAccessKey(),
             userEnv.getBinanceSecretKey(),
-            autoTradingStrategy));
+            tradingStrategy));
   }
 
   private void updateUserStream(
-      BinanceUserStream userStream,
-      User user,
-      UserEnv userEnv,
-      AutoTradingStrategy autoTradingStrategy) {
+      BinanceUserStream userStream, User user, UserEnv userEnv, TradingStrategy tradingStrategy) {
     userStream.updateAutomaticValue(
         binanceExchangeInfoMap,
         new AutomaticUserInfoDTO(
@@ -149,26 +145,24 @@ public class AutoApplicationService {
             userEnv.getUpbitSecretKey(),
             userEnv.getBinanceAccessKey(),
             userEnv.getBinanceSecretKey(),
-            autoTradingStrategy));
+            tradingStrategy));
   }
 
   @Transactional
-  public AutoTradingStrategyForm getAutoTradingStrategyForm() {
+  public TradingStrategyForm getAutoTradingStrategyForm() {
     Long userId = SecurityUtil.getUserId();
     User user = userService.findAndExistByUserId(userId);
-    Optional<AutoTradingStrategy> autoTradingStrategy =
-        autoTradingStrategyService.findByUserId(userId);
+    Optional<TradingStrategy> tradingStrategy = autoTradingStrategyService.findByUserId(userId);
 
-    if (autoTradingStrategy.isPresent()) {
-      return AutoTradingStrategyForm.fromEntity(user, autoTradingStrategy.get());
+    if (tradingStrategy.isPresent()) {
+      return TradingStrategyForm.fromEntity(user, tradingStrategy.get());
     }
 
-    return AutoTradingStrategyForm.fromEntity(user);
+    return TradingStrategyForm.fromEntity(user);
   }
 
   @Transactional
-  public AutoTradingStrategyForm updateAutoTradingSetting(
-      AutoTradingStrategyForm autoTradingStrategyForm) {
+  public TradingStrategyForm updateAutoTradingSetting(TradingStrategyForm autoTradingStrategyForm) {
     Long userId = SecurityUtil.getUserId();
     User user = userService.findAndExistByUserId(userId);
     userFlagUpdate(user, autoTradingStrategyForm);
@@ -204,38 +198,38 @@ public class AutoApplicationService {
       return autoTradingStrategyForm;
     }
 
-    Optional<AutoTradingStrategy> autoTradingStrategyOptional =
+    Optional<TradingStrategy> autoTradingStrategyOptional =
         autoTradingStrategyService.findByUserId(userId);
 
     Symbol symbol =
         symbolVariableService.findAndExistSymbolByName(autoTradingStrategyForm.getSymbol());
 
-    AutoTradingStrategy autoTradingStrategy =
+    TradingStrategy tradingStrategy =
         createOrUpdateAutoStrategy(
             autoTradingStrategyOptional, user, symbol, autoTradingStrategyForm);
     if (userStream == null) {
-      createUserStream(user, userEnv, autoTradingStrategy);
+      createUserStream(user, userEnv, tradingStrategy);
     } else {
-      updateUserStream(userStream, user, userEnv, autoTradingStrategy);
+      updateUserStream(userStream, user, userEnv, tradingStrategy);
     }
 
     return autoTradingStrategyForm;
   }
 
-  private void userFlagUpdate(User user, AutoTradingStrategyForm autoTradingStrategyForm) {
+  private void userFlagUpdate(User user, TradingStrategyForm autoTradingStrategyForm) {
     user.updateAutoFlag(autoTradingStrategyForm.getAutoFlag());
     user.updateLpFlag(autoTradingStrategyForm.getLpFlag());
   }
 
-  private AutoTradingStrategy createOrUpdateAutoStrategy(
-      Optional<AutoTradingStrategy> autoTradingStrategyOptional,
+  private TradingStrategy createOrUpdateAutoStrategy(
+      Optional<TradingStrategy> autoTradingStrategyOptional,
       User user,
       Symbol symbol,
-      AutoTradingStrategyForm autoTradingStrategyForm) {
+      TradingStrategyForm autoTradingStrategyForm) {
     if (autoTradingStrategyOptional.isPresent()) {
-      AutoTradingStrategy autoTradingStrategy = autoTradingStrategyOptional.get();
-      updateAutoStrategy(user, autoTradingStrategy, symbol, autoTradingStrategyForm);
-      return autoTradingStrategy;
+      TradingStrategy tradingStrategy = autoTradingStrategyOptional.get();
+      updateAutoStrategy(user, tradingStrategy, symbol, autoTradingStrategyForm);
+      return tradingStrategy;
     }
 
     return createAutoStrategy(user, symbol, autoTradingStrategyForm);
@@ -243,10 +237,10 @@ public class AutoApplicationService {
 
   private void updateAutoStrategy(
       User user,
-      AutoTradingStrategy autoTradingStrategy,
+      TradingStrategy tradingStrategy,
       Symbol symbol,
-      AutoTradingStrategyForm autoTradingStrategyForm) {
-    autoTradingStrategy.update(
+      TradingStrategyForm autoTradingStrategyForm) {
+    tradingStrategy.update(
         symbol,
         autoTradingStrategyForm.getLeverage(),
         autoTradingStrategyForm.getStopLossPercent(),
@@ -259,8 +253,8 @@ public class AutoApplicationService {
         autoTradingStrategyForm.getShoulderEntryPercent());
   }
 
-  private AutoTradingStrategy createAutoStrategy(
-      User user, Symbol symbol, AutoTradingStrategyForm autoTradingStrategyForm) {
+  private TradingStrategy createAutoStrategy(
+      User user, Symbol symbol, TradingStrategyForm autoTradingStrategyForm) {
     return autoTradingStrategyService.create(
         user,
         symbol,
@@ -286,9 +280,9 @@ public class AutoApplicationService {
   //     symbolVariableService.findAndExistSymbolByName(autoTradingStrategyForm.getSymbol());
 
   //   if (autoTradingStrategyOptional.isPresent()) {
-  //     AutoTradingStrategy autoTradingStrategy = autoTradingStrategyOptional.get();
+  //     AutoTradingStrategy tradingStrategy = autoTradingStrategyOptional.get();
 
-  //     autoTradingStrategy.update(
+  //     tradingStrategy.update(
   //         currentSymbol,
   //         autoTradingStrategyForm.getLeverage(),
   //         autoTradingStrategyForm.getStopLossPercent(),

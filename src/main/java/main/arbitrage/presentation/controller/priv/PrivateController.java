@@ -6,7 +6,7 @@ import main.arbitrage.application.auto.service.AutoApplicationService;
 import main.arbitrage.application.user.service.UserApplicationService;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.presentation.controller.priv.constant.PrivateControllerUrlConstants;
-import main.arbitrage.presentation.dto.form.AutoTradingStrategyForm;
+import main.arbitrage.presentation.dto.form.TradingStrategyForm;
 import main.arbitrage.presentation.dto.form.UserEnvForm;
 import main.arbitrage.presentation.dto.view.UserProfileView;
 import org.springframework.beans.factory.annotation.Value;
@@ -71,12 +71,12 @@ public class PrivateController {
 
   @GetMapping(PrivateControllerUrlConstants.ORDER_SETTING)
   public String getOrderSetting(Model model) {
-    AutoTradingStrategyForm autoTradingStrategyForm =
+    TradingStrategyForm autoTradingStrategyForm =
         autoApplicationService.getAutoTradingStrategyForm();
 
     model.addAttribute("symbols", symbolVariableService.getSupportedSymbolNames());
     if (autoTradingStrategyForm == null) {
-      model.addAttribute("formDto", new AutoTradingStrategyForm());
+      model.addAttribute("formDto", new TradingStrategyForm());
     } else {
       model.addAttribute("formDto", autoTradingStrategyForm);
     }
@@ -87,7 +87,7 @@ public class PrivateController {
   @PostMapping(PrivateControllerUrlConstants.ORDER_SETTING)
   public String postOrderSetting(
       Model model,
-      @Valid @ModelAttribute("formDto") AutoTradingStrategyForm autoTradingStrategyForm,
+      @Valid @ModelAttribute("formDto") TradingStrategyForm autoTradingStrategyForm,
       BindingResult bindingResult) {
 
     model.addAttribute("symbols", symbolVariableService.getSupportedSymbolNames());

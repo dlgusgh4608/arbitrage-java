@@ -24,7 +24,7 @@ public class Symbol {
   @Column(name = "id")
   private Long id;
 
-  @Column(name = "symbol", nullable = false, unique = true, columnDefinition = "VARCHAR(5)")
+  @Column(name = "name", nullable = false, unique = true, columnDefinition = "VARCHAR(5)")
   private String name;
 
   @Column(name = "use", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")

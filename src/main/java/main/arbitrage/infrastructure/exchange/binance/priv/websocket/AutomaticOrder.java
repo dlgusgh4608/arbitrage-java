@@ -104,11 +104,11 @@ public class AutomaticOrder {
     this.upbitService = upbitService;
 
     if (automaticUser.autoFlag()) {
-      this.symbol = automaticUser.autoTradingStrategy().getSymbol();
+      this.symbol = automaticUser.tradingStrategy().getSymbol();
       this.exchangeInfo = exchangeInfoMap.get(symbol.getName());
       this.executorService = Executors.newSingleThreadScheduledExecutor();
       this.openOrders.addAll(buyOrderService.getOpenOrders(automaticUser.userId(), symbol));
-      updateLeverage(automaticUser.autoTradingStrategy().getLeverage());
+      updateLeverage(automaticUser.tradingStrategy().getLeverage());
       setStandardSchedule();
       updateWallet();
     }
@@ -118,14 +118,14 @@ public class AutomaticOrder {
       Map<String, BinanceExchangeInfoResponse> exchangeInfoMap,
       AutomaticUserInfoDTO automaticUser) {
     this.automaticUser = automaticUser;
-    this.symbol = automaticUser.autoTradingStrategy().getSymbol();
+    this.symbol = automaticUser.tradingStrategy().getSymbol();
     this.exchangeInfo = exchangeInfoMap.get(symbol.getName());
     if (executorService == null) {
       this.executorService = Executors.newSingleThreadScheduledExecutor();
     }
     this.openOrders.clear();
     this.openOrders.addAll(buyOrderService.getOpenOrders(automaticUser.userId(), symbol));
-    updateLeverage(automaticUser.autoTradingStrategy().getLeverage());
+    updateLeverage(automaticUser.tradingStrategy().getLeverage());
     setStandardSchedule();
     updateWallet();
     unlock();
@@ -170,7 +170,7 @@ public class AutomaticOrder {
                               && shoulderValue < premiumOfStandardExchangeRate) return true;
 
                           // 손절
-                          if (automaticUser.autoTradingStrategy().getStopLossPercent() > profitRate)
+                          if (automaticUser.tradingStrategy().getStopLossPercent() > profitRate)
                             return true;
 
                           return false;
@@ -219,7 +219,7 @@ public class AutomaticOrder {
                                     avgExchangeRate);
 
                             // 추가매수가에 도달했는지 판단
-                            if (automaticUser.autoTradingStrategy().getAdditionalBuyTargetPercent()
+                            if (automaticUser.tradingStrategy().getAdditionalBuyTargetPercent()
                                 > premiumOfStandardExchangeRate - premiumOfOrder) return true;
 
                             return false;
@@ -247,7 +247,7 @@ public class AutomaticOrder {
     double totalPriceOfInitialWallet =
         Math.min(MathUtil.krwToUsd(initialKrw, exchangeRate), initialUsdt)
             * safeWalletPercent
-            / automaticUser.autoTradingStrategy().getDivisionCount();
+            / automaticUser.tradingStrategy().getDivisionCount();
 
     double totalPriceOfCurrentWallet =
         Math.min(MathUtil.krwToUsd(currentKrw, exchangeRate), currentUsdt) * safeWalletPercent;
@@ -402,8 +402,8 @@ public class AutomaticOrder {
             () -> {
               standardValue =
                   priceService.getAutoTradingValue(
-                      automaticUser.autoTradingStrategy().getSymbol(),
-                      automaticUser.autoTradingStrategy().getEntryCandleMinutes());
+                      automaticUser.tradingStrategy().getSymbol(),
+                      automaticUser.tradingStrategy().getEntryCandleMinutes());
 
               // 평균 환율
               avgExchangeRate = standardValue.avgExchangeRate();
@@ -413,21 +413,20 @@ public class AutomaticOrder {
                   MathUtil.calculatePercentValue(
                       standardValue.minPremium(),
                       standardValue.maxPremium(),
-                      automaticUser.autoTradingStrategy().getKneeEntryPercent());
+                      automaticUser.tradingStrategy().getKneeEntryPercent());
 
               // 어깨 값
               shoulderValue =
                   MathUtil.calculatePercentValue(
                       standardValue.minPremium(),
                       standardValue.maxPremium(),
-                      automaticUser.autoTradingStrategy().getShoulderEntryPercent());
+                      automaticUser.tradingStrategy().getShoulderEntryPercent());
 
               // 고정 수익률 (0일 시 무시)
-              fixedProfitRate = automaticUser.autoTradingStrategy().getFixedProfitTargetPercent();
+              fixedProfitRate = automaticUser.tradingStrategy().getFixedProfitTargetPercent();
 
               // 최소 수익률
-              minimumProfitRate =
-                  automaticUser.autoTradingStrategy().getMinimumProfitTargetPercent();
+              minimumProfitRate = automaticUser.tradingStrategy().getMinimumProfitTargetPercent();
 
               // 최소 주문 개수
               decimalPlacesOfStepSize = MathUtil.getDecimalPlaces(exchangeInfo.stepSize());
@@ -441,7 +440,7 @@ public class AutomaticOrder {
                       .floatValue();
             },
             0,
-            automaticUser.autoTradingStrategy().getEntryCandleMinutes() / 2,
+            automaticUser.tradingStrategy().getEntryCandleMinutes() / 2,
             TimeUnit.MINUTES);
   }
 

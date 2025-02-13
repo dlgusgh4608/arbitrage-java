@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import main.arbitrage.domain.autoTradingStrategy.entity.AutoTradingStrategy;
+import main.arbitrage.domain.tradingStrategy.entity.TradingStrategy;
 import main.arbitrage.domain.user.entity.User;
 
 @Getter
@@ -15,7 +15,7 @@ import main.arbitrage.domain.user.entity.User;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor
-public class AutoTradingStrategyForm {
+public class TradingStrategyForm {
   // Flag설정
   private Boolean lpFlag; // 청산방지 플래그
   private Boolean autoFlag; // 자동거래 플래그
@@ -159,26 +159,25 @@ public class AutoTradingStrategyForm {
     return shoulderEntryPercent >= kneeEntryPercent;
   }
 
-  public static AutoTradingStrategyForm fromEntity(
-      User user, AutoTradingStrategy autoTradingStrategy) {
-    return AutoTradingStrategyForm.builder()
+  public static TradingStrategyForm fromEntity(User user, TradingStrategy tradingStrategy) {
+    return TradingStrategyForm.builder()
         .lpFlag(user.isLpFlag())
         .autoFlag(user.isAutoFlag())
-        .symbol(autoTradingStrategy.getSymbol().getName())
-        .leverage(autoTradingStrategy.getLeverage())
-        .stopLossPercent(autoTradingStrategy.getStopLossPercent())
-        .minimumProfitTargetPercent(autoTradingStrategy.getMinimumProfitTargetPercent())
-        .fixedProfitTargetPercent(autoTradingStrategy.getFixedProfitTargetPercent())
-        .divisionCount(autoTradingStrategy.getDivisionCount())
-        .additionalBuyTargetPercent(autoTradingStrategy.getAdditionalBuyTargetPercent())
-        .entryCandleMinutes(autoTradingStrategy.getEntryCandleMinutes())
-        .kneeEntryPercent(autoTradingStrategy.getKneeEntryPercent())
-        .shoulderEntryPercent(autoTradingStrategy.getShoulderEntryPercent())
+        .symbol(tradingStrategy.getSymbol().getName())
+        .leverage(tradingStrategy.getLeverage())
+        .stopLossPercent(tradingStrategy.getStopLossPercent())
+        .minimumProfitTargetPercent(tradingStrategy.getMinimumProfitTargetPercent())
+        .fixedProfitTargetPercent(tradingStrategy.getFixedProfitTargetPercent())
+        .divisionCount(tradingStrategy.getDivisionCount())
+        .additionalBuyTargetPercent(tradingStrategy.getAdditionalBuyTargetPercent())
+        .entryCandleMinutes(tradingStrategy.getEntryCandleMinutes())
+        .kneeEntryPercent(tradingStrategy.getKneeEntryPercent())
+        .shoulderEntryPercent(tradingStrategy.getShoulderEntryPercent())
         .build();
   }
 
-  public static AutoTradingStrategyForm fromEntity(User user) {
-    return AutoTradingStrategyForm.builder()
+  public static TradingStrategyForm fromEntity(User user) {
+    return TradingStrategyForm.builder()
         .lpFlag(user.isLpFlag())
         .autoFlag(user.isAutoFlag())
         .build();

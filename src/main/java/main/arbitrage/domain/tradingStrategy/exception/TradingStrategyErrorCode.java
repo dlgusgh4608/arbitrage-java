@@ -1,4 +1,4 @@
-package main.arbitrage.domain.autoTradingStrategy.exception;
+package main.arbitrage.domain.tradingStrategy.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum AutoTradingStrategyErrorCode implements BaseErrorCode {
+public enum TradingStrategyErrorCode implements BaseErrorCode {
   UNKNOWN("TS01", "알 수 없는 에러입니다.", HttpStatus.INTERNAL_SERVER_ERROR),
   // 손절 퍼센트 관련 에러
   STOP_LOSS_PERCENT_POSITIVE("TS02", "손절 퍼센트는 음수여야 합니다.", HttpStatus.BAD_REQUEST),

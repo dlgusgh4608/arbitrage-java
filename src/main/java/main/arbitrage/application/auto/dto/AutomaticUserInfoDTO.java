@@ -1,7 +1,7 @@
 package main.arbitrage.application.auto.dto;
 
 import com.querydsl.core.annotations.QueryProjection;
-import main.arbitrage.domain.autoTradingStrategy.entity.AutoTradingStrategy;
+import main.arbitrage.domain.tradingStrategy.entity.TradingStrategy;
 
 public record AutomaticUserInfoDTO(
     // in UserEntity
@@ -15,7 +15,7 @@ public record AutomaticUserInfoDTO(
     String binanceSecretKey,
 
     // autoFlat가 false일 경우 null일 수 있음.
-    AutoTradingStrategy autoTradingStrategy) {
+    TradingStrategy tradingStrategy) {
 
   @QueryProjection
   public AutomaticUserInfoDTO {

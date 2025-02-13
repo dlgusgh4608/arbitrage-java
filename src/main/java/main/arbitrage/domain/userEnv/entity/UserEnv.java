@@ -33,16 +33,16 @@ public class UserEnv {
   @JoinColumn(name = "user_id")
   private User user;
 
-  @Column(name = "upbit_access_key")
+  @Column(name = "upbit_access_key", nullable = false)
   private String upbitAccessKey;
 
-  @Column(name = "upbit_secret_key")
+  @Column(name = "upbit_secret_key", nullable = false)
   private String upbitSecretKey;
 
-  @Column(name = "binance_access_key")
+  @Column(name = "binance_access_key", nullable = false)
   private String binanceAccessKey;
 
-  @Column(name = "binance_secret_key")
+  @Column(name = "binance_secret_key", nullable = false)
   private String binanceSecretKey;
 
   @CreationTimestamp

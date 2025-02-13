@@ -1,21 +1,21 @@
-package main.arbitrage.domain.autoTradingStrategy.service;
+package main.arbitrage.domain.tradingStrategy.service;
 
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.domain.autoTradingStrategy.entity.AutoTradingStrategy;
-import main.arbitrage.domain.autoTradingStrategy.exception.AutoTradingStrategyErrorCode;
-import main.arbitrage.domain.autoTradingStrategy.exception.AutoTradingStrategyException;
-import main.arbitrage.domain.autoTradingStrategy.repository.AutoTradingStrategyRepository;
 import main.arbitrage.domain.symbol.entity.Symbol;
+import main.arbitrage.domain.tradingStrategy.entity.TradingStrategy;
+import main.arbitrage.domain.tradingStrategy.exception.TradingStrategyErrorCode;
+import main.arbitrage.domain.tradingStrategy.exception.TradingStrategyException;
+import main.arbitrage.domain.tradingStrategy.repository.TradingStrategyRepository;
 import main.arbitrage.domain.user.entity.User;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class AutoTradingStrategyService {
-  private final AutoTradingStrategyRepository autoTradingStrategyRepository;
+public class TradingStrategyService {
+  private final TradingStrategyRepository autoTradingStrategyRepository;
 
-  public AutoTradingStrategy create(
+  public TradingStrategy create(
       User user,
       Symbol symbol,
       int leverage,
@@ -29,7 +29,7 @@ public class AutoTradingStrategyService {
       int shoulderEntryPercent) {
     try {
       return autoTradingStrategyRepository.save(
-          AutoTradingStrategy.builder()
+          TradingStrategy.builder()
               .user(user)
               .symbol(symbol)
               .leverage(leverage)
@@ -42,20 +42,20 @@ public class AutoTradingStrategyService {
               .kneeEntryPercent(kneeEntryPercent)
               .shoulderEntryPercent(shoulderEntryPercent)
               .build());
-    } catch (AutoTradingStrategyException e) {
+    } catch (TradingStrategyException e) {
       throw e;
     } catch (Exception e) {
-      throw new AutoTradingStrategyException(AutoTradingStrategyErrorCode.UNKNOWN, e);
+      throw new TradingStrategyException(TradingStrategyErrorCode.UNKNOWN, e);
     }
   }
 
-  public Optional<AutoTradingStrategy> findByUserId(Long userId) {
+  public Optional<TradingStrategy> findByUserId(Long userId) {
     try {
       return autoTradingStrategyRepository.findById(userId);
-    } catch (AutoTradingStrategyException e) {
+    } catch (TradingStrategyException e) {
       throw e;
     } catch (Exception e) {
-      throw new AutoTradingStrategyException(AutoTradingStrategyErrorCode.UNKNOWN, e);
+      throw new TradingStrategyException(TradingStrategyErrorCode.UNKNOWN, e);
     }
   }
 }

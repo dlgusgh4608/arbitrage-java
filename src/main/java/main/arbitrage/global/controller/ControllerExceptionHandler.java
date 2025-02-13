@@ -2,7 +2,6 @@ package main.arbitrage.global.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.auth.exception.AuthException;
-import main.arbitrage.domain.autoTradingStrategy.exception.AutoTradingStrategyException;
 import main.arbitrage.domain.buyOrder.exception.BuyOrderException;
 import main.arbitrage.domain.exchangeRate.exception.ExchangeRateException;
 import main.arbitrage.domain.grade.exception.GradeException;
@@ -11,6 +10,7 @@ import main.arbitrage.domain.price.exception.PriceException;
 import main.arbitrage.domain.sellOrder.exception.SellOrderException;
 import main.arbitrage.domain.symbol.exception.SymbolException;
 import main.arbitrage.domain.tier.exception.TierException;
+import main.arbitrage.domain.tradingStrategy.exception.TradingStrategyException;
 import main.arbitrage.domain.user.exception.UserException;
 import main.arbitrage.domain.userEnv.exception.UserEnvException;
 import main.arbitrage.global.exception.ErrorResponse;
@@ -41,7 +41,7 @@ public class ControllerExceptionHandler {
     BuyOrderException.class,
     SellOrderException.class,
     ExchangeRateException.class,
-    AutoTradingStrategyException.class,
+    TradingStrategyException.class,
     GradeException.class,
     TierException.class,
     AuthException.class

@@ -1,4 +1,4 @@
-package main.arbitrage.domain.autoTradingStrategy.entity;
+package main.arbitrage.domain.tradingStrategy.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,9 +14,9 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import main.arbitrage.domain.autoTradingStrategy.exception.AutoTradingStrategyErrorCode;
-import main.arbitrage.domain.autoTradingStrategy.exception.AutoTradingStrategyException;
 import main.arbitrage.domain.symbol.entity.Symbol;
+import main.arbitrage.domain.tradingStrategy.exception.TradingStrategyErrorCode;
+import main.arbitrage.domain.tradingStrategy.exception.TradingStrategyException;
 import main.arbitrage.domain.user.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -25,7 +25,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Table(name = "trading_strategy")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class AutoTradingStrategy {
+public class TradingStrategy {
   @Id
   @Column(name = "user_id")
   private Long userId;
@@ -154,7 +154,7 @@ public class AutoTradingStrategy {
   private Timestamp updatedAt;
 
   @Builder
-  public AutoTradingStrategy(
+  public TradingStrategy(
       User user,
       Symbol symbol,
       int leverage,
@@ -214,103 +214,94 @@ public class AutoTradingStrategy {
 
   private void validateLeverage(int leverage) {
     if (leverage < 1) {
-      throw new AutoTradingStrategyException(AutoTradingStrategyErrorCode.LEVERAGE_TOO_LOW);
+      throw new TradingStrategyException(TradingStrategyErrorCode.LEVERAGE_TOO_LOW);
     }
 
     if (leverage > 10) {
-      throw new AutoTradingStrategyException(AutoTradingStrategyErrorCode.LEVERAGE_TOO_HIGH);
+      throw new TradingStrategyException(TradingStrategyErrorCode.LEVERAGE_TOO_HIGH);
     }
   }
 
   private void validateStopLossPercent(float stopLossPercent, float additionalBuyTargetPercent) {
     if (stopLossPercent >= 0) {
-      throw new AutoTradingStrategyException(
-          AutoTradingStrategyErrorCode.STOP_LOSS_PERCENT_POSITIVE);
+      throw new TradingStrategyException(TradingStrategyErrorCode.STOP_LOSS_PERCENT_POSITIVE);
     }
     if (stopLossPercent > additionalBuyTargetPercent) {
-      throw new AutoTradingStrategyException(
-          AutoTradingStrategyErrorCode.STOP_LOSS_PERCENT_GREATER_THAN_ADDITIONAL);
+      throw new TradingStrategyException(
+          TradingStrategyErrorCode.STOP_LOSS_PERCENT_GREATER_THAN_ADDITIONAL);
     }
   }
 
   private void validateMinimumProfitTargetPercent(
       float minimumProfitTargetPercent, float fixedProfitTargetPercent) {
     if (minimumProfitTargetPercent < 0.25f) {
-      throw new AutoTradingStrategyException(AutoTradingStrategyErrorCode.MINIMUM_PROFIT_TOO_LOW);
+      throw new TradingStrategyException(TradingStrategyErrorCode.MINIMUM_PROFIT_TOO_LOW);
     }
     if (minimumProfitTargetPercent > fixedProfitTargetPercent && fixedProfitTargetPercent != 0) {
-      throw new AutoTradingStrategyException(
-          AutoTradingStrategyErrorCode.MINIMUM_PROFIT_GREATER_THAN_FIXED);
+      throw new TradingStrategyException(
+          TradingStrategyErrorCode.MINIMUM_PROFIT_GREATER_THAN_FIXED);
     }
   }
 
   private void validateFixedProfitTargetPercent(
       float fixedProfitTargetPercent, float minimumProfitTargetPercent) {
     if (fixedProfitTargetPercent < 0) {
-      throw new AutoTradingStrategyException(AutoTradingStrategyErrorCode.FIXED_PROFIT_NEGATIVE);
+      throw new TradingStrategyException(TradingStrategyErrorCode.FIXED_PROFIT_NEGATIVE);
     }
     if (fixedProfitTargetPercent != 0 && fixedProfitTargetPercent < minimumProfitTargetPercent) {
-      throw new AutoTradingStrategyException(
-          AutoTradingStrategyErrorCode.FIXED_PROFIT_LESS_THAN_MINIMUM);
+      throw new TradingStrategyException(TradingStrategyErrorCode.FIXED_PROFIT_LESS_THAN_MINIMUM);
     }
   }
 
   private void validateDivisionCount(int divisionCount) {
     if (divisionCount < 1) {
-      throw new AutoTradingStrategyException(AutoTradingStrategyErrorCode.DIVISION_COUNT_TOO_LOW);
+      throw new TradingStrategyException(TradingStrategyErrorCode.DIVISION_COUNT_TOO_LOW);
     }
     if (divisionCount > 100) {
-      throw new AutoTradingStrategyException(AutoTradingStrategyErrorCode.DIVISION_COUNT_TOO_HIGH);
+      throw new TradingStrategyException(TradingStrategyErrorCode.DIVISION_COUNT_TOO_HIGH);
     }
   }
 
   private void validateAdditionalBuyTargetPercent(
       float additionalBuyTargetPercent, float stopLossPercent) {
     if (additionalBuyTargetPercent >= 0) {
-      throw new AutoTradingStrategyException(
-          AutoTradingStrategyErrorCode.ADDITIONAL_BUY_PERCENT_POSITIVE);
+      throw new TradingStrategyException(TradingStrategyErrorCode.ADDITIONAL_BUY_PERCENT_POSITIVE);
     }
     if (additionalBuyTargetPercent < stopLossPercent) {
-      throw new AutoTradingStrategyException(
-          AutoTradingStrategyErrorCode.ADDITIONAL_BUY_PERCENT_LESS_THAN_STOP_LOSS);
+      throw new TradingStrategyException(
+          TradingStrategyErrorCode.ADDITIONAL_BUY_PERCENT_LESS_THAN_STOP_LOSS);
     }
   }
 
   private void validateEntryCandleMinutes(int entryCandleMinutes) {
     if (entryCandleMinutes < 240) {
-      throw new AutoTradingStrategyException(
-          AutoTradingStrategyErrorCode.ENTRY_CANDLE_MINUTES_TOO_LOW);
+      throw new TradingStrategyException(TradingStrategyErrorCode.ENTRY_CANDLE_MINUTES_TOO_LOW);
     }
 
     if (entryCandleMinutes > 21600) {
-      throw new AutoTradingStrategyException(
-          AutoTradingStrategyErrorCode.ENTRY_CANDLE_MINUTES_TOO_HIGH);
+      throw new TradingStrategyException(TradingStrategyErrorCode.ENTRY_CANDLE_MINUTES_TOO_HIGH);
     }
   }
 
   private void validateKneeEntryPercent(int kneeEntryPercent) {
     if (kneeEntryPercent < 10) {
-      throw new AutoTradingStrategyException(
-          AutoTradingStrategyErrorCode.KNEE_ENTRY_PERCENT_TOO_LOW);
+      throw new TradingStrategyException(TradingStrategyErrorCode.KNEE_ENTRY_PERCENT_TOO_LOW);
     }
     if (kneeEntryPercent > 100) {
-      throw new AutoTradingStrategyException(
-          AutoTradingStrategyErrorCode.KNEE_ENTRY_PERCENT_TOO_HIGH);
+      throw new TradingStrategyException(TradingStrategyErrorCode.KNEE_ENTRY_PERCENT_TOO_HIGH);
     }
   }
 
   private void validateShoulderEntryPercent(int shoulderEntryPercent, int kneeEntryPercent) {
     if (shoulderEntryPercent < 0) {
-      throw new AutoTradingStrategyException(
-          AutoTradingStrategyErrorCode.SHOULDER_ENTRY_PERCENT_NEGATIVE);
+      throw new TradingStrategyException(TradingStrategyErrorCode.SHOULDER_ENTRY_PERCENT_NEGATIVE);
     }
     if (shoulderEntryPercent < kneeEntryPercent) {
-      throw new AutoTradingStrategyException(
-          AutoTradingStrategyErrorCode.SHOULDER_ENTRY_PERCENT_LESS_THAN_KNEE);
+      throw new TradingStrategyException(
+          TradingStrategyErrorCode.SHOULDER_ENTRY_PERCENT_LESS_THAN_KNEE);
     }
     if (shoulderEntryPercent > 100) {
-      throw new AutoTradingStrategyException(
-          AutoTradingStrategyErrorCode.SHOULDER_ENTRY_PERCENT_TOO_HIGH);
+      throw new TradingStrategyException(TradingStrategyErrorCode.SHOULDER_ENTRY_PERCENT_TOO_HIGH);
     }
   }
 
