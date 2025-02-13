@@ -28,27 +28,62 @@
         </ul>
         <!-- position -->
         <div id="position-wrap" class="d-block">
-            <div class="d-flex align-items-center py-2">
-                <div class="position-item">심볼</div>
-                <div class="position-item">바이낸스 평단가</div>
-                <div class="position-item">바이낸스 수량</div>
-                <div class="position-item">바이낸스 청산가</div>
-                <div class="position-item">바이낸스 수익률</div>
-                <div class="position-item">업비트 평단가</div>
-                <div class="position-item">업비트 수량</div>
-                <div class="position-item">업비트 수익률</div>
-            </div>
-            <div class="d-flex align-items-center py-2">
-                <div class="position-item" id="position-symbol"></div>
-                <div class="position-item" id="binance-avg-price"></div>
-                <div class="position-item" id="binance-qty"></div>
-                <div class="position-item" id="binance-liquidation-price"></div>
-                <div class="position-item" id="binance-profit"></div>
-                <div class="position-item" id="upbit-avg-price"></div>
-                <div class="position-item" id="upbit-qty"></div>
-                <div class="position-item" id="upbit-profit"></div>
+            <div class="position-item-wrap">
+                <div class="position-item d-none">
+                    <div>심볼</div>
+                    <div id="position-symbol"></div>
+                </div>
+                <div class="position-item d-none">
+                    <div>바이낸스 평단가</div>
+                    <div id="binance-avg-price"></div>
+                </div>
+                <div class="position-item d-none">
+                    <div>바이낸스 수량</div>
+                    <div id="binance-qty"></div>
+                </div>
+                <div class="position-item d-none">
+                    <div>바이낸스 청산가</div>
+                    <div id="binance-liquidation-price"></div>
+                </div>
+                <div class="position-item d-none">
+                    <div>바이낸스 수익률</div>
+                    <div id="binance-profit"></div>
+                </div>
+                <div class="position-item d-none">
+                    <div>업비트 평단가</div>
+                    <div id="upbit-avg-price"></div>
+                </div>
+                <div class="position-item d-none">
+                    <div>업비트 수량</div>
+                    <div id="upbit-qty"></div>
+                </div>
+                <div class="position-item d-none">
+                    <div>업비트 수익률</div>
+                    <div id="upbit-profit"></div>
+                </div>
             </div>
         </div>
+
+        <!-- <div class="d-flex align-items-center py-2">
+            <div class="position-item">심볼</div>
+            <div class="position-item">바이낸스 평단가</div>
+            <div class="position-item">바이낸스 수량</div>
+            <div class="position-item">바이낸스 청산가</div>
+            <div class="position-item">바이낸스 수익률</div>
+            <div class="position-item">업비트 평단가</div>
+            <div class="position-item">업비트 수량</div>
+            <div class="position-item">업비트 수익률</div>
+        </div>
+        <div class="d-flex align-items-center py-2">
+            <div class="position-item" id="position-symbol"></div>
+            <div class="position-item" id="binance-avg-price"></div>
+            <div class="position-item" id="binance-qty"></div>
+            <div class="position-item" id="binance-liquidation-price"></div>
+            <div class="position-item" id="binance-profit"></div>
+            <div class="position-item" id="upbit-avg-price"></div>
+            <div class="position-item" id="upbit-qty"></div>
+            <div class="position-item" id="upbit-profit"></div>
+        </div> -->
         <!-- order history -->
         <div id="order-history-wrap" class="d-none">
             <div id="orders" class="orders"></div>
@@ -57,18 +92,20 @@
 </section>
 <script th:inline="javascript">
     $(() => {
-        if (hasPosition) {
-            const positionSymbolEle = $('#position-symbol')
-            const binanceAvgPrice = $("#binance-avg-price")
-            const binanceQty = $("#binance-qty")
-            const binanceLiquidationPrice = $('#binance-liquidation-price')
-            const upbitAvgPrice = $("#upbit-avg-price")
-            const upbitQty = $("#upbit-qty")
+        const positionSymbolEle = $('#position-symbol')
+        const binanceAvgPrice = $("#binance-avg-price")
+        const binanceQty = $("#binance-qty")
+        const binanceLiquidationPrice = $('#binance-liquidation-price')
+        const upbitAvgPrice = $("#upbit-avg-price")
+        const upbitQty = $("#upbit-qty")
+        const positionItems = $('.position-item')
 
+        if (hasPosition) {
             const { entryPrice, liquidationPrice, positionAmt } = binancePosition
             const { avg_buy_price, balance } = upbitPosition
 
-            positionSymbolEle.text(symbol)
+            noneToFlex(positionItems)
+            positionSymbolEle.text(symbol.toUpperCase())
             binanceAvgPrice.text(Number(entryPrice).toLocaleString())
             binanceQty.text(Math.abs(Number(positionAmt)))
             binanceLiquidationPrice.text(liquidationPrice)
@@ -80,6 +117,8 @@
         const noneToBlock = (ele) => ele.addClass('d-block').removeClass('d-none')
         const flexToNone = (ele) => ele.removeClass('d-flex').addClass('d-none')
         const noneToFlex = (ele) => ele.addClass('d-flex').removeClass('d-none')
+
+        
 
         $('#position').click(function () {
             $(this).addClass('active')

@@ -87,6 +87,7 @@
 
             // orderHistory.html
             const orderHistoryJquery = {
+                positionItems: $('.position-item'),
                 binanceProfit: $('#binance-profit'),
                 upbitProfit: $('#upbit-profit'),
                 orders: $('#orders'),
@@ -124,6 +125,7 @@
 
             const updatePosition = (upbitPosition, binancePosition) => {
                 const {
+                    positionItems,
                     positionSymbol,
                     binanceAvgPrice,
                     binanceQty,
@@ -143,8 +145,11 @@
                     binanceQty.text('')
                     binanceLiquidationPrice.text('')
                     binanceProfit.text('')
+                    positionItems.removeClass('d-flex').addClass('d-none')
                     return
                 }
+
+                positionItems.addClass('d-flex').removeClass('d-none')
 
                 positionSymbol.text(symbol)
 

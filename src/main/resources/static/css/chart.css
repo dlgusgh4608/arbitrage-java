@@ -174,12 +174,19 @@
     opacity: .7;
 }
 
+.position-item-wrap {
+    display: flex;
+    flex-direction: row;
+    padding: .5rem 0;
+}
 .position-item {
     flex: 1;
-    font-size: .7em;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+    font-size: .7rem;
     font-weight: bold;
-    list-style: none;
-    text-align: center;
 }
 
 .orders {
@@ -362,5 +369,19 @@
 
     .order-form {
         width: 100%;
+    }
+
+    .position-item-wrap {
+        flex-direction: column;
+    }
+
+    .position-item {
+        flex: 0;
+        padding: 1rem 0;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: start;
+        font-size: .9rem;
+        font-weight: initial;
     }
 }
