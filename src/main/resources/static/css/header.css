@@ -59,6 +59,11 @@
     margin-left: -5px;
 }
 
+.menu {
+    flex: 1;
+    padding: 0 3rem;
+}
+
 @media(max-width: 768px) {
     .h-logo {
         width: 48px;
