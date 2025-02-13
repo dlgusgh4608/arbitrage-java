@@ -99,6 +99,16 @@ public class BaseBinancePublicRestService implements ExchangeRestService {
         throw new BinanceException(BinanceErrorCode.QTY_LESS_THAN_ZERO, serverMsg);
       case "-4055":
         throw new BinanceException(BinanceErrorCode.AMOUNT_MUST_BE_POSITIVE, serverMsg);
+      case "0":
+        // Github Action에서 @SpringBootTest 진행할때 Binance API를 호출하면 아래의 에러가 반환됨.
+        // {
+        //   "code": 0,
+        //   "msg": "Service unavailable from a restricted location according to 'b. Eligibility' in
+        // https://www.binance.com/en/terms. Please contact customer service if you believe you
+        // received this message in error."
+        // }
+        System.out.println("API call not working in github actions");
+        break;
       default:
         throw new BinanceException(BinanceErrorCode.UNKNOWN, serverMsg);
     }

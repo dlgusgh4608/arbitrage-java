@@ -38,15 +38,13 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
 
       String responseBody = response.body().string();
 
-      System.out.println(responseBody);
-
-      if (responseBody == null) return null;
-
       JsonNode json = objectMapper.readTree(responseBody);
 
       if (!response.isSuccessful()) validateResponse(json, "getExchangeInfo Error");
 
       JsonNode symbols = json.get("symbols");
+
+      if (symbols == null) return null;
 
       Map<String, BinanceExchangeInfoResponse> exchangeHashMap = new HashMap<>();
 
