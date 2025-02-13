@@ -87,7 +87,7 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
       }
 
       if (type.equals(Type.LIMIT) && price == null) {
-        throw new BinanceException(BinanceErrorCode.BAD_PARAMS, String.format(paramString));
+        throw new BinanceException(BinanceErrorCode.BAD_PARAMS, paramString);
       }
 
       String symbol = convertSymbol(market);
@@ -146,7 +146,7 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
       }
 
       if (type.equals(Type.LIMIT) && price == null) {
-        throw new BinanceException(BinanceErrorCode.BAD_PARAMS, String.format(paramString));
+        throw new BinanceException(BinanceErrorCode.BAD_PARAMS, paramString);
       }
 
       String symbol = convertSymbol(market);

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceExchangeInfoResponse;
 import main.arbitrage.infrastructure.exchange.binance.exception.BinanceErrorCode;
@@ -14,6 +15,7 @@ import okhttp3.Response;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class BinancePublicRestService extends BaseBinancePublicRestService {
 
   public BinancePublicRestService(
@@ -38,6 +40,10 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
 
       String responseBody = response.body().string();
 
+      log.info(responseBody);
+
+      if (responseBody == null) return null;
+
       JsonNode json = objectMapper.readTree(responseBody);
 
       if (!response.isSuccessful()) validateResponse(json, "getExchangeInfo Error");
@@ -49,8 +55,6 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
       String MARKET_LOT_SIZE = "MARKET_LOT_SIZE"; // 시장가 체결 필터
       String MIN_NOTIONAL = "MIN_NOTIONAL"; // 최소 주문금액 필터
       String PRICE_FILTER = "PRICE_FILTER"; // 가격 필터
-
-      if (symbols == null) return null;
 
       for (JsonNode symbol : symbols) {
         String symbolName = symbol.get("baseAsset").asText();
