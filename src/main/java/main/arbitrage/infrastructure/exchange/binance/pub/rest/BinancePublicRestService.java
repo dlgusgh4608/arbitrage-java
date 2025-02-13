@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
-import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceExchangeInfoResponse;
 import main.arbitrage.infrastructure.exchange.binance.exception.BinanceErrorCode;
@@ -15,7 +14,6 @@ import okhttp3.Response;
 import org.springframework.stereotype.Service;
 
 @Service
-@Slf4j
 public class BinancePublicRestService extends BaseBinancePublicRestService {
 
   public BinancePublicRestService(
@@ -40,7 +38,7 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
 
       String responseBody = response.body().string();
 
-      log.info(responseBody);
+      System.out.println(responseBody);
 
       if (responseBody == null) return null;
 
