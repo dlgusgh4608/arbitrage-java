@@ -30,6 +30,8 @@ import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums;
 import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitAccountResponse;
 import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitOrderResponse;
 import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
+import main.arbitrage.infrastructure.upbit.UpbitHttpInterface;
+import main.arbitrage.infrastructure.upbit.UpbitPrivateRestServ;
 import main.arbitrage.presentation.dto.request.OrderRequest;
 import main.arbitrage.presentation.dto.request.UpdateLeverageRequest;
 import main.arbitrage.presentation.dto.request.UpdateMarginTypeRequest;
@@ -49,6 +51,7 @@ public class OrderApplicationService {
   private final UserEnvService userEnvService;
   private final SymbolVariableService symbolVariableService;
   private final ExchangeRateService exchangeRateService;
+  private final UpbitHttpInterface inf;
 
   @Transactional
   public SellOrderResponse createSellOrder(OrderRequest req) {
@@ -284,5 +287,11 @@ public class OrderApplicationService {
     }
 
     return builder.build();
+  }
+
+  public List<UpbitAccountResponse> test() {
+    return new UpbitPrivateRestServ(
+            "DXU", "xrh", symbolVariableService.getSupportedSymbolNames(), inf)
+        .getAccounts();
   }
 }
