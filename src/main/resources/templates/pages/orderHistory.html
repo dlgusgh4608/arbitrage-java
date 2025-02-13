@@ -4,6 +4,7 @@
 <head>
     <title>주문내역</title>
     <link rel="stylesheet" th:href="@{/css/components/orderHistory.css}">
+    <link rel="stylesheet" th:href="@{/css/orderHistory.css}">
 </head>
 
 <div layout:fragment="myPage">
@@ -27,6 +28,42 @@
                 const element = orders.map(myModule.generateOrder).map(v => v.element).join('')
                 wrapEle.append(element)
             }
+
+            const LOAD_ORDER_NUM = 10
+            let page = 1
+            let loading = false
+            let done = orders.length < LOAD_ORDER_NUM
+
+            async function getOrders(doc) {
+                const { success, data } = await myModule.fetch('GET', `/api/orders?&page=${page}`)
+
+                if (success) {
+                    const element = data.map(myModule.generateOrder).map(v => v.element).join('')
+                    $(doc).append(element)
+
+                    if (data.length < LOAD_ORDER_NUM) {
+                        done = true
+                    }
+                } else {
+                    done = true
+                    alert(data)
+                }
+
+                loading = false
+                page++
+            }
+
+            $('#orders').scroll(function () {
+                if (orders.length < LOAD_ORDER_NUM || loading || done) return
+
+                const scrollHeight = $(this).prop("scrollHeight")
+                const currentHeight = $(this).scrollTop() + $(this).prop("clientHeight")
+
+                if (scrollHeight - currentHeight < 150) {
+                    loading = true
+                    getOrders(this)
+                }
+            })
         })
     </script>
 </div>

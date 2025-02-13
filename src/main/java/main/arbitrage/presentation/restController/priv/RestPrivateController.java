@@ -57,8 +57,12 @@ public class RestPrivateController {
 
   @GetMapping(PrivateRestControllerUrlConstants.ORDERS)
   public ResponseEntity<?> getOrderBySymbol(
-      @RequestParam(name = "symbol", required = true) String symbol,
+      @RequestParam(name = "symbol", required = false) String symbol,
       @RequestParam(name = "page", required = true) int page) {
-    return ResponseEntity.ok(orderApplicationService.getOrderBySymbol(symbol, page));
+    if (symbol == null) {
+      return ResponseEntity.ok(userApplicationService.getBuyOrderOfPage(page));
+    } else {
+      return ResponseEntity.ok(orderApplicationService.getOrderBySymbol(symbol, page));
+    }
   }
 }
