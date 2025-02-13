@@ -2,7 +2,6 @@ package main.arbitrage.infrastructure.exchange.binance.pub.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
@@ -39,9 +38,9 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
 
       String responseBody = response.body().string();
 
-      if (!response.isSuccessful()) objectMapper.readTree(responseBody);
-
       JsonNode json = objectMapper.readTree(responseBody);
+
+      if (!response.isSuccessful()) validateResponse(json, "getExchangeInfo Error");
 
       JsonNode symbols = json.get("symbols");
 
@@ -86,8 +85,10 @@ public class BinancePublicRestService extends BaseBinancePublicRestService {
         }
       }
       return exchangeHashMap;
-    } catch (IOException e) {
-      throw new BinanceException(BinanceErrorCode.API_ERROR, e);
+    } catch (BinanceException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, "getExchangeInfo Error", e);
     }
   }
 }

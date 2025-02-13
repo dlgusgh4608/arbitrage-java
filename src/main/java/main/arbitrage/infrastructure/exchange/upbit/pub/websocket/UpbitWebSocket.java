@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -171,7 +172,7 @@ public class UpbitWebSocket extends ExchangeWebsocketClient {
 
   private void sendSubscribeMessage(List<String> symbols) throws IOException {
     List<UpbitSubscribeMessage> messages =
-        UpbitSubscribeMessage.createSubscribeMessage("unique_ticket_123", symbols);
+        UpbitSubscribeMessage.createSubscribeMessage(UUID.randomUUID().toString(), symbols);
     String message = objectMapper.writeValueAsString(messages);
     session.sendMessage(new TextMessage(message));
   }

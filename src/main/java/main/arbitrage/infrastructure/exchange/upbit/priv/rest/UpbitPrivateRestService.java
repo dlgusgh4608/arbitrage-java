@@ -2,7 +2,6 @@ package main.arbitrage.infrastructure.exchange.upbit.priv.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -46,15 +45,18 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
 
       String responseBody = response.body().string();
 
-      if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
+      if (!response.isSuccessful())
+        validateResponse(objectMapper.readTree(responseBody), "getAccountError");
 
       return objectMapper.readValue(
           responseBody,
           objectMapper
               .getTypeFactory()
               .constructCollectionType(List.class, UpbitAccountResponse.class));
-    } catch (IOException e) {
-      throw new UpbitException(UpbitErrorCode.API_ERROR, e);
+    } catch (UpbitException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new UpbitException(UpbitErrorCode.UNKNOWN, "getAccountError", e);
     }
   }
 
@@ -143,11 +145,11 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
 
       JsonNode json = objectMapper.readTree(responseBody);
 
-      if (!response.isSuccessful()) validateResponse(json);
+      if (!response.isSuccessful()) validateResponse(json, paramString);
 
       return json.get("uuid").asText();
-    } catch (IOException e) {
-      throw new UpbitException(UpbitErrorCode.API_ERROR, paramString, e);
+    } catch (UpbitException e) {
+      throw e;
     } catch (Exception e) {
       throw new UpbitException(UpbitErrorCode.UNKNOWN, paramString, e);
     }
@@ -155,7 +157,6 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
 
   public UpbitOrderResponse order(String uuid, int repeat) {
     try {
-      System.out.println(Thread.currentThread().getName());
       if (repeat < 2) return null;
       Thread.sleep(1000);
 
@@ -174,7 +175,7 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
       Response response = okHttpClient.newCall(request).execute();
       String responseBody = response.body().string();
 
-      if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
+      if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody), uuid);
 
       UpbitOrderResponse dto = objectMapper.readValue(responseBody, UpbitOrderResponse.class);
 
@@ -183,10 +184,12 @@ public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
       }
 
       return dto;
-    } catch (IOException e) {
-      throw new UpbitException(UpbitErrorCode.API_ERROR, e);
+    } catch (UpbitException e) {
+      throw e;
     } catch (InterruptedException e) {
       throw new UpbitException(UpbitErrorCode.INTERRUPTED_ERROR, e);
+    } catch (Exception e) {
+      throw new UpbitException(UpbitErrorCode.UNKNOWN, e);
     }
   }
 }

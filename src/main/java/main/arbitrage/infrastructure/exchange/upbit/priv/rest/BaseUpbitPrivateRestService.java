@@ -108,40 +108,69 @@ public class BaseUpbitPrivateRestService implements ExchangeRestService {
   }
 
   @Override
-  public void validateResponse(JsonNode json) {
+  public void validateResponse(JsonNode json, String serverMsg) {
     String errorCode = json.get("error").get("name").asText();
 
     switch (errorCode) {
       case "invalid_query_payload":
-        throw new UpbitException(UpbitErrorCode.INVALID_QUERY_PAYLOAD, errorCode);
+        throw new UpbitException(
+            UpbitErrorCode.INVALID_QUERY_PAYLOAD,
+            String.format("errorCode: %s, msg: %s", errorCode, serverMsg));
       case "jwt_verification":
-        throw new UpbitException(UpbitErrorCode.JWT_VERIFICATION, errorCode);
+        throw new UpbitException(
+            UpbitErrorCode.JWT_VERIFICATION,
+            String.format("errorCode: %s, msg: %s", errorCode, serverMsg));
       case "expired_access_key":
-        throw new UpbitException(UpbitErrorCode.EXPIRED_ACCESS_KEY, errorCode);
+        throw new UpbitException(
+            UpbitErrorCode.EXPIRED_ACCESS_KEY,
+            String.format("errorCode: %s, msg: %s", errorCode, serverMsg));
       case "nonce_used":
-        throw new UpbitException(UpbitErrorCode.NONCE_USED, errorCode);
+        throw new UpbitException(
+            UpbitErrorCode.NONCE_USED,
+            String.format("errorCode: %s, msg: %s", errorCode, serverMsg));
       case "no_authorization_ip":
-        throw new UpbitException(UpbitErrorCode.NO_AUTHORIZATION_IP, errorCode);
+        throw new UpbitException(
+            UpbitErrorCode.NO_AUTHORIZATION_IP,
+            String.format("errorCode: %s, msg: %s", errorCode, serverMsg));
       case "out_of_scope":
-        throw new UpbitException(UpbitErrorCode.OUT_OF_SCOPE, errorCode);
+        throw new UpbitException(
+            UpbitErrorCode.OUT_OF_SCOPE,
+            String.format("errorCode: %s, msg: %s", errorCode, serverMsg));
       case "create_ask_error":
-        throw new UpbitException(UpbitErrorCode.CREATE_ASK_ERROR, errorCode);
+        throw new UpbitException(
+            UpbitErrorCode.CREATE_ASK_ERROR,
+            String.format("errorCode: %s, msg: %s", errorCode, serverMsg));
       case "create_bid_error":
-        throw new UpbitException(UpbitErrorCode.CREATE_BID_ERROR, errorCode);
+        throw new UpbitException(
+            UpbitErrorCode.CREATE_BID_ERROR,
+            String.format("errorCode: %s, msg: %s", errorCode, serverMsg));
       case "insufficient_funds_ask":
-        throw new UpbitException(UpbitErrorCode.INSUFFICIENT_FUNDS_ASK, errorCode);
+        throw new UpbitException(
+            UpbitErrorCode.INSUFFICIENT_FUNDS_ASK,
+            String.format("errorCode: %s, msg: %s", errorCode, serverMsg));
       case "insufficient_funds_bid":
-        throw new UpbitException(UpbitErrorCode.INSUFFICIENT_FUNDS_BID, errorCode);
+        throw new UpbitException(
+            UpbitErrorCode.INSUFFICIENT_FUNDS_BID,
+            String.format("errorCode: %s, msg: %s", errorCode, serverMsg));
       case "under_min_total_ask":
-        throw new UpbitException(UpbitErrorCode.UNDER_MIN_TOTAL_ASK, errorCode);
+        throw new UpbitException(
+            UpbitErrorCode.UNDER_MIN_TOTAL_ASK,
+            String.format("errorCode: %s, msg: %s", errorCode, serverMsg));
       case "under_min_total_bid":
-        throw new UpbitException(UpbitErrorCode.UNDER_MIN_TOTAL_BID, errorCode);
+        throw new UpbitException(
+            UpbitErrorCode.UNDER_MIN_TOTAL_BID,
+            String.format("errorCode: %s, msg: %s", errorCode, serverMsg));
       case "withdraw_address_not_registerd":
-        throw new UpbitException(UpbitErrorCode.BAD_REQUEST, errorCode);
+        throw new UpbitException(
+            UpbitErrorCode.BAD_REQUEST,
+            String.format("errorCode: %s, msg: %s", errorCode, serverMsg));
       case "validation_error", "invalid_parameter":
-        throw new UpbitException(UpbitErrorCode.INVALID_PARAMETER, errorCode);
+        throw new UpbitException(
+            UpbitErrorCode.INVALID_PARAMETER,
+            String.format("errorCode: %s, msg: %s", errorCode, serverMsg));
       default:
-        throw new UpbitException(UpbitErrorCode.UNKNOWN, errorCode);
+        throw new UpbitException(
+            UpbitErrorCode.UNKNOWN, String.format("errorCode: %s, msg: %s", errorCode, serverMsg));
     }
   }
 }

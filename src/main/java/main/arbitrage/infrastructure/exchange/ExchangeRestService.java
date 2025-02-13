@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Map;
 
 public interface ExchangeRestService {
-  void validateResponse(JsonNode json);
+  void validateResponse(JsonNode json, String serverMsg);
 
   String convertSymbol(String symbol);
 

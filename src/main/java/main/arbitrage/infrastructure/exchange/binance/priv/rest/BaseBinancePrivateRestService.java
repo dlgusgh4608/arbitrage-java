@@ -98,48 +98,48 @@ public class BaseBinancePrivateRestService implements ExchangeRestService {
   }
 
   @Override
-  public void validateResponse(JsonNode json) {
+  public void validateResponse(JsonNode json, String serverMsg) {
     String errorCode = json.get("code").asText();
     switch (errorCode) {
       // General Server or Network issues (10xx)
       case "-1000":
-        throw new BinanceException(BinanceErrorCode.UNKNOWN);
+        throw new BinanceException(BinanceErrorCode.UNKNOWN, serverMsg);
       case "-1001":
-        throw new BinanceException(BinanceErrorCode.DISCONNECTED);
+        throw new BinanceException(BinanceErrorCode.DISCONNECTED, serverMsg);
       case "-1002":
-        throw new BinanceException(BinanceErrorCode.UNAUTHORIZED);
+        throw new BinanceException(BinanceErrorCode.UNAUTHORIZED, serverMsg);
       case "-1008":
-        throw new BinanceException(BinanceErrorCode.TOO_MANY_REQUESTS);
+        throw new BinanceException(BinanceErrorCode.TOO_MANY_REQUESTS, serverMsg);
       case "-1021":
-        throw new BinanceException(BinanceErrorCode.INVALID_TIMESTAMP);
+        throw new BinanceException(BinanceErrorCode.INVALID_TIMESTAMP, serverMsg);
       case "-1022":
-        throw new BinanceException(BinanceErrorCode.INVALID_SIGNATURE);
+        throw new BinanceException(BinanceErrorCode.INVALID_SIGNATURE, serverMsg);
 
       // Request issues (11xx - 2xxx)
       case "-1102":
-        throw new BinanceException(BinanceErrorCode.MANDATORY_PARAM_EMPTY_OR_MALFORMED);
+        throw new BinanceException(BinanceErrorCode.MANDATORY_PARAM_EMPTY_OR_MALFORMED, serverMsg);
       case "-1121":
-        throw new BinanceException(BinanceErrorCode.BAD_SYMBOL);
+        throw new BinanceException(BinanceErrorCode.BAD_SYMBOL, serverMsg);
       case "-2010":
-        throw new BinanceException(BinanceErrorCode.NEW_ORDER_REJECTED);
+        throw new BinanceException(BinanceErrorCode.NEW_ORDER_REJECTED, serverMsg);
       case "-2013":
-        throw new BinanceException(BinanceErrorCode.NO_SUCH_ORDER);
+        throw new BinanceException(BinanceErrorCode.NO_SUCH_ORDER, serverMsg);
       case "-2014":
-        throw new BinanceException(BinanceErrorCode.BAD_API_KEY_FMT);
+        throw new BinanceException(BinanceErrorCode.BAD_API_KEY_FMT, serverMsg);
       case "-2015":
-        throw new BinanceException(BinanceErrorCode.INVALID_API_KEY_IP_PERMISSION);
+        throw new BinanceException(BinanceErrorCode.INVALID_API_KEY_IP_PERMISSION, serverMsg);
       case "-2018":
-        throw new BinanceException(BinanceErrorCode.BALANCE_NOT_SUFFICIENT);
+        throw new BinanceException(BinanceErrorCode.BALANCE_NOT_SUFFICIENT, serverMsg);
 
       // Filters and other issues (3xxx-5xxx)
       case "-4001":
-        throw new BinanceException(BinanceErrorCode.PRICE_LESS_THAN_ZERO);
+        throw new BinanceException(BinanceErrorCode.PRICE_LESS_THAN_ZERO, serverMsg);
       case "-4003":
-        throw new BinanceException(BinanceErrorCode.QTY_LESS_THAN_ZERO);
+        throw new BinanceException(BinanceErrorCode.QTY_LESS_THAN_ZERO, serverMsg);
       case "-4055":
-        throw new BinanceException(BinanceErrorCode.AMOUNT_MUST_BE_POSITIVE);
+        throw new BinanceException(BinanceErrorCode.AMOUNT_MUST_BE_POSITIVE, serverMsg);
       default:
-        throw new BinanceException(BinanceErrorCode.UNKNOWN);
+        throw new BinanceException(BinanceErrorCode.UNKNOWN, serverMsg);
     }
   }
 }

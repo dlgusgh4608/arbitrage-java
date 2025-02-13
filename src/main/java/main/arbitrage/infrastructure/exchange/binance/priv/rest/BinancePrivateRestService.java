@@ -2,7 +2,6 @@ package main.arbitrage.infrastructure.exchange.binance.priv.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,15 +52,18 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
       String responseBody = response.body().string();
 
-      if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
+      if (!response.isSuccessful())
+        validateResponse(objectMapper.readTree(responseBody), "getAccountError");
 
       return objectMapper.readValue(
           responseBody,
           objectMapper
               .getTypeFactory()
               .constructCollectionType(List.class, BinanceAccountResponse.class));
+    } catch (BinanceException e) {
+      throw e;
     } catch (Exception e) {
-      throw new BinanceException(BinanceErrorCode.API_ERROR, e);
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, "getAccountError", e);
     }
   }
 
@@ -120,9 +122,12 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
       String responseBody = response.body().string();
 
-      if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
+      if (!response.isSuccessful())
+        validateResponse(objectMapper.readTree(responseBody), paramString);
 
       return objectMapper.readValue(responseBody, BinanceOrderResponse.class);
+    } catch (BinanceException e) {
+      throw e;
     } catch (Exception e) {
       throw new BinanceException(BinanceErrorCode.UNKNOWN, paramString, e);
     }
@@ -176,9 +181,12 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
       String responseBody = response.body().string();
 
-      if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
+      if (!response.isSuccessful())
+        validateResponse(objectMapper.readTree(responseBody), paramString);
 
       return objectMapper.readValue(responseBody, BinanceOrderResponse.class);
+    } catch (BinanceException e) {
+      throw e;
     } catch (Exception e) {
       throw new BinanceException(BinanceErrorCode.UNKNOWN, paramString, e);
     }
@@ -207,9 +215,12 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
       String responseBody = response.body().string();
 
-      if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
+      if (!response.isSuccessful())
+        validateResponse(objectMapper.readTree(responseBody), paramString);
 
       return objectMapper.readValue(responseBody, BinanceOrderResponse.class);
+    } catch (BinanceException e) {
+      throw e;
     } catch (Exception e) {
       throw new BinanceException(BinanceErrorCode.UNKNOWN, paramString, e);
     }
@@ -235,7 +246,8 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
       String responseBody = response.body().string();
 
-      if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
+      if (!response.isSuccessful())
+        validateResponse(objectMapper.readTree(responseBody), symbolName);
 
       List<BinanceSymbolInfoResponse> responseList =
           objectMapper.readValue(
@@ -247,8 +259,10 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
       if (responseList.isEmpty()) return null;
 
       return responseList.get(0);
+    } catch (BinanceException e) {
+      throw e;
     } catch (Exception e) {
-      throw new BinanceException(BinanceErrorCode.UNKNOWN, e);
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, symbolName, e);
     }
   }
 
@@ -273,7 +287,8 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
       String responseBody = response.body().string();
 
-      if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
+      if (!response.isSuccessful())
+        validateResponse(objectMapper.readTree(responseBody), symbolName);
 
       List<BinanceLeverageBracketResponse> responseList =
           objectMapper.readValue(
@@ -285,12 +300,16 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
       if (responseList.isEmpty()) return null;
 
       return responseList.get(0);
+    } catch (BinanceException e) {
+      throw e;
     } catch (Exception e) {
-      throw new BinanceException(BinanceErrorCode.UNKNOWN, e);
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, symbolName, e);
     }
   }
 
   public BinanceChangeLeverageResponse changeLeverage(String symbolName, int leverage) {
+    String paramString = String.format("symbolName: %s, leverage: %s", symbolName, leverage);
+
     try {
       String symbol = convertSymbol(symbolName);
 
@@ -314,11 +333,14 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
       String responseBody = response.body().string();
 
-      if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
+      if (!response.isSuccessful())
+        validateResponse(objectMapper.readTree(responseBody), paramString);
 
       return objectMapper.readValue(responseBody, BinanceChangeLeverageResponse.class);
+    } catch (BinanceException e) {
+      throw e;
     } catch (Exception e) {
-      throw new BinanceException(BinanceErrorCode.UNKNOWN, e);
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, paramString, e);
     }
   }
 
@@ -343,7 +365,8 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
       String responseBody = response.body().string();
 
-      if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
+      if (!response.isSuccessful())
+        validateResponse(objectMapper.readTree(responseBody), symbolName);
 
       List<BinancePositionInfoResponse> responseList =
           objectMapper.readValue(
@@ -356,12 +379,17 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
       return responseList.get(0);
 
+    } catch (BinanceException e) {
+      throw e;
     } catch (Exception e) {
-      throw new BinanceException(BinanceErrorCode.UNKNOWN, e);
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, symbolName, e);
     }
   }
 
   public boolean updateMarginType(String symbolName, MarginType marginType) {
+    String parmaString =
+        String.format("symbolName: %s, marginType: %s", symbolName, marginType.name());
+
     try {
       String symbol = convertSymbol(symbolName);
 
@@ -385,11 +413,14 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
       String responseBody = response.body().string();
 
-      if (!response.isSuccessful()) validateResponse(objectMapper.readTree(responseBody));
+      if (!response.isSuccessful())
+        validateResponse(objectMapper.readTree(responseBody), parmaString);
 
       return true;
-    } catch (IOException e) {
-      throw new BinanceException(BinanceErrorCode.UNKNOWN, e);
+    } catch (BinanceException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, parmaString, e);
     }
   }
 
@@ -413,11 +444,13 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
       String responseBody = response.body().string();
 
       JsonNode json = objectMapper.readTree(responseBody);
-      if (!response.isSuccessful()) validateResponse(json);
+      if (!response.isSuccessful()) validateResponse(json, "Create listen key Error");
 
       return json.get("listenKey").asText();
+    } catch (BinanceException e) {
+      throw e;
     } catch (Exception e) {
-      throw new BinanceException(BinanceErrorCode.UNKNOWN, e);
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, "Create listen key Error", e);
     }
   }
 
@@ -440,11 +473,13 @@ public class BinancePrivateRestService extends BaseBinancePrivateRestService {
 
       String responseBody = response.body().string();
       JsonNode json = objectMapper.readTree(responseBody);
-      if (!response.isSuccessful()) validateResponse(json);
+      if (!response.isSuccessful()) validateResponse(json, "Update listen key Error");
 
       return json.get("listenKey").asText();
+    } catch (BinanceException e) {
+      throw e;
     } catch (Exception e) {
-      throw new BinanceException(BinanceErrorCode.UNKNOWN, e);
+      throw new BinanceException(BinanceErrorCode.UNKNOWN, "Update listen key Error", e);
     }
   }
 }
