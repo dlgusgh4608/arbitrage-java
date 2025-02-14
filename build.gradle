@@ -36,6 +36,14 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+    
+
+	// spring boot 애플리케이션을 모니터링하고 관리하는 데 도움이 되는 운영 환경용 기능들
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // https://mvnrepository.com/artifact/io.micrometer/micrometer-registry-prometheus
+    implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.14.4'
+
+
 
     // OAuth 2
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'

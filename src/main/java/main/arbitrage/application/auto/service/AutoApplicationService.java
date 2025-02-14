@@ -268,47 +268,4 @@ public class AutoApplicationService {
         autoTradingStrategyForm.getKneeEntryPercent(),
         autoTradingStrategyForm.getShoulderEntryPercent());
   }
-
-  // @Transactional
-  // public AutoTradingStrategyForm updateAutoTradingStrategy(
-  //     AutoTradingStrategyForm autoTradingStrategyForm) {
-
-  // if (isAutoFlag) {
-  //   Optional<AutoTradingStrategy> autoTradingStrategyOptional =
-  //       autoTradingStrategyService.findByUserId(userId);
-  // Symbol currentSymbol =
-  //     symbolVariableService.findAndExistSymbolByName(autoTradingStrategyForm.getSymbol());
-
-  //   if (autoTradingStrategyOptional.isPresent()) {
-  //     AutoTradingStrategy tradingStrategy = autoTradingStrategyOptional.get();
-
-  //     tradingStrategy.update(
-  //         currentSymbol,
-  //         autoTradingStrategyForm.getLeverage(),
-  //         autoTradingStrategyForm.getStopLossPercent(),
-  //         autoTradingStrategyForm.getMinimumProfitTargetPercent(),
-  //         autoTradingStrategyForm.getFixedProfitTargetPercent(),
-  //         autoTradingStrategyForm.getDivisionCount(),
-  //         autoTradingStrategyForm.getAdditionalBuyTargetPercent(),
-  //         autoTradingStrategyForm.getEntryCandleMinutes(),
-  //         autoTradingStrategyForm.getKneeEntryPercent(),
-  //         autoTradingStrategyForm.getShoulderEntryPercent());
-  //   } else {
-  //     autoTradingStrategyService.create(
-  // user,
-  // currentSymbol,
-  // autoTradingStrategyForm.getLeverage(),
-  // autoTradingStrategyForm.getStopLossPercent(),
-  // autoTradingStrategyForm.getMinimumProfitTargetPercent(),
-  // autoTradingStrategyForm.getFixedProfitTargetPercent(),
-  // autoTradingStrategyForm.getDivisionCount(),
-  // autoTradingStrategyForm.getAdditionalBuyTargetPercent(),
-  // autoTradingStrategyForm.getEntryCandleMinutes(),
-  // autoTradingStrategyForm.getKneeEntryPercent(),
-  // autoTradingStrategyForm.getShoulderEntryPercent());
-  //   }
-  //   // 여기에 update userStream에 업데이트
-  // }
-  // return autoTradingStrategyForm;
-  // }
 }

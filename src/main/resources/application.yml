@@ -1,13 +1,17 @@
+# spring
 spring:
   application:
     name: arbitrage
+
   profiles:
     active: ${ENV:development}
+
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:123456}
+
   datasource:
     url: ${PG_URL:jdbc:postgresql://localhost:5432/postgres}
     username: ${PG_USERNAME:postgres}
@@ -15,15 +19,18 @@ spring:
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 4
+
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: ${SHOW_SQL:false}
     open-in-view: false
+
   thymeleaf:
     cache: false
     prefix: classpath:templates/
     suffix: .html
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -36,6 +43,7 @@ spring:
           timeout: 5000
           starttls:
             enable: true
+
   security:
     oauth2:
       client:
@@ -61,19 +69,37 @@ spring:
             user-name-attribute: id
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
+
+# management
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,metrics
+
+  metrics:
+    tags:
+      application: ${spring.application.name} # 애플리케이션별 태그 추가
+
+
+# server
 server:
   port: ${SERVER_PORT:8000}
   tomcat:
     use-relative-redirects: true
 
+# jwt
 jwt:
   secret: ${JWT_SECRET:fhasdjkfhasdjkfhasdjkjfhdsajkfhskajdfhjksadhfkjsdahfjksadhfkjdsa}
 
+# mail
 mail:
   secret: ${MAIL_SECRET:fhasdjkfhasdjkfhasdjkjfhdsajkfhskajdfhjksadhfkjsdahfjksadhfkjdsa}
 
+# token
 token:
   access: 1800000 # 30minutes
   refresh: 604800000 # 7days
 
+# server ipv4
 ip-address: ${IP_ADDRESS:12.34.56.789}

@@ -36,12 +36,6 @@ public class JwtFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    // Public URl check
-
-    if (isPublicUrl(request.getRequestURI())) {
-      filterChain.doFilter(request, response);
-      return;
-    }
 
     try {
       /*
@@ -149,10 +143,6 @@ public class JwtFilter extends OncePerRequestFilter {
     ErrorResponse errorResponse = ErrorResponse.of(e);
     String jsonResponse = objectMapper.writeValueAsString(errorResponse);
     response.getWriter().write(jsonResponse);
-  }
-
-  private boolean isPublicUrl(String requestURI) {
-    return requestURI.equals("/api/login") || requestURI.equals("/api/signup");
   }
 
   private void saveUserAuthContext(AuthContext tokenDto) {
