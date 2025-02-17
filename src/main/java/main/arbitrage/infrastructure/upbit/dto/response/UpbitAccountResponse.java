@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.exchange.upbit.dto.response;
+package main.arbitrage.infrastructure.upbit.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;

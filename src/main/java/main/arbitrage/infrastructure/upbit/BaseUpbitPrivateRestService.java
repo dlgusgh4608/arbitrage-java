@@ -12,15 +12,15 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.crypto.SecretKey;
-import main.arbitrage.infrastructure.exchange.upbit.exception.UpbitErrorCode;
-import main.arbitrage.infrastructure.exchange.upbit.exception.UpbitException;
+import main.arbitrage.infrastructure.upbit.exception.UpbitErrorCode;
+import main.arbitrage.infrastructure.upbit.exception.UpbitException;
 
-public class BaseUpbitPrivateRestServ {
+public class BaseUpbitPrivateRestService {
   protected final String accessKey;
   protected final String secretKey;
   protected final List<String> symbolNames;
 
-  public BaseUpbitPrivateRestServ(String accessKey, String secretKey, List<String> symbolNames) {
+  public BaseUpbitPrivateRestService(String accessKey, String secretKey, List<String> symbolNames) {
     if (accessKey.isEmpty() || secretKey.isEmpty())
       throw new UpbitException(UpbitErrorCode.EMPTY_KEYS);
 

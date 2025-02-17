@@ -11,7 +11,7 @@ import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.global.util.math.MathUtil;
 import main.arbitrage.infrastructure.exchange.binance.dto.event.BinanceOrderTradeUpdateEvent;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitOrderResponse;
+import main.arbitrage.infrastructure.upbit.dto.response.UpbitOrderResponse;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 

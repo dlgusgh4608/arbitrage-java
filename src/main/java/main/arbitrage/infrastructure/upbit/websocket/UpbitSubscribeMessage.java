@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.exchange.upbit.pub.websocket;
+package main.arbitrage.infrastructure.upbit.websocket;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.ArrayList;

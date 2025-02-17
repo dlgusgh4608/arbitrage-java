@@ -8,7 +8,8 @@ import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.global.util.aes.AESCrypto;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
 import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
+import main.arbitrage.infrastructure.upbit.UpbitHttpInterface;
+import main.arbitrage.infrastructure.upbit.UpbitPrivateRestService;
 import okhttp3.OkHttpClient;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 public class ExchangePrivateRestFactory {
   private final AESCrypto aesCrypto;
   private final OkHttpClient okHttpClient;
+  private final UpbitHttpInterface upbitClient;
   private final ObjectMapper objectMapper;
   private final SymbolVariableService symbolVariableService;
 
@@ -27,7 +29,7 @@ public class ExchangePrivateRestFactory {
         new UpbitPrivateRestService(
             aesCrypto.decrypt(userEnv.getUpbitAccessKey()),
             aesCrypto.decrypt(userEnv.getUpbitSecretKey()),
-            okHttpClient,
+            upbitClient,
             objectMapper,
             symbolNames);
 
@@ -51,7 +53,7 @@ public class ExchangePrivateRestFactory {
 
     UpbitPrivateRestService upbitService =
         new UpbitPrivateRestService(
-            upbitAccessKey, upbitSecretKey, okHttpClient, objectMapper, symbolNames);
+            upbitAccessKey, upbitSecretKey, upbitClient, objectMapper, symbolNames);
 
     BinancePrivateRestService binanceService =
         new BinancePrivateRestService(

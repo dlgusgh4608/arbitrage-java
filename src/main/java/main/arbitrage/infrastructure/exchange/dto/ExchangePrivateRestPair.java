@@ -3,7 +3,7 @@ package main.arbitrage.infrastructure.exchange.dto;
 import lombok.Builder;
 import lombok.Getter;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
+import main.arbitrage.infrastructure.upbit.UpbitPrivateRestService;
 
 @Getter
 @Builder

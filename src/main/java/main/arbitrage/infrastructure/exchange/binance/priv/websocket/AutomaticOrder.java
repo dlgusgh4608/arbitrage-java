@@ -34,10 +34,10 @@ import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceAccoun
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceExchangeInfoResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
 import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
-import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitAccountResponse;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitOrderResponse;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
+import main.arbitrage.infrastructure.upbit.UpbitPrivateRestService;
+import main.arbitrage.infrastructure.upbit.dto.enums.UpbitOrderEnums;
+import main.arbitrage.infrastructure.upbit.dto.response.UpbitAccountResponse;
+import main.arbitrage.infrastructure.upbit.dto.response.UpbitOrderResponse;
 
 // 해당 class는 UserStream의 주문, 돈, Key 관리를 담당.
 // 자동거래가 on일경우에만 쓰레드를 할당하여 자동거래가 돌아감
@@ -260,7 +260,7 @@ public class AutomaticOrder {
     ExchangeRate exchangeRate = exchangeRateService.getNonNullUsdToKrw();
     Symbol symbol = orderTradeUpdateEvent.getSymbol();
     String uuid =
-        upbitService.order(
+        upbitService.createOrder(
             symbol.getName(),
             UpbitOrderEnums.Side.bid,
             UpbitOrderEnums.OrdType.price,
@@ -270,7 +270,7 @@ public class AutomaticOrder {
                     * exchangeRate.getRate()),
             null);
 
-    UpbitOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
+    UpbitOrderResponse upbitOrderRes = upbitService.getOrder(uuid, 5);
 
     BuyOrder buyOrder =
         buyOrderService.createLimitOrder(
@@ -291,14 +291,14 @@ public class AutomaticOrder {
     double upbitQty = sellOrderService.calculateSellQty(results, openOrders, qty);
 
     String uuid =
-        upbitService.order(
+        upbitService.createOrder(
             symbol.getName(),
             UpbitOrderEnums.Side.ask,
             UpbitOrderEnums.OrdType.market,
             null,
             upbitQty);
 
-    UpbitOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
+    UpbitOrderResponse upbitOrderRes = upbitService.getOrder(uuid, 5);
 
     for (OrderCalcResultDTO orderCalcResult : results) {
       BuyOrder buyOrder = orderCalcResult.getBuyOrder();

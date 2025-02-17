@@ -1,6 +1,8 @@
-package main.arbitrage.infrastructure.upbit;
+package main.arbitrage.config;
 
 import lombok.RequiredArgsConstructor;
+import main.arbitrage.infrastructure.upbit.UpbitErrorHandler;
+import main.arbitrage.infrastructure.upbit.UpbitHttpInterface;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
@@ -32,9 +34,3 @@ public class UpbitClientConfig {
         .createClient(UpbitHttpInterface.class);
   }
 }
-
-// .requestInterceptor(
-            //     (request, body, execution) -> {
-            //       upbitErrorHandler.setRequest(request);
-            //       return execution.execute(request, body);
-            //     })

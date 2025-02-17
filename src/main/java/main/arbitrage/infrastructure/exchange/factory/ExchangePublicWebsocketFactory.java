@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import main.arbitrage.infrastructure.exchange.binance.pub.websocket.BinanceWebSocket;
 import main.arbitrage.infrastructure.exchange.dto.OrderbookPair;
 import main.arbitrage.infrastructure.exchange.dto.TradePair;
-import main.arbitrage.infrastructure.exchange.upbit.pub.websocket.UpbitWebSocket;
+import main.arbitrage.infrastructure.upbit.websocket.UpbitWebSocket;
 import org.springframework.stereotype.Component;
 
 @Component

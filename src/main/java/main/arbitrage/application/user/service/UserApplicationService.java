@@ -24,9 +24,9 @@ import main.arbitrage.infrastructure.email.service.EmailMessageService;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceAccountResponse;
 import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
 import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitAccountResponse;
 import main.arbitrage.infrastructure.oauthValidator.service.OauthValidatorService;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
+import main.arbitrage.infrastructure.upbit.dto.response.UpbitAccountResponse;
 import main.arbitrage.presentation.dto.form.UserEnvForm;
 import main.arbitrage.presentation.dto.form.UserLoginForm;
 import main.arbitrage.presentation.dto.form.UserSignupForm;
@@ -130,7 +130,7 @@ public class UserApplicationService {
             req.getBinanceAccessKey(),
             req.getBinanceSecretKey());
 
-    upbitExchangePrivateRestPair.getUpbit().getAccount();
+    upbitExchangePrivateRestPair.getUpbit().getAccounts();
     upbitExchangePrivateRestPair.getBinance().getAccount();
 
     Optional<UserEnv> optionalUserEnv = userEnvService.findByUserId(userId);

@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.exchange.upbit.dto.enums;
+package main.arbitrage.infrastructure.upbit.dto.enums;
 
 public class UpbitOrderEnums {
   public enum OrdType {

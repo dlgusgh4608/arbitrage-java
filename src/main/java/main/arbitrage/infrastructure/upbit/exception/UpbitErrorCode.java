@@ -1,4 +1,4 @@
-package main.arbitrage.infrastructure.exchange.upbit.exception;
+package main.arbitrage.infrastructure.upbit.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

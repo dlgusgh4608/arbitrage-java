@@ -4,7 +4,7 @@ import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinancePositionInfoResponse;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitAccountResponse;
+import main.arbitrage.infrastructure.upbit.dto.response.UpbitAccountResponse;
 
 @Builder
 @Getter

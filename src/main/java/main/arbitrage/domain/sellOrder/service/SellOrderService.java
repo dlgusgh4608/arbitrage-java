@@ -15,7 +15,7 @@ import main.arbitrage.domain.sellOrder.repository.SellOrderRepository;
 import main.arbitrage.global.util.math.MathUtil;
 import main.arbitrage.infrastructure.exchange.binance.dto.event.BinanceOrderTradeUpdateEvent;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitOrderResponse;
+import main.arbitrage.infrastructure.upbit.dto.response.UpbitOrderResponse;
 import org.springframework.stereotype.Service;
 
 @Service

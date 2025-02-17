@@ -6,7 +6,7 @@ import lombok.Getter;
 import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.MarginType;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceLeverageBracketResponse;
 import main.arbitrage.infrastructure.exchange.binance.dto.response.BinancePositionInfoResponse;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitAccountResponse;
+import main.arbitrage.infrastructure.upbit.dto.response.UpbitAccountResponse;
 import main.arbitrage.presentation.dto.response.OrderResponse;
 
 @Builder
