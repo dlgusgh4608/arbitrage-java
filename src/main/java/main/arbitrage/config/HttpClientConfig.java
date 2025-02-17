@@ -3,6 +3,8 @@ package main.arbitrage.config;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.infrastructure.binance.BinanceClient;
 import main.arbitrage.infrastructure.binance.BinanceErrorHandler;
+import main.arbitrage.infrastructure.oauthValidator.OAuthApiClient;
+import main.arbitrage.infrastructure.oauthValidator.OAuthApiErrorHandler;
 import main.arbitrage.infrastructure.upbit.UpbitClient;
 import main.arbitrage.infrastructure.upbit.UpbitErrorHandler;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +18,7 @@ import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 public class HttpClientConfig {
   private final UpbitErrorHandler upbitErrorHandler;
   private final BinanceErrorHandler binanceErrorHandler;
+  private final OAuthApiErrorHandler oAuthApiErrorHandler;
 
   @Bean
   public UpbitClient upbitClient() {
@@ -51,5 +54,22 @@ public class HttpClientConfig {
 
     RestClientAdapter adapter = RestClientAdapter.create(resClient);
     return HttpServiceProxyFactory.builderFor(adapter).build().createClient(BinanceClient.class);
+  }
+
+  @Bean
+  public OAuthApiClient oauthApiClient() {
+    RestClient resClient =
+        RestClient.builder()
+            .defaultHeader("Content-Type", "application/json")
+            .defaultStatusHandler(oAuthApiErrorHandler)
+            .requestInterceptor(
+                (request, body, execution) -> {
+                  oAuthApiErrorHandler.setRequest(request, body);
+                  return execution.execute(request, body);
+                })
+            .build();
+
+    RestClientAdapter adapter = RestClientAdapter.create(resClient);
+    return HttpServiceProxyFactory.builderFor(adapter).build().createClient(OAuthApiClient.class);
   }
 }
