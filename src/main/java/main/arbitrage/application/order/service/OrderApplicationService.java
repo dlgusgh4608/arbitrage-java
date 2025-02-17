@@ -18,18 +18,18 @@ import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
-import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceChangeLeverageResponse;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinancePositionInfoResponse;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceSymbolInfoResponse;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
-import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
-import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
-import main.arbitrage.infrastructure.exchange.upbit.dto.enums.UpbitOrderEnums;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitAccountResponse;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitOrderResponse;
-import main.arbitrage.infrastructure.exchange.upbit.priv.rest.UpbitPrivateRestService;
+import main.arbitrage.infrastructure.binance.BinancePrivateRestService;
+import main.arbitrage.infrastructure.binance.dto.enums.BinanceEnums;
+import main.arbitrage.infrastructure.binance.dto.response.BinanceChangeLeverageResponse;
+import main.arbitrage.infrastructure.binance.dto.response.BinanceOrderResponse;
+import main.arbitrage.infrastructure.binance.dto.response.BinancePositionInfoResponse;
+import main.arbitrage.infrastructure.binance.dto.response.BinanceSymbolInfoResponse;
+import main.arbitrage.infrastructure.exchanges.ExchangePrivateRestFactory;
+import main.arbitrage.infrastructure.exchanges.dto.ExchangePrivateRestPair;
+import main.arbitrage.infrastructure.upbit.UpbitPrivateRestService;
+import main.arbitrage.infrastructure.upbit.dto.enums.UpbitOrderEnums;
+import main.arbitrage.infrastructure.upbit.dto.response.UpbitAccountResponse;
+import main.arbitrage.infrastructure.upbit.dto.response.UpbitOrderResponse;
 import main.arbitrage.presentation.dto.request.OrderRequest;
 import main.arbitrage.presentation.dto.request.UpdateLeverageRequest;
 import main.arbitrage.presentation.dto.request.UpdateMarginTypeRequest;
@@ -72,18 +72,18 @@ public class OrderApplicationService {
     double upbitTotalQty = sellOrderService.calculateSellQty(results, openOrders, qty);
 
     BinanceOrderResponse binanceOrderRes =
-        binanceService.order(
-            symbolName, BinanceEnums.Side.BUY, BinanceEnums.Type.MARKET, req.qty(), null);
+        binanceService.createOrder(
+            symbolName, BinanceEnums.Side.BUY, BinanceEnums.Type.MARKET, req.qty(), null, false);
 
     String uuid =
-        upbitService.order(
+        upbitService.createOrder(
             symbol.getName(),
             UpbitOrderEnums.Side.ask,
             UpbitOrderEnums.OrdType.market,
             null,
             upbitTotalQty);
 
-    UpbitOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
+    UpbitOrderResponse upbitOrderRes = upbitService.getOrder(uuid, 5);
 
     // buy order update와 sell order create
     for (OrderCalcResultDTO orderCalcResult : results) {
@@ -128,18 +128,18 @@ public class OrderApplicationService {
     UpbitPrivateRestService upbitService = upbitExchangePrivateRestPair.getUpbit();
 
     BinanceOrderResponse binanceOrderRes =
-        binanceService.order( // 시장가 숏
-            symbolName, BinanceEnums.Side.SELL, BinanceEnums.Type.MARKET, req.qty(), null);
+        binanceService.createOrder( // 시장가 숏
+            symbolName, BinanceEnums.Side.SELL, BinanceEnums.Type.MARKET, req.qty(), null, false);
 
     String uuid =
-        upbitService.order(
+        upbitService.createOrder(
             symbolName,
             UpbitOrderEnums.Side.bid,
             UpbitOrderEnums.OrdType.price,
             Math.round(binanceOrderRes.cumQuote() * exchangeRate.getRate()),
             null);
 
-    UpbitOrderResponse upbitOrderRes = upbitService.order(uuid, 5);
+    UpbitOrderResponse upbitOrderRes = upbitService.getOrder(uuid, 5);
 
     // 주문 완료.
     OrderResponse orderResponse =
@@ -257,7 +257,7 @@ public class OrderApplicationService {
         ExchangeMarketPositionDTO.builder();
 
     // 지갑정보
-    List<UpbitAccountResponse> upbitAccount = upbitService.getAccount();
+    List<UpbitAccountResponse> upbitAccount = upbitService.getAccounts();
     Optional<UpbitAccountResponse> optionalKRW = upbitService.getKRW(upbitAccount);
 
     // krw를 기준으로 조건 USDT는 바이낸스측에서 값이 0이더라도 항상 줌.

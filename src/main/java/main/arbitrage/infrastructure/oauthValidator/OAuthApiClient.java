@@ -1,9 +1,18 @@
 package main.arbitrage.infrastructure.oauthValidator;
 
-import main.arbitrage.infrastructure.oauthValidator.dto.OAuthValidatorDTO;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.service.annotation.GetExchange;
+import org.springframework.web.service.annotation.HttpExchange;
 
+@HttpExchange(contentType = "application/json", accept = "application/json")
 public interface OAuthApiClient {
-  OAuthValidatorDTO validateTokenAndGetUserInfo(String accessToken);
 
-  boolean validateUser(String accessToken, String sub, String email);
+  // google
+  @GetExchange("https://www.googleapis.com/oauth2/v3/userinfo")
+  public JsonNode getGoogleInfo(@RequestHeader("Authorization") String accessKey);
+
+  // kakao
+  @GetExchange("https://kapi.kakao.com/v2/user/me")
+  public JsonNode getKakaoInfo(@RequestHeader("Authorization") String accessKey);
 }

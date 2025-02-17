@@ -8,6 +8,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.auto.dto.AutomaticUserInfoDTO;
 import main.arbitrage.application.collector.dto.PremiumDTO;
+import main.arbitrage.application.collector.service.CollectorScheduleService;
 import main.arbitrage.auth.security.SecurityUtil;
 import main.arbitrage.domain.buyOrder.service.BuyOrderService;
 import main.arbitrage.domain.exchangeRate.service.ExchangeRateService;
@@ -22,11 +23,11 @@ import main.arbitrage.domain.user.service.UserService;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
 import main.arbitrage.global.util.aes.AESCrypto;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceExchangeInfoResponse;
-import main.arbitrage.infrastructure.exchange.binance.priv.websocket.BinanceUserStream;
-import main.arbitrage.infrastructure.exchange.binance.pub.rest.BinancePublicRestService;
-import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
-import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
+import main.arbitrage.infrastructure.binance.BinancePublicRestService;
+import main.arbitrage.infrastructure.binance.dto.response.BinanceExchangeInfoResponse;
+import main.arbitrage.infrastructure.binance.websocket.BinanceUserStream;
+import main.arbitrage.infrastructure.exchanges.ExchangePrivateRestFactory;
+import main.arbitrage.infrastructure.exchanges.dto.ExchangePrivateRestPair;
 import main.arbitrage.infrastructure.websocket.handler.BinanceUserStreamHandler;
 import main.arbitrage.presentation.dto.form.TradingStrategyForm;
 import org.springframework.context.event.EventListener;
@@ -50,17 +51,12 @@ public class AutoApplicationService {
   private final PriceService priceService;
   private final BinancePublicRestService binancePublicRestService;
   private final Map<Long, BinanceUserStream> userStreams = new HashMap<>();
-  private Map<String, BinanceExchangeInfoResponse> binanceExchangeInfoMap = new HashMap<>();
+  private Map<String, BinanceExchangeInfoResponse> binanceExchangeInfoMap =
+      CollectorScheduleService.binanceExchangeInfoMap;
 
   @EventListener
   public void premiumConsumer(PremiumDTO dto) {
     userStreams.values().forEach(v -> v.run(dto));
-  }
-
-  @EventListener
-  public void exchangeInfoConsumer(
-      Map<String, BinanceExchangeInfoResponse> binanceExchangeInfoMap) {
-    this.binanceExchangeInfoMap = binanceExchangeInfoMap;
   }
 
   /*

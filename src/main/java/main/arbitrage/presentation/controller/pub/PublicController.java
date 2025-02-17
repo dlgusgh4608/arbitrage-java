@@ -13,7 +13,7 @@ import main.arbitrage.auth.dto.AuthContext;
 import main.arbitrage.domain.oauthUser.store.OAuthUserStore;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.global.util.cookie.CookieUtil;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceExchangeInfoResponse;
+import main.arbitrage.infrastructure.binance.dto.response.BinanceExchangeInfoResponse;
 import main.arbitrage.presentation.controller.pub.constant.PublicControllerUrlConstants;
 import main.arbitrage.presentation.dto.form.UserLoginForm;
 import main.arbitrage.presentation.dto.form.UserSignupForm;

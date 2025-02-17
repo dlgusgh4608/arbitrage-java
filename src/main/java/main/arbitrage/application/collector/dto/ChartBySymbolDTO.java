@@ -2,7 +2,7 @@ package main.arbitrage.application.collector.dto;
 
 import lombok.Builder;
 import lombok.Getter;
-import main.arbitrage.infrastructure.exchange.dto.OrderbookPair;
+import main.arbitrage.infrastructure.exchanges.dto.OrderbookPair;
 
 @Getter
 @Builder

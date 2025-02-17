@@ -1,6 +1,6 @@
 package main.arbitrage.application.collector.validator;
 
-import main.arbitrage.infrastructure.exchange.dto.TradeDto;
+import main.arbitrage.infrastructure.exchanges.dto.TradeDto;
 import org.springframework.stereotype.Component;
 
 @Component

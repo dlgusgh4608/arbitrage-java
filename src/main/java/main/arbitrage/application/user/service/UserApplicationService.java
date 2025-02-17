@@ -19,14 +19,14 @@ import main.arbitrage.domain.user.service.UserService;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
 import main.arbitrage.global.util.aes.AESCrypto;
+import main.arbitrage.infrastructure.binance.dto.response.BinanceAccountResponse;
 import main.arbitrage.infrastructure.email.dto.EmailMessageDTO;
 import main.arbitrage.infrastructure.email.service.EmailMessageService;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceAccountResponse;
-import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
-import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
-import main.arbitrage.infrastructure.exchange.upbit.dto.response.UpbitAccountResponse;
-import main.arbitrage.infrastructure.oauthValidator.service.OauthValidatorService;
+import main.arbitrage.infrastructure.exchanges.ExchangePrivateRestFactory;
+import main.arbitrage.infrastructure.exchanges.dto.ExchangePrivateRestPair;
+import main.arbitrage.infrastructure.oauthValidator.OauthValidatorService;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
+import main.arbitrage.infrastructure.upbit.dto.response.UpbitAccountResponse;
 import main.arbitrage.presentation.dto.form.UserEnvForm;
 import main.arbitrage.presentation.dto.form.UserLoginForm;
 import main.arbitrage.presentation.dto.form.UserSignupForm;
@@ -130,7 +130,7 @@ public class UserApplicationService {
             req.getBinanceAccessKey(),
             req.getBinanceSecretKey());
 
-    upbitExchangePrivateRestPair.getUpbit().getAccount();
+    upbitExchangePrivateRestPair.getUpbit().getAccounts();
     upbitExchangePrivateRestPair.getBinance().getAccount();
 
     Optional<UserEnv> optionalUserEnv = userEnvService.findByUserId(userId);

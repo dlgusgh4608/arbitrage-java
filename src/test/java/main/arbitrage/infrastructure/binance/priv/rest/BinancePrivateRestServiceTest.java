@@ -15,7 +15,7 @@
 // import com.fasterxml.jackson.databind.ObjectMapper;
 // import com.fasterxml.jackson.databind.node.ObjectNode;
 // import main.arbitrage.infrastructure.exchange.binance.exception.BinanceRestException;
-// import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
+// import main.arbitrage.infrastructure.binance.BinancePrivateRestService;
 // import okhttp3.OkHttpClient;
 // import okhttp3.Response;
 // import okhttp3.ResponseBody;
