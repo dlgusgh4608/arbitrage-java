@@ -1,10 +1,8 @@
-package main.arbitrage.infrastructure.oauthValidator.service;
+package main.arbitrage.infrastructure.oauthValidator;
 
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.infrastructure.oauthValidator.exception.OauthValidatorErrorCode;
 import main.arbitrage.infrastructure.oauthValidator.exception.OauthValidatorException;
-import main.arbitrage.infrastructure.oauthValidator.google.GoogleApiClient;
-import main.arbitrage.infrastructure.oauthValidator.kakao.KakaoApiClient;
 import org.springframework.stereotype.Service;
 
 @Service

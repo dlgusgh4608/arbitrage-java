@@ -24,7 +24,7 @@ import main.arbitrage.infrastructure.email.dto.EmailMessageDTO;
 import main.arbitrage.infrastructure.email.service.EmailMessageService;
 import main.arbitrage.infrastructure.exchanges.ExchangePrivateRestFactory;
 import main.arbitrage.infrastructure.exchanges.dto.ExchangePrivateRestPair;
-import main.arbitrage.infrastructure.oauthValidator.service.OauthValidatorService;
+import main.arbitrage.infrastructure.oauthValidator.OauthValidatorService;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
 import main.arbitrage.infrastructure.upbit.dto.response.UpbitAccountResponse;
 import main.arbitrage.presentation.dto.form.UserEnvForm;

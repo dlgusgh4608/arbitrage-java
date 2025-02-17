@@ -1,8 +1,7 @@
-package main.arbitrage.infrastructure.oauthValidator.google;
+package main.arbitrage.infrastructure.oauthValidator;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
-import main.arbitrage.infrastructure.oauthValidator.OAuthApiClient;
 import main.arbitrage.infrastructure.oauthValidator.dto.OAuthValidatorDTO;
 import org.springframework.stereotype.Component;
 
