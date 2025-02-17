@@ -1,9 +1,20 @@
 #!/bin/bash
+
 APP_DIR="/home/ubuntu/app"
+
 JAR="$APP_DIR/arbitrageJava.jar"
 LOG="/home/ubuntu/log/afterInstall.log"
 
 NOW=$(date '+%Y-%m-%d %T')
+
+JVM_OPTS=(
+  "-Xmx192M" #최대값
+  "-Xms64M" #초기값
+  "-XX:MaxMetaspaceSize=192M" #최대값
+  "-XX:MetaspaceSize=128M" #초기값
+)
+
+# t2.micro기준 작성했습니다. 좋은 서버 쓰려면 값 바꾸세용
 
 echo "[$NOW] start afterInstall process" >> $LOG
 if [ -f $JAR ]; then
@@ -15,7 +26,7 @@ fi
 
 cd $APP_DIR
 
-nohup java -jar $JAR > /dev/null 2>&1 &
+nohup java "${JVM_OPTS[@]}" -jar "$JAR" > /dev/null 2>&1 &
 
 echo "[$NOW] end afterInstall process" >> $LOG
 exit 0
