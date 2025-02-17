@@ -12,7 +12,7 @@
 // import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.Type;
 // import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
 // import main.arbitrage.infrastructure.exchange.binance.exception.BinanceRestException;
-// import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
+// import main.arbitrage.infrastructure.binance.BinancePrivateRestService;
 // import okhttp3.OkHttpClient;
 
 // class BinancePrivateRestServiceRealTest {

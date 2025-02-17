@@ -128,14 +128,22 @@ public class JwtFilter extends OncePerRequestFilter {
     } catch (AuthException e) {
       handlerAuthException(request, response, e);
     } catch (Exception e) {
-      handlerAuthException(
-          request,
-          response,
-          new AuthException(
-              AuthErrorCode.UNKNOWN,
-              String.format("토큰 처리 중 예상치 못한 오류가 발생했습니다 - %s", e.getMessage()),
-              e));
+      handleUnknownException(request, response, e);
     }
+  }
+
+  private void handleUnknownException(
+      HttpServletRequest request, HttpServletResponse response, Exception e) throws IOException {
+    logout(request, response);
+    response.setStatus(500);
+    response.setContentType("application/json;charset=UTF-8");
+    log.error(e.getMessage());
+
+    ErrorResponse errorResponse =
+        ErrorResponse.builder().code("G01").message("알 수 없는 에러입니다.").build();
+
+    String jsonResponse = objectMapper.writeValueAsString(errorResponse);
+    response.getWriter().write(jsonResponse);
   }
 
   private void handlerAuthException(

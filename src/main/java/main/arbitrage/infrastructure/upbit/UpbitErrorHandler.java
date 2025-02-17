@@ -6,19 +6,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import main.arbitrage.global.exception.common.BaseHttpErrorHandler;
 import main.arbitrage.infrastructure.upbit.exception.UpbitErrorCode;
 import main.arbitrage.infrastructure.upbit.exception.UpbitException;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.client.ResponseErrorHandler;
 
 @Controller
 @RequiredArgsConstructor
-public class UpbitErrorHandler implements ResponseErrorHandler {
+public class UpbitErrorHandler extends BaseHttpErrorHandler {
   private final ObjectMapper objectMapper;
   private final Map<String, UpbitErrorCode> errorMap =
       Map.ofEntries(
@@ -37,14 +35,6 @@ public class UpbitErrorHandler implements ResponseErrorHandler {
           entry("withdraw_address_not_registerd", UpbitErrorCode.BAD_REQUEST),
           entry("validation_error", UpbitErrorCode.INVALID_PARAMETER),
           entry("invalid_parameter", UpbitErrorCode.INVALID_PARAMETER));
-
-  private final ThreadLocal<RequestContext> requestContext = new ThreadLocal<>();
-
-  private static record RequestContext(HttpRequest request, String body) {}
-
-  public void setRequest(HttpRequest request, byte[] body) {
-    requestContext.set(new RequestContext(request, new String(body, StandardCharsets.UTF_8)));
-  }
 
   // API호출시 에러를 catch함.
   @Override

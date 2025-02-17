@@ -18,14 +18,14 @@ import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.domain.userEnv.entity.UserEnv;
 import main.arbitrage.domain.userEnv.service.UserEnvService;
-import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceChangeLeverageResponse;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceOrderResponse;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinancePositionInfoResponse;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceSymbolInfoResponse;
-import main.arbitrage.infrastructure.exchange.binance.priv.rest.BinancePrivateRestService;
-import main.arbitrage.infrastructure.exchange.dto.ExchangePrivateRestPair;
-import main.arbitrage.infrastructure.exchange.factory.ExchangePrivateRestFactory;
+import main.arbitrage.infrastructure.binance.BinancePrivateRestService;
+import main.arbitrage.infrastructure.binance.dto.enums.BinanceEnums;
+import main.arbitrage.infrastructure.binance.dto.response.BinanceChangeLeverageResponse;
+import main.arbitrage.infrastructure.binance.dto.response.BinanceOrderResponse;
+import main.arbitrage.infrastructure.binance.dto.response.BinancePositionInfoResponse;
+import main.arbitrage.infrastructure.binance.dto.response.BinanceSymbolInfoResponse;
+import main.arbitrage.infrastructure.exchanges.ExchangePrivateRestFactory;
+import main.arbitrage.infrastructure.exchanges.dto.ExchangePrivateRestPair;
 import main.arbitrage.infrastructure.upbit.UpbitPrivateRestService;
 import main.arbitrage.infrastructure.upbit.dto.enums.UpbitOrderEnums;
 import main.arbitrage.infrastructure.upbit.dto.response.UpbitAccountResponse;
@@ -72,8 +72,8 @@ public class OrderApplicationService {
     double upbitTotalQty = sellOrderService.calculateSellQty(results, openOrders, qty);
 
     BinanceOrderResponse binanceOrderRes =
-        binanceService.order(
-            symbolName, BinanceEnums.Side.BUY, BinanceEnums.Type.MARKET, req.qty(), null);
+        binanceService.createOrder(
+            symbolName, BinanceEnums.Side.BUY, BinanceEnums.Type.MARKET, req.qty(), null, false);
 
     String uuid =
         upbitService.createOrder(
@@ -128,8 +128,8 @@ public class OrderApplicationService {
     UpbitPrivateRestService upbitService = upbitExchangePrivateRestPair.getUpbit();
 
     BinanceOrderResponse binanceOrderRes =
-        binanceService.order( // 시장가 숏
-            symbolName, BinanceEnums.Side.SELL, BinanceEnums.Type.MARKET, req.qty(), null);
+        binanceService.createOrder( // 시장가 숏
+            symbolName, BinanceEnums.Side.SELL, BinanceEnums.Type.MARKET, req.qty(), null, false);
 
     String uuid =
         upbitService.createOrder(

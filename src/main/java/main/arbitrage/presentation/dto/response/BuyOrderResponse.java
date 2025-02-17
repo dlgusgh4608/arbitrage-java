@@ -2,7 +2,7 @@ package main.arbitrage.presentation.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinancePositionInfoResponse;
+import main.arbitrage.infrastructure.binance.dto.response.BinancePositionInfoResponse;
 import main.arbitrage.infrastructure.upbit.dto.response.UpbitAccountResponse;
 
 @Builder

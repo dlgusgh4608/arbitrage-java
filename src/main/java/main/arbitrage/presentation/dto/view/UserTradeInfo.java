@@ -3,9 +3,9 @@ package main.arbitrage.presentation.dto.view;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-import main.arbitrage.infrastructure.exchange.binance.dto.enums.BinanceEnums.MarginType;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceLeverageBracketResponse;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinancePositionInfoResponse;
+import main.arbitrage.infrastructure.binance.dto.enums.BinanceEnums.MarginType;
+import main.arbitrage.infrastructure.binance.dto.response.BinanceLeverageBracketResponse;
+import main.arbitrage.infrastructure.binance.dto.response.BinancePositionInfoResponse;
 import main.arbitrage.infrastructure.upbit.dto.response.UpbitAccountResponse;
 import main.arbitrage.presentation.dto.response.OrderResponse;
 

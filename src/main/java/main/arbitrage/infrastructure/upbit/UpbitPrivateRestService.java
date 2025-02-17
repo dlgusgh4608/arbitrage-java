@@ -14,13 +14,13 @@ import main.arbitrage.infrastructure.upbit.exception.UpbitErrorCode;
 import main.arbitrage.infrastructure.upbit.exception.UpbitException;
 
 public class UpbitPrivateRestService extends BaseUpbitPrivateRestService {
-  private final UpbitHttpInterface upbitClient;
+  private final UpbitClient upbitClient;
   private final ObjectMapper objectMapper;
 
   public UpbitPrivateRestService(
       String accessKey,
       String secretKey,
-      UpbitHttpInterface upbitClient,
+      UpbitClient upbitClient,
       ObjectMapper objectMapper,
       List<String> symbolNames) {
     super(accessKey, secretKey, symbolNames);

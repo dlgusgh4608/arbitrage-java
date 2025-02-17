@@ -21,12 +21,12 @@ import main.arbitrage.domain.price.service.PriceService;
 import main.arbitrage.domain.symbol.entity.Symbol;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
 import main.arbitrage.global.util.math.MathUtil;
-import main.arbitrage.infrastructure.exchange.binance.dto.response.BinanceExchangeInfoResponse;
-import main.arbitrage.infrastructure.exchange.binance.pub.rest.BinancePublicRestService;
-import main.arbitrage.infrastructure.exchange.dto.OrderbookPair;
-import main.arbitrage.infrastructure.exchange.dto.TradeDto;
-import main.arbitrage.infrastructure.exchange.dto.TradePair;
-import main.arbitrage.infrastructure.exchange.factory.ExchangePublicWebsocketFactory;
+import main.arbitrage.infrastructure.binance.BinancePublicRestService;
+import main.arbitrage.infrastructure.binance.dto.response.BinanceExchangeInfoResponse;
+import main.arbitrage.infrastructure.exchanges.ExchangePublicWebsocketFactory;
+import main.arbitrage.infrastructure.exchanges.dto.OrderbookPair;
+import main.arbitrage.infrastructure.exchanges.dto.TradeDto;
+import main.arbitrage.infrastructure.exchanges.dto.TradePair;
 import main.arbitrage.infrastructure.websocket.handler.ChartWebsocketHandler;
 import main.arbitrage.infrastructure.websocket.handler.PremiumWebsocketHandler;
 import org.springframework.context.ApplicationEventPublisher;
@@ -48,7 +48,7 @@ public class CollectorScheduleService {
   private final ExchangeRateService exchangeRateService;
   private final Map<String, Price> priceMap = new ConcurrentHashMap<>();
   private final ApplicationEventPublisher applicationEventPublisher;
-  private Map<String, BinanceExchangeInfoResponse> binanceExchangeInfoMap = new HashMap<>();
+  public static Map<String, BinanceExchangeInfoResponse> binanceExchangeInfoMap = new HashMap<>();
   private ExecutorService threadPools;
   private List<Symbol> supportedSymbols = new ArrayList<>();
 
@@ -83,7 +83,6 @@ public class CollectorScheduleService {
   @Scheduled(cron = "0 0 0 * * *") // 하루
   protected void updateExchangeInfo() {
     binanceExchangeInfoMap = binancePublicRestService.getExchangeInfo();
-    applicationEventPublisher.publishEvent(binanceExchangeInfoMap);
   }
 
   private void processSymbol(Symbol symbol, ExchangeRate exchangeRate) {
