@@ -35,8 +35,7 @@ public class BinanceErrorHandler extends BaseHttpErrorHandler {
           entry("-2018", BinanceErrorCode.BALANCE_NOT_SUFFICIENT),
           entry("-4001", BinanceErrorCode.PRICE_LESS_THAN_ZERO),
           entry("-4003", BinanceErrorCode.QTY_LESS_THAN_ZERO),
-          entry("-4055", BinanceErrorCode.AMOUNT_MUST_BE_POSITIVE),
-          entry("0", BinanceErrorCode.UNKNOWN));
+          entry("-4055", BinanceErrorCode.AMOUNT_MUST_BE_POSITIVE));
 
   @Override
   public boolean hasError(ClientHttpResponse response) {
@@ -57,18 +56,6 @@ public class BinanceErrorHandler extends BaseHttpErrorHandler {
       JsonNode errorNode = objectMapper.readTree(response.getBody());
 
       String key = errorNode.get("code").asText();
-
-      // Github Action에서 @SpringBootTest 진행할때 Binance API를 호출하면 아래의 에러가 반환됨.
-      // {
-      //   "code": 0,
-      //   "msg": "Service unavailable from a restricted location according to 'b. Eligibility' in
-      // https://www.binance.com/en/terms. Please contact customer service if you believe you
-      // received this message in error."
-      // }
-      if (key.equals("0")) {
-        System.out.println("API call not working in github actions");
-        return;
-      }
 
       BinanceErrorCode errorCode = errorMap.get(key);
 
