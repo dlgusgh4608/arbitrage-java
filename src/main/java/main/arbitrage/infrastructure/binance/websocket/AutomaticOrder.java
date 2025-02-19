@@ -185,6 +185,13 @@ public class AutomaticOrder {
               double targetPrice =
                   MathUtil.floorTo(binancePrice - moveValue, decimalPlacesOfTickSize).doubleValue();
 
+              log.info(
+                  "[ {} ] TrySellOrder\t{}:{},{}",
+                  automaticUser.userId(),
+                  symbol.getName(),
+                  qty,
+                  targetPrice);
+
               buyBinance(symbol.getName(), qty, targetPrice);
             }
           }
@@ -226,10 +233,26 @@ public class AutomaticOrder {
 
               if (buyOrderOptional.isPresent()) {
                 lock();
+
+                log.info(
+                    "[ {} ] TryBuyOrder\t{}:{},{}",
+                    automaticUser.userId(),
+                    symbol.getName(),
+                    targetQuantity,
+                    targetPrice);
+
                 sellBinance(symbol.getName(), targetQuantity, targetPrice);
               }
             } else {
               lock();
+
+              log.info(
+                  "[ {} ] TryBuyOrder\t{}:{},{}",
+                  automaticUser.userId(),
+                  symbol.getName(),
+                  targetQuantity,
+                  targetPrice);
+
               sellBinance(symbol.getName(), targetQuantity, targetPrice);
             }
           }

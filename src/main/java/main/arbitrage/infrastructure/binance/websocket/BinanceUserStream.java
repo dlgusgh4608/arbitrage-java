@@ -215,6 +215,9 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
   // 새 주문
   private void newOrderTrade(BinanceOrderTradeUpdateEvent payload) {
     String clientId = payload.getClientId();
+
+    log.info("{} NewOrder\t{}:{}", socketName, payload.getSymbol().getName(), clientId);
+
     orderMap.put(clientId, new ArrayList<>());
     setTicker(payload.getSymbol().getName(), clientId);
   }
@@ -222,6 +225,9 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
   // 부분 체결
   private void partiallyFilledOrderTrade(BinanceOrderTradeUpdateEvent payload) {
     String clientId = payload.getClientId();
+
+    log.info("{} PartiallyFilledOrder\t{}:{}", socketName, payload.getSymbol().getName(), clientId);
+
     List<BinanceOrderTradeUpdateEvent> oldOrder = orderMap.get(clientId);
 
     // 동시성 문제로 binance cancel을 하는 중에 체결이 발생함.
@@ -241,18 +247,29 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
   // 완전 체결
   private void filledOrderTrade(BinanceOrderTradeUpdateEvent payload) {
     String clientId = payload.getClientId();
+
+    String symbolName = payload.getSymbol().getName();
+    log.info("{} FilledOrder\t{}:{}", socketName, symbolName, clientId);
+
     List<BinanceOrderTradeUpdateEvent> oldOrder = orderMap.get(clientId);
 
     // 타이머 종료 및 Map에서 데이터 삭제
     orderMap.remove(clientId);
-    orderTickerMap.remove(clientId);
+    log.info("RemovedOrderMap[FromFilled]\t{}:{}", symbolName, clientId);
+
     ScheduledFuture<?> currentTicker = orderTickerMap.get(clientId);
-    if (currentTicker != null) currentTicker.cancel(false);
+    orderTickerMap.remove(clientId);
+    log.info("RemovedTickerMap[FromFilled]\t{}:{}", symbolName, clientId);
+
+    if (currentTicker != null) {
+      log.info("CancelTicker[FromFilled]\t{}:{}", symbolName, clientId);
+      currentTicker.cancel(false);
+    }
 
     // 한번에 체결되지 않았으며, Ticker(ORDER_TICKER_TIMEOUT)의 시간이 경과하지 않았지만
     // 주문이 전부 체결되었을때 실행
     if (oldOrder != null) {
-
+      log.info("Found Orders:{} [FromFilled]\t{}:{}", oldOrder.size(), symbolName, clientId);
       oldOrder.add(payload);
 
       BinanceOrderTradeUpdateEvent calculatedPayload = calculateOrderTrade(oldOrder);
@@ -260,6 +277,8 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
       orderForSide(calculatedPayload); // 진행
       return;
     }
+
+    log.info("NotFound Orders[FromFilled]\t{}:{}", symbolName, clientId);
 
     // cancel을 하는 도중 주문이 들어와 동시성 문제가 발생했을때
     // 주문이 한번에 다 체결된 경우
@@ -305,6 +324,8 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
   private void setTicker(String symbolName, String clientId) {
     if (executorService == null) return;
 
+    log.info("setTicker\t{}:{}", symbolName, clientId);
+
     // orderMap은 newOrderTrade와 partiallyFilledOrderTrade method에서 생성하며
     // 이는 동시성 문제를 해결하기 위함입니다.
     ScheduledFuture<?> ticker =
@@ -316,10 +337,14 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
                 Thread.sleep(ORDER_TICKER_TIMEOUT); // 3sec
                 List<BinanceOrderTradeUpdateEvent> orders = orderMap.get(clientId);
                 orderMap.remove(clientId);
+                log.info("RemovedOrderMap[FromTicker]\t{}:{}", symbolName, clientId);
                 orderTickerMap.remove(clientId);
+                log.info("RemovedTickerMap[FromTicker]\t{}:{}", symbolName, clientId);
 
                 // null이면 이미 완전체결 이후라 취소 할 필요 없음.
                 if (orders != null) {
+                  log.info(
+                      "Found Orders:{} [FromTicker]\t{}:{}", orders.size(), symbolName, clientId);
                   cancelBinance(symbolName, clientId);
 
                   // null이 아니고 isEmpty가 false, 체결된게 하나라도 있으면 거래 진행
@@ -330,6 +355,8 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
                   } else {
                     unlock();
                   }
+                } else {
+                  log.info("NotFound Orders[FromTicker]\t{}:{}", symbolName, clientId);
                 }
               } catch (Exception e) {
                 log.error(
