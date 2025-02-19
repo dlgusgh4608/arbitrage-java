@@ -100,6 +100,11 @@
         const upbitQty = $("#upbit-qty")
         const positionItems = $('.position-item')
 
+        const blockToNone = (ele) => ele.removeClass('d-block').addClass('d-none')
+        const noneToBlock = (ele) => ele.addClass('d-block').removeClass('d-none')
+        const flexToNone = (ele) => ele.removeClass('d-flex').addClass('d-none')
+        const noneToFlex = (ele) => ele.addClass('d-flex').removeClass('d-none')
+        
         if (hasPosition) {
             const { entryPrice, liquidationPrice, positionAmt } = binancePosition
             const { avg_buy_price, balance } = upbitPosition
@@ -113,12 +118,6 @@
             upbitQty.text(balance)
         }
 
-        const blockToNone = (ele) => ele.removeClass('d-block').addClass('d-none')
-        const noneToBlock = (ele) => ele.addClass('d-block').removeClass('d-none')
-        const flexToNone = (ele) => ele.removeClass('d-flex').addClass('d-none')
-        const noneToFlex = (ele) => ele.addClass('d-flex').removeClass('d-none')
-
-        
 
         $('#position').click(function () {
             $(this).addClass('active')
