@@ -16,12 +16,18 @@ JVM_OPTS=(
 
 # t2.micro기준 작성했습니다. 좋은 서버 쓰려면 값 바꾸세용
 
-echo "[$NOW] start afterInstall process" >> $LOG
-if [ -f $JAR ]; then
-  pkill -f "java -jar $JAR" || echo "[$NOW] Process not running" >> $LOG
+if pgrep -f "java.*arbitrageJava.jar"; then
+    echo "[$NOW] try process shutdown" >> "$LOG"
+    pkill -f "java.*arbitrageJava.jar" || echo "[$NOW] Process shutdown failed" >> "$LOG"
+    sleep 5
+
+    if pgrep -f "java.*arbitrageJava.jar"; then
+        echo "[$NOW] try process shutdown now(SIGKILL)" >> "$LOG"
+        pkill -9 -f "java.*arbitrageJava.jar" || echo "[$NOW] Process shutdown now failed" >> "$LOG"
+        sleep 2
+    fi
 else
-  echo "[$NOW] Error: JAR file not found at $JAR"
-  exit 1
+    echo "[$NOW] Process not running" >> "$LOG"
 fi
 
 cd $APP_DIR
