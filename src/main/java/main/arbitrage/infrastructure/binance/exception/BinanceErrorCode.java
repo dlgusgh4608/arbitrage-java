@@ -27,7 +27,8 @@ public enum BinanceErrorCode implements BaseErrorCode {
   AMOUNT_MUST_BE_POSITIVE("EB16", "금액은 양수여야 합니다.", HttpStatus.BAD_REQUEST),
   EMPTY_KEYS("EB17", "API키를 입력해주세요.", HttpStatus.BAD_REQUEST),
   API_ERROR("EB18", "API 오류입니다. 다시 시도해주세요.", HttpStatus.INTERNAL_SERVER_ERROR),
-  BAD_PARAMS("EB19", "잘못된 요청입니다.", HttpStatus.BAD_REQUEST);
+  BAD_PARAMS("EB19", "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
+  INVALID_LOCATION("EB20", "지원하지 않는 위치입니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
   private final String code;
   private final String clientMessage;

@@ -35,7 +35,8 @@ public class BinanceErrorHandler extends BaseHttpErrorHandler {
           entry("-2018", BinanceErrorCode.BALANCE_NOT_SUFFICIENT),
           entry("-4001", BinanceErrorCode.PRICE_LESS_THAN_ZERO),
           entry("-4003", BinanceErrorCode.QTY_LESS_THAN_ZERO),
-          entry("-4055", BinanceErrorCode.AMOUNT_MUST_BE_POSITIVE));
+          entry("-4055", BinanceErrorCode.AMOUNT_MUST_BE_POSITIVE),
+          entry("0", BinanceErrorCode.INVALID_LOCATION));
 
   @Override
   public boolean hasError(ClientHttpResponse response) {
@@ -54,6 +55,8 @@ public class BinanceErrorHandler extends BaseHttpErrorHandler {
     String errorMsg = String.format("\nurl: %s\nbody: %s", uri.toString(), body);
     try {
       JsonNode errorNode = objectMapper.readTree(response.getBody());
+
+      System.out.println(errorNode);
 
       String key = errorNode.get("code").asText();
 
