@@ -146,11 +146,11 @@ public class TradingStrategy {
   private int shoulderEntryPercent;
 
   @CreationTimestamp
-  @Column(name = "created_at", updatable = false)
+  @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP(6) WITH TIME ZONE")
   private Timestamp createdAt;
 
   @UpdateTimestamp
-  @Column(name = "updated_at", nullable = false)
+  @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP(6) WITH TIME ZONE")
   private Timestamp updatedAt;
 
   @Builder

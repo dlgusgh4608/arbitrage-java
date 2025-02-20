@@ -297,6 +297,8 @@ public class AutomaticOrder {
         buyOrderService.createLimitOrder(
             automaticUser.userId(), symbol, exchangeRate, orderTradeUpdateEvent, upbitOrderRes);
 
+    if (executorService == null) return;
+
     openOrders.add(buyOrder);
     updateWallet();
     unlock();
@@ -333,6 +335,9 @@ public class AutomaticOrder {
           sellOrderService.createLimitOrder(
               orderCalcResult, orderTradeUpdateEvent, upbitOrderRes, exchangeRate));
     }
+
+    if (executorService == null) return;
+
     updateWallet();
     unlock();
   }

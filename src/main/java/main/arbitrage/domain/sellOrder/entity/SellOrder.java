@@ -54,7 +54,7 @@ public class SellOrder {
   @Column(
       name = "upbit_event_time",
       nullable = false,
-      columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
+      columnDefinition = "TIMESTAMP(6) WITH TIME ZONE")
   private Timestamp upbitEventTime;
 
   @Column(name = "binance_price", nullable = false, columnDefinition = "DOUBLE PRECISION")
@@ -69,7 +69,7 @@ public class SellOrder {
   @Column(
       name = "binance_event_time",
       nullable = false,
-      columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
+      columnDefinition = "TIMESTAMP(6) WITH TIME ZONE")
   private Timestamp binanceEventTime;
 
   @Column(name = "is_maker", columnDefinition = "BOOLEAN DEFAULT FALSE")
@@ -82,11 +82,11 @@ public class SellOrder {
   private float profitRateWithFees;
 
   @CreationTimestamp
-  @Column(name = "created_at", updatable = false)
+  @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP(6) WITH TIME ZONE")
   private Timestamp createdAt;
 
   @UpdateTimestamp
-  @Column(name = "updated_at", nullable = false)
+  @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP(6) WITH TIME ZONE")
   private Timestamp updatedAt;
 
   @Builder

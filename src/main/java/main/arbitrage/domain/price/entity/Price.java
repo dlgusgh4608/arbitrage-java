@@ -49,19 +49,16 @@ public class Price {
   @Column(
       name = "upbit_trade_at",
       nullable = false,
-      columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
+      columnDefinition = "TIMESTAMP(6) WITH TIME ZONE")
   private Timestamp upbitTradeAt;
 
   @Column(
       name = "binance_trade_at",
       nullable = false,
-      columnDefinition = "TIMESTAMP(6) WITHOUT TIME ZONE")
+      columnDefinition = "TIMESTAMP(6) WITH TIME ZONE")
   private Timestamp binanceTradeAt;
 
-  @Column(
-      name = "created_at",
-      nullable = false,
-      columnDefinition = "TIMESTAMP(0) WITHOUT TIME ZONE")
+  @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP(0) WITH TIME ZONE")
   private Timestamp createdAt;
 
   /*
