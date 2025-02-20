@@ -13,8 +13,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -121,10 +120,7 @@ public class BuyOrder {
     this.upbitPrice = upbitPrice;
     this.upbitQuantity = upbitQuantity;
     this.upbitCommission = upbitCommission;
-    this.upbitEventTime =
-        Timestamp.valueOf(
-            LocalDateTime.parse(
-                upbitEventTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")));
+    this.upbitEventTime = Timestamp.from(ZonedDateTime.parse(upbitEventTime).toInstant());
     this.binancePrice = binancePrice;
     this.binanceQuantity = binanceQuantity;
     this.binanceCommission = binanceCommission;

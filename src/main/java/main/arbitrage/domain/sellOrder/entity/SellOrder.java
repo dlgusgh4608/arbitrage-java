@@ -10,8 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.ZonedDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -110,10 +109,7 @@ public class SellOrder {
     this.upbitPrice = upbitPrice;
     this.upbitQuantity = upbitQuantity;
     this.upbitCommission = upbitCommission;
-    this.upbitEventTime =
-        Timestamp.valueOf(
-            LocalDateTime.parse(
-                upbitEventTime, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX")));
+    this.upbitEventTime = Timestamp.from(ZonedDateTime.parse(upbitEventTime).toInstant());
     this.binancePrice = binancePrice;
     this.binanceQuantity = binanceQuantity;
     this.binanceCommission = binanceCommission;
