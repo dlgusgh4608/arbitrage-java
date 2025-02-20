@@ -10,7 +10,7 @@ const createOfMinute = (data) => {
         if (!currentCandle || currentCandle.x !== roundedTimestamp) {
             // 새로운 캔들 시작
             if (currentCandle) {
-                result.push(currentCandle);
+                result.unshift(currentCandle);
             }
 
             // initial
@@ -30,7 +30,7 @@ const createOfMinute = (data) => {
     })
 
     if (currentCandle) {
-        result.push(currentCandle)
+        result.unshift(currentCandle)
     }
 
     return result
@@ -84,19 +84,12 @@ const getChartProperties = (initialData) => ({
         scales: {
             x: {
                 type: 'time',
+                min: initialData.at(-155)?.x ? initialData.at(-155)?.x : initialData.at(0)?.x,
+                max: initialData.at(-1).x + initialData.at(2).x - initialData.at(0).x,
                 time: {
                     unit: 'minute',
                     stepSize: 1,
                 },
-                min: new Date(Date.now() - (60 * 1000 * 100)).getTime(),
-                // max: Date.now(),
-                ticks: {
-                    source: 'data'
-                },
-                offset: true,
-                grid: {
-                    offset: true
-                }
             },
             y: {
                 position: 'right',
@@ -104,10 +97,6 @@ const getChartProperties = (initialData) => ({
                 beginAtZero: false,
                 grace: '5%'  // 위아래 5% 여백
             }
-        },
-        interaction: {
-            intersect: false,
-            mode: 'index'
         },
         plugins: {
             legend: {
@@ -121,6 +110,7 @@ const getChartProperties = (initialData) => ({
                     label: function (context) {
                         const point = context.raw;
                         return [
+                            `Time: ${point.x}`,
                             `Open: ${point.o}`,
                             `High: ${point.h}`,
                             `Low: ${point.l}`,
@@ -132,8 +122,8 @@ const getChartProperties = (initialData) => ({
             zoom: {
                 limits: {
                     x: {
-                        min: 'original',
-                        max: 'original'
+                        min: initialData[0].x,
+                        max: initialData.at(-1).x + initialData.at(2).x - initialData.at(0).x,
                     }
                 },
                 pan: {
@@ -178,7 +168,10 @@ const getChartProperties = (initialData) => ({
 
 const drawChart = (chartJquery, initialData) => {
     const chartData = createOfMinute(initialData)
+
+
     const chart = new Chart(chartJquery[0].getContext('2d'), getChartProperties(chartData))
+
     return {
         chart,
         chartData,
