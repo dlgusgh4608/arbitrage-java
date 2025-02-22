@@ -59,6 +59,21 @@ const updateOfMinute = (originArr, data) => {
     }
 }
 
+function getVisibleData({ min, max }, chart) {
+    const chartData = chart.data.datasets[0].data
+    const visibleData = chartData.filter(({ x }) => x >= min && x <= max)
+    return {
+        first: visibleData.at(0),
+        last: visibleData.at(-1),
+        count: visibleData.length
+    }
+  }
+
+let prevZoomScale = {
+    min: null,
+    max: null
+}
+
 const getChartProperties = (initialData) => ({
     type: 'candlestick',
     data: {
@@ -129,9 +144,18 @@ const getChartProperties = (initialData) => ({
                 pan: {
                     enabled: true,
                     mode: 'x',
-                    modifierKey: null,
-                    scaleMode: 'x',
-                    threshold: 10,
+                    // modifierKey: null,
+                    // scaleMode: 'x',
+                    // threshold: 10,
+                    onPan: ({ chart }) => {
+                        const chartData = chart.data.datasets[0].data
+                        const { first, last, count } = getVisibleData(chart.scales.x, chart);
+                        const firstChart = chartData.at(0)
+                        const lastChart = chartData.at(-1)
+
+                        const { min, max } = chart.scales.x
+                        prevZoomScale = { min, max }
+                    }
                 },
                 zoom: {
                     wheel: {
@@ -144,7 +168,18 @@ const getChartProperties = (initialData) => ({
                     pinch: {
                         enabled: true
                     },
-                    mode: 'x'
+                    mode: 'x',
+                    onZoom: ({ chart }) => {
+                        const zoomLevel = chart.getZoomLevel();
+                        const MAXIMUM_ZOOM_LEVEL = 3.5
+                        const MINIMUM_ZOOM_LEVEL = 0.3
+
+                        if(zoomLevel <= MINIMUM_ZOOM_LEVEL || zoomLevel >= MAXIMUM_ZOOM_LEVEL)
+                            return chart.zoomScale('x', prevZoomScale, 'none')
+                        
+                        const { min, max } = chart.scales.x
+                        prevZoomScale = { min, max }
+                    },
                 }
             },
             crosshair: {

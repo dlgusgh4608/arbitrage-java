@@ -40,9 +40,9 @@ const setSocketInitialItems = (requiredItems) => (message) => {
 
     chart.updateOfMinute(chartData, premium)
 
-    const zoomLimit = chartData.at(-1).x + chartData.at(6).x - chartData.at(0).x
+    // const zoomLimit = chartData.at(-1).x + chartData.at(6).x - chartData.at(0).x
     
-    chartJs.config.options.plugins.zoom.limits.x.max = zoomLimit;
+    // chartJs.config.options.plugins.zoom.limits.x.max = zoomLimit;
 
     chartJs.update('none')
 
