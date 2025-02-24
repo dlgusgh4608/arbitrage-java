@@ -1,10 +1,34 @@
 <article class="w-100 shadow rounded position-relative ele-bg-color">
     <div class="d-flex position-absolute top-0 start-0">
         <!-- <div class="d-flex align-items-center">Time: </div> -->
-        <button id="min" class="custom-btn border-0 bg-transparent" style="font-weight: 600;">1m</button>
-        <button id="min3" class="custom-btn border-0 bg-transparent" style="font-weight: 500;">3m</button>
-        <button id="min5" class="custom-btn border-0 bg-transparent" style="font-weight: 500;">5m</button>
-        <button id="min15" class="custom-btn border-0 bg-transparent" style="font-weight: 500;">15m</button>
+        <button data-value="1" class="time-btn custom-btn border-0 bg-transparent text-point-color">1m</button>
+        <button data-value="3" class="time-btn custom-btn border-0 bg-transparent text-color">3m</button>
+        <button data-value="5" class="time-btn custom-btn border-0 bg-transparent text-color">5m</button>
+        <button data-value="15" class="time-btn custom-btn border-0 bg-transparent text-color">15m</button>
     </div>
     <canvas id="candlestickChart" class="chart-canvas"></canvas>
 </article>
+
+<script th:inline="javascript">
+    $(() => {
+        const { setCurrentTime, fetch } = window.myModule
+
+        async function getChartData(unit = 1, lastTime = new Date().getTime()) {
+            await fetch('GET', `/api/ohlc?symbol=${symbol}&unit=${unit}&lastTime=${lastTime}`)
+        }
+        
+        $('.time-btn').click(function () {
+            $('.time-btn').removeClass('text-point-color').addClass('text-color')
+
+            const currentJquery = $(this)
+            
+            currentJquery.removeClass('text-color').addClass('text-point-color')
+
+            const currentTimeValue = Number(currentJquery.attr('data-value'))
+
+            setCurrentTime(currentTimeValue)
+
+            getChartData(currentTimeValue)
+        })
+    })
+</script>

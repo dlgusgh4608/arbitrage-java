@@ -1,5 +1,39 @@
+let currentTime = 1; // 1, 3, 5, 15
+
+const setCurrentTime = (timeOfMinutes = 1) => {
+    if(!Number(timeOfMinutes)) return // 숫자 아님
+    if(timeOfMinutes === currentTime) return // 같은 시간값
+    if(![1,3,5,15].some(v => v === timeOfMinutes)) return // 허용된 시간값 아님
+
+    currentTime = timeOfMinutes
+}
+
+
+
+const genChartData = (date, p, minutes) => {
+    const loadCount = 300 * minutes * 12
+    const interval = 5000; // 5초 (ms)
+    let premium = p
+    const result = []
+
+    for (let i = 0; i < loadCount; i++) {
+        const currentTime = new Date(date.getTime() - i * interval);
+        
+        // 가격에 약간의 변동 추가 (랜덤 워크 예시)
+        premium += (Math.random() - 0.5) * 0.5;
+        
+        result.push({
+            symbol: "ETH",
+            premium: parseFloat(premium.toFixed(4)),
+            createdAt: currentTime.toISOString()
+        });
+    }
+    return result
+}
+
+
 const createOfMinute = (data) => {
-    const aMinuteMs = 60 * 1000;
+    const aMinuteMs = 60 * 1000 * currentTime;
     const result = []
     let currentCandle = null
 
@@ -38,7 +72,7 @@ const createOfMinute = (data) => {
 
 const updateOfMinute = (originArr, data) => {
     // chart js 원본배열 참조함.
-    const aMinuteMs = 60 * 1000;
+    const aMinuteMs = 60 * 1000  * currentTime;
     const timestamp = Date.now()
     const roundedTimestamp = Math.floor(timestamp / aMinuteMs) * aMinuteMs
 
@@ -149,12 +183,22 @@ const getChartProperties = (initialData) => ({
                     // threshold: 10,
                     onPan: ({ chart }) => {
                         const chartData = chart.data.datasets[0].data
-                        const { first, last, count } = getVisibleData(chart.scales.x, chart);
-                        const firstChart = chartData.at(0)
-                        const lastChart = chartData.at(-1)
+                        // const { first, last, count } = getVisibleData(chart.scales.x, chart);
+                        // const firstChart = chartData.at(0)
+                        // const lastChart = chartData.at(-1)
+
+                        const lastChartData = chartData.at(0)
+
+                        const a = genChartData(new Date(lastChartData.x), lastChartData.o, 3)
+                        const b = createOfMinute(a)
+                        chartData.unshift(...b)
 
                         const { min, max } = chart.scales.x
+                        console.log({ min, max, init: lastChartData.x })
                         prevZoomScale = { min, max }
+
+                        // chart.update('none')
+                        console.log('updated')
                     }
                 },
                 zoom: {
@@ -170,10 +214,16 @@ const getChartProperties = (initialData) => ({
                     },
                     mode: 'x',
                     onZoom: ({ chart }) => {
+                        const chartData = chart.data.datasets[0].data
                         const zoomLevel = chart.getZoomLevel();
                         const MAXIMUM_ZOOM_LEVEL = 3.5
                         const MINIMUM_ZOOM_LEVEL = 0.3
 
+                        console.log(chartData.length)
+
+                        // console.log({ min: chart.scales.x.min, max: chart.scales.x.max })
+                        console.log({ min: chartData.at(0).x, max: chartData.at(-1).x })
+                        
                         if(zoomLevel <= MINIMUM_ZOOM_LEVEL || zoomLevel >= MAXIMUM_ZOOM_LEVEL)
                             return chart.zoomScale('x', prevZoomScale, 'none')
                         
@@ -216,5 +266,6 @@ const drawChart = (chartJquery, initialData) => {
 export default {
     createOfMinute,
     updateOfMinute,
-    drawChart
+    drawChart,
+    setCurrentTime
 }
