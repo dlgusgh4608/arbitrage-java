@@ -19,7 +19,6 @@ import main.arbitrage.presentation.dto.form.UserLoginForm;
 import main.arbitrage.presentation.dto.form.UserSignupForm;
 import main.arbitrage.presentation.dto.response.UserTokenResponseCookie;
 import main.arbitrage.presentation.dto.view.OAuthSignupView;
-import main.arbitrage.presentation.dto.view.PriceView;
 import main.arbitrage.presentation.dto.view.UserTradeInfo;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -134,10 +133,6 @@ public class PublicController {
       return "redirect:/";
     }
 
-    // symbol에 해당하는 chart데이터
-    List<PriceView> priceViewList =
-        priceApplicationService.getInitialPriceOfSymbolName(upperCaseSymbol);
-
     // symbol에 해당하는 시장가 주문시 step size, 최대 주문 개수, 최소 주문 개수 구해오기.
     BinanceExchangeInfoResponse symbolInfo =
         collectorScheduleService.getExchangeInfo(upperCaseSymbol);
@@ -154,7 +149,6 @@ public class PublicController {
     else model.addAttribute("symbolInfo", Collections.emptyMap());
 
     model.addAttribute("supportedSymbols", supportedSymbols);
-    model.addAttribute("prices", priceViewList);
 
     return "pages/chart/index";
   }

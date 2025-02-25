@@ -13,10 +13,6 @@
     $(() => {
         const { setCurrentTime, fetch } = window.myModule
 
-        async function getChartData(unit = 1, lastTime = new Date().getTime()) {
-            await fetch('GET', `/api/ohlc?symbol=${symbol}&unit=${unit}&lastTime=${lastTime}`)
-        }
-        
         $('.time-btn').click(function () {
             $('.time-btn').removeClass('text-point-color').addClass('text-color')
 
@@ -27,8 +23,6 @@
             const currentTimeValue = Number(currentJquery.attr('data-value'))
 
             setCurrentTime(currentTimeValue)
-
-            getChartData(currentTimeValue)
         })
     })
 </script>

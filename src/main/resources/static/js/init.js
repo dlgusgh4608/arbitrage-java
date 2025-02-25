@@ -45,7 +45,7 @@ function toggleDarkMode() {
     }
 }
 
-async function fetcher(method = 'GET', url = '', data = {}) {
+export async function fetcher(method = 'GET', url = '', data = {}) {
     const headers = {
         'Content-Type': 'application/json',
     }

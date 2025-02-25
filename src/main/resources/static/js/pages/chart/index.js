@@ -1,14 +1,24 @@
-import WebsocketClient from '../../WebsocketClient.js'
+import WebsocketClient from '../../WebsocketClient.js';
 import {
     chart,
     order,
     orderbook,
     position
-} from './handler/index.js'
+} from './handler/index.js';
 
 const URL = `ws/chart/${symbol}`
 
 const client = new WebsocketClient(URL)
+
+let fetching = false;
+
+export const isFetching = () => {
+    fetching = true
+}
+
+export const isNotFetching = () => {
+    fetching = false
+}
 
 const setSocketInitialItems = (requiredItems) => (message) => {
     const {
@@ -38,13 +48,16 @@ const setSocketInitialItems = (requiredItems) => (message) => {
     // exchange rate update
     exchangeRateJquery.usdToKrw.text(usdToKrw)
 
-    chart.updateOfMinute(chartData, premium)
-
-    const zoomLimit = chartData.at(-1).x + chartData.at(6).x - chartData.at(0).x
+    if(!fetching) {
+        chart.updateOfMinute(chartData, premium)
     
-    chartJs.config.options.plugins.zoom.limits.x.max = zoomLimit;
-
-    chartJs.update('none')
+        const zoomLimit = chartData.at(-1).x + chartData.at(6).x - chartData.at(0).x
+        
+        chartJs.config.options.plugins.zoom.limits.x.max = zoomLimit;
+    
+        chartJs.update('none')
+    }
+    
 
     order.update(premium, usdToKrw, leverageModalJquery.modalBtn, orderJquery)
 

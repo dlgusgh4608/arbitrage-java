@@ -1,6 +1,5 @@
 package main.arbitrage.domain.price.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +10,7 @@ import main.arbitrage.domain.price.exception.PriceErrorCode;
 import main.arbitrage.domain.price.exception.PriceException;
 import main.arbitrage.domain.price.repository.PriceRepository;
 import main.arbitrage.domain.symbol.entity.Symbol;
-import org.springframework.data.domain.PageRequest;
+import main.arbitrage.presentation.dto.response.ChartDataResponse;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -55,23 +54,11 @@ public class PriceService {
     }
   }
 
-  public List<Price> getInitialPriceOfSymbolName(String symbolName) {
-    try {
-      List<Price> prices = priceRepository.findBySymbolName(symbolName, PageRequest.of(0, 3000));
-
-      List<Price> restPrices = priceBuffer.getBufferedDataOfSymbol(symbolName);
-      List<Price> allPrices = new ArrayList<>();
-
-      allPrices.addAll(prices);
-      allPrices.addAll(restPrices);
-
-      return allPrices;
-    } catch (Exception e) {
-      throw new PriceException(PriceErrorCode.UNKNOWN, e);
-    }
-  }
-
   public AutoTradingStandardValueDTO getAutoTradingValue(Symbol symbol, int minutes) {
     return priceRepository.getAutoTradingStandardValue(symbol, minutes);
+  }
+
+  public List<ChartDataResponse> getPremiumOHLC(Symbol symbol, int intervalMinutes, long lastTime) {
+    return priceRepository.getPremiumOHLC(symbol, intervalMinutes, lastTime);
   }
 }

@@ -34,7 +34,7 @@
     <script type='module' th:src="@{/js/pages/chart/index.js}"></script>
     <script type='module' th:src="@{/js/elements/orderHistory.js}"></script>
     <script th:inline="javascript">
-        $(() => {
+        $(async () => {
             // 모듈 window.myModule을 통해 가져옴
             const {
                 websocketClient,
@@ -105,36 +105,7 @@
                 crossed: $('#crossed'),
             }
 
-            // siuuuuuuuuuuuuuuuuuu
-            const genChartData = (date, p, minutes) => {
-                const loadCount = 300 * minutes * 12
-                const interval = 5000; // 5초 (ms)
-                let premium = p
-                const result = []
-
-                for (let i = 0; i < loadCount; i++) {
-                    const currentTime = new Date(date.getTime() - i * interval);
-                    
-                    // 가격에 약간의 변동 추가 (랜덤 워크 예시)
-                    premium += (Math.random() - 0.5) * 0.5;
-                    
-                    result.push({
-                        symbol: "ETH",
-                        premium: parseFloat(premium.toFixed(4)),
-                        createdAt: currentTime.toISOString()
-                    });
-                }
-                return result
-            }
-
-            // max 600
-            // min 30
-            
-            const prices = genChartData(new Date(), 3.1423, 3);
-            // siuuuuuuuuuuuuuuuuu
-            
-            
-            const { chart, chartData } = drawChart(chartJquery.candlestickChart, prices)
+            const { chart, chartData } = await drawChart(chartJquery.candlestickChart)
 
             const initialItems = {
                 exchangeRateJquery,
@@ -330,34 +301,6 @@
         const hasPosition = [upbitPosition, binancePosition].every(v => v !== null)
         const responseOk = maxQty !== 0 && leverage !== 0
         const canTrade = isAnonymous && responseOk
-
-        // siuuuuuuuuuuuuuuuuuu
-        // const genChartData = (date, p, minutes) => {
-        //     const loadCount = 300 * minutes * 12
-        //     const interval = 5000; // 5초 (ms)
-        //     let premium = p
-        //     const result = []
-
-        //     for (let i = 0; i < loadCount; i++) {
-        //         const currentTime = new Date(date.getTime() - i * interval);
-                
-        //         // 가격에 약간의 변동 추가 (랜덤 워크 예시)
-        //         premium += (Math.random() - 0.5) * 0.5;
-                
-        //         result.push({
-        //             symbol: "ETH",
-        //             premium: parseFloat(premium.toFixed(4)),
-        //             createdAt: currentTime.toISOString()
-        //         });
-        //     }
-        //     return result
-        // }
-        
-        // const prices = genChartData(new Date(), 3.1423, 1);
-        // siuuuuuuuuuuuuuuuuu
-
-        // 차트 초기 값
-        // const prices = /*[[${prices}]]*/[];
     </script>
 </main>
 
