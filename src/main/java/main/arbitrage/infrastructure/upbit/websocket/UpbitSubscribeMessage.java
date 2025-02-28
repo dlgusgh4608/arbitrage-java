@@ -5,12 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Slf4j
+@ToString
 public class UpbitSubscribeMessage {
   private String ticket;
   private String type;
@@ -36,6 +38,8 @@ public class UpbitSubscribeMessage {
             .type("orderbook")
             .codes(formatSymbols(orderbookSymbols))
             .build());
+
+    log.info("upbit subscribe message: {}", messages);
 
     return messages;
   }

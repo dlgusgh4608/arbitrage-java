@@ -84,30 +84,40 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
 
   @Override
   public void connect() {
+    if (isRunning) {
+      throw new IllegalStateException(socketName + "UserStream is already running!");
+    }
+
+    String listenKey = createListenKey();
+    String websocketURL = BASE_URL.concat(listenKey);
+
     try {
-      if (isRunning) throw new IllegalStateException(socketName + "UserStream is already running!");
-
-      StandardWebSocketClient client = new StandardWebSocketClient();
-
-      reconnectFlag = true;
-
-      String listenKey = createListenKey();
-
-      String websocketURL = BASE_URL.concat(listenKey);
-      session =
-          client
-              .execute(
-                  binanceUserStreamHandler
-                      .setSocketName(socketName)
-                      .setMessageHandler(this::handleMessage),
-                  websocketURL)
-              .get();
 
       isRunning = true;
-      // 자동거래가 활성화 되어있을시 unLock
-      if (automaticUser.autoFlag() == true) unlock();
+
+      StandardWebSocketClient client = new StandardWebSocketClient();
+      reconnectFlag = true;
+
+      client
+          .execute(
+              binanceUserStreamHandler
+                  .setSocketName(socketName)
+                  .setMessageHandler(this::handleMessage),
+              websocketURL)
+          .thenAccept(
+              session -> {
+                this.session = session;
+                if (automaticUser.autoFlag() == true) unlock();
+              })
+          .exceptionally(
+              e -> {
+                log.error("{} Binance UserStream Error", websocketURL, e);
+                reconnect();
+                return null;
+              });
     } catch (Exception e) {
-      log.error("알 수 없는 에러입니다.", e);
+      log.error("{} Binance UserStream Error", websocketURL, e);
+      reconnect();
       throw new RuntimeException(e);
     }
   }

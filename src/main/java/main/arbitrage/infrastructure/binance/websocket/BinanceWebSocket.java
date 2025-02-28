@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 public class BinanceWebSocket extends ExchangeWebsocketClient {
   private final SymbolVariableService symbolVariableService;
   private final BinancePublicWebsocketHandler binancePublicWebsocketHandler;
+  private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
   private List<String> symbols;
   private static String WS_URL = "wss://fstream.binance.com/stream?streams=";
   private static boolean isRunning = false;
@@ -36,10 +39,10 @@ public class BinanceWebSocket extends ExchangeWebsocketClient {
   }
 
   private void reconnect() {
-    session = null;
+    this.session = null;
     isRunning = false;
 
-    connect();
+    scheduler.schedule(() -> connect(), 2000, TimeUnit.MILLISECONDS);
   }
 
   @Override
@@ -47,21 +50,34 @@ public class BinanceWebSocket extends ExchangeWebsocketClient {
     if (isRunning) {
       throw new IllegalStateException("Binance WebSocket is already running!");
     }
+
+    isRunning = true;
+
+    String params = createStreamParams();
+    String url = WS_URL + params;
     try {
       StandardWebSocketClient client = new StandardWebSocketClient();
-      String params = createStreamParams();
-      WS_URL = WS_URL.concat(params);
-      session =
-          client
-              .execute(
-                  binancePublicWebsocketHandler
-                      .setMessageHandler(this::handleMessage)
-                      .setReconnectHandler(this::reconnect),
-                  WS_URL)
-              .get();
-      isRunning = true;
-    } catch (InterruptedException | ExecutionException e) {
-      log.error("Binance WebSocket Connect Error {}", WS_URL, e);
+
+      client
+          .execute(
+              binancePublicWebsocketHandler
+                  .setMessageHandler(this::handleMessage)
+                  .setReconnectHandler(this::reconnect),
+              url)
+          .thenAccept(
+              session -> {
+                this.session = session;
+              })
+          .exceptionally(
+              e -> {
+                log.error("Binance WebSocket Connect Error {}", url, e);
+                reconnect();
+                return null;
+              });
+
+    } catch (Exception e) {
+      log.error("Binance WebSocket Connection Error(I don't know what) {}", url, e);
+      isRunning = false;
       throw new RuntimeException(e);
     }
   }

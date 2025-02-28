@@ -71,15 +71,15 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
 
 # management
-management:
-  endpoints:
-    web:
-      exposure:
-        include: prometheus,metrics
+# management:
+#   endpoints:
+#     web:
+#       exposure:
+#         include: prometheus,metrics
 
-  metrics:
-    tags:
-      application: ${spring.application.name} # 애플리케이션별 태그 추가
+#   metrics:
+#     tags:
+#       application: ${spring.application.name} # 애플리케이션별 태그 추가
 
 
 # server

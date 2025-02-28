@@ -38,15 +38,15 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     
 
-    // Monitoring
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'io.micrometer:micrometer-registry-prometheus:1.14.4'
+    // // Monitoring
+	// implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    // implementation 'io.micrometer:micrometer-registry-prometheus:1.14.4'
 
     // OAuth 2
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
-    // HTTP
-    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    // // HTTP
+    // implementation 'com.squareup.okhttp3:okhttp:4.12.0'
 
     // ENV
     implementation 'me.paulschwarz:spring-dotenv:3.0.0'

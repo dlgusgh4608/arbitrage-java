@@ -6,7 +6,9 @@ import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.domain.symbol.service.SymbolVariableService;
@@ -25,6 +27,7 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 public class UpbitWebSocket extends ExchangeWebsocketClient {
   private final SymbolVariableService symbolVariableService;
   private final UpbitPublicWebsocketHandler upbitPublicWebsocketHandler;
+  private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
   private static final String WS_URL = "wss://api.upbit.com/websocket/v1";
   private List<String> symbols;
   private static boolean isRunning = false;
@@ -38,10 +41,10 @@ public class UpbitWebSocket extends ExchangeWebsocketClient {
   }
 
   private void reconnect() {
-    session = null;
+    this.session = null;
     isRunning = false;
 
-    connect();
+    scheduler.schedule(() -> connect(), 2000, TimeUnit.MILLISECONDS);
   }
 
   @Override
@@ -50,22 +53,33 @@ public class UpbitWebSocket extends ExchangeWebsocketClient {
       throw new IllegalStateException("Upbit WebSocket is already running!");
     }
 
+    isRunning = true;
+
     try {
       StandardWebSocketClient client = new StandardWebSocketClient();
-      session =
-          client
-              .execute(
-                  upbitPublicWebsocketHandler
-                      .setMessageHandler(this::handleMessage)
-                      .setReconnectHandler(this::reconnect),
-                  WS_URL)
-              .get();
-      isRunning = true;
 
-      sendSubscribeMessage(symbols);
-      sendPing();
-    } catch (InterruptedException | ExecutionException | IOException e) {
-      log.error("Upbit WebSocket Connect Error {}", WS_URL, e);
+      client
+          .execute(
+              upbitPublicWebsocketHandler
+                  .setMessageHandler(this::handleMessage)
+                  .setReconnectHandler(this::reconnect),
+              WS_URL)
+          .thenAccept(
+              session -> {
+                this.session = session;
+                sendSubscribeMessage(symbols);
+                sendPing();
+              })
+          .exceptionally(
+              e -> {
+                log.error("Upbit WebSocket Connect Error {}", WS_URL, e);
+                reconnect();
+                return null;
+              });
+
+    } catch (Exception e) {
+      log.error("Upbit WebSocket Connection Error(I don't know what) {}", WS_URL, e);
+      isRunning = false;
       throw new RuntimeException(e);
     }
   }
@@ -170,10 +184,14 @@ public class UpbitWebSocket extends ExchangeWebsocketClient {
     }
   }
 
-  private void sendSubscribeMessage(List<String> symbols) throws IOException {
-    List<UpbitSubscribeMessage> messages =
-        UpbitSubscribeMessage.createSubscribeMessage(UUID.randomUUID().toString(), symbols);
-    String message = objectMapper.writeValueAsString(messages);
-    session.sendMessage(new TextMessage(message));
+  private void sendSubscribeMessage(List<String> symbols) {
+    try {
+      List<UpbitSubscribeMessage> messages =
+          UpbitSubscribeMessage.createSubscribeMessage(UUID.randomUUID().toString(), symbols);
+      String message = objectMapper.writeValueAsString(messages);
+      session.sendMessage(new TextMessage(message));
+    } catch (IOException e) {
+      log.error("upbit send subscribe message error", e);
+    }
   }
 }
