@@ -273,7 +273,7 @@ public class BinanceUserStream extends AutomaticOrder implements WebSocketClient
 
     if (currentTicker != null) {
       log.info("CancelTicker[FromFilled]\t{}:{}", symbolName, clientId);
-      currentTicker.cancel(false);
+      currentTicker.cancel(true);
     }
 
     // 한번에 체결되지 않았으며, Ticker(ORDER_TICKER_TIMEOUT)의 시간이 경과하지 않았지만

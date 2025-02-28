@@ -177,6 +177,7 @@ public class AutomaticOrder {
 
             // 익절, 손절중 하나
             if (buyOrderOptional.isPresent()) {
+              if (this.isLock) return;
               lock();
               BuyOrder buyOrder = buyOrderOptional.get();
 
@@ -232,6 +233,7 @@ public class AutomaticOrder {
                       .findFirst();
 
               if (buyOrderOptional.isPresent()) {
+                if (this.isLock) return;
                 lock();
 
                 log.info(
@@ -244,6 +246,7 @@ public class AutomaticOrder {
                 sellBinance(symbol.getName(), targetQuantity, targetPrice);
               }
             } else {
+              if (this.isLock) return;
               lock();
 
               log.info(
