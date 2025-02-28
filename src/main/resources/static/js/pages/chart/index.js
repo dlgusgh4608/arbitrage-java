@@ -28,7 +28,6 @@ const setSocketInitialItems = (requiredItems) => (message) => {
         leverageModalJquery,
         orderHistoryJquery,
         chart: chartJs,
-        chartData
     } = requiredItems
     const { premium, orderbookPair } = JSON.parse(message.data)
     const { upbit, binance } = orderbookPair
@@ -48,7 +47,10 @@ const setSocketInitialItems = (requiredItems) => (message) => {
     // exchange rate update
     exchangeRateJquery.usdToKrw.text(usdToKrw)
 
+    
     if(!fetching) {
+        const chartData = chartJs.data.datasets[0].data
+        
         chart.updateOfMinute(chartData, premium)
     
         const zoomLimit = chartData.at(-1).x + chartData.at(6).x - chartData.at(0).x

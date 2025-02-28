@@ -247,10 +247,7 @@ const drawChart = async (chartJquery) => {
 
     chart = new Chart(chartJquery[0].getContext('2d'), getChartProperties(chartData))
 
-    return {
-        chart,
-        chartData,
-    }
+    return { chart }
 }
 
 export default {

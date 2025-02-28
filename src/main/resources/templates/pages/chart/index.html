@@ -105,7 +105,7 @@
                 crossed: $('#crossed'),
             }
 
-            const { chart, chartData } = await drawChart(chartJquery.candlestickChart)
+            const { chart } = await drawChart(chartJquery.candlestickChart)
 
             const initialItems = {
                 exchangeRateJquery,
@@ -114,7 +114,6 @@
                 leverageModalJquery,
                 orderHistoryJquery,
                 chart,
-                chartData
             }
 
             const handleMessage = setSocketInitialItems(initialItems)
