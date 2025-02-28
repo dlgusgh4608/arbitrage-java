@@ -7,7 +7,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import main.arbitrage.application.collector.service.CollectorScheduleService;
 import main.arbitrage.application.order.service.OrderApplicationService;
-import main.arbitrage.application.price.service.PriceApplicationService;
 import main.arbitrage.application.user.service.UserApplicationService;
 import main.arbitrage.auth.dto.AuthContext;
 import main.arbitrage.domain.oauthUser.store.OAuthUserStore;
@@ -37,7 +36,6 @@ public class PublicController {
   private final UserApplicationService userApplicationService;
   private final SymbolVariableService symbolVariableService;
   private final OAuthUserStore authUserStore;
-  private final PriceApplicationService priceApplicationService;
   private final CollectorScheduleService collectorScheduleService;
   private final OrderApplicationService orderApplicationService;
 
@@ -96,13 +94,26 @@ public class PublicController {
   /** only public */
   @PostMapping(PublicControllerUrlConstants.SIGNUP)
   public String postSignup(
+      Model model,
       @Valid @ModelAttribute("formDto") UserSignupForm userSignupDto,
       BindingResult bindingResult,
       @AuthenticationPrincipal AuthContext authContext,
       HttpServletResponse response) {
     if (authContext != null) return "redirect:/";
 
-    if (bindingResult.hasErrors()) return "pages/signup";
+    if (bindingResult.hasErrors()) {
+      if (userSignupDto.getAccessToken().isEmpty() == false) {
+        model.addAttribute(
+            "oauth",
+            OAuthSignupView.builder()
+                .accessToken(userSignupDto.getAccessToken())
+                .email(userSignupDto.getEmail())
+                .provider(userSignupDto.getProvider())
+                .providerId(userSignupDto.getProviderId())
+                .build());
+      }
+      return "pages/signup";
+    }
 
     try {
       UserTokenResponseCookie userTokenDto = userApplicationService.signup(userSignupDto);

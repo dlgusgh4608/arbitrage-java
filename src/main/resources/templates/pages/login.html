@@ -25,9 +25,12 @@
                 <button type="submit" class="btn-point w-100">로그인</button>
                 <script th:inline="javascript">
                     const globalErrors = /*[[${#fields.hasGlobalErrors()} ? ${#fields.globalErrors()} : null]]*/ null;
+                    const hasError = /*[[${#fields.hasErrors()} ? ${#fields.hasErrors()} : null]]*/ null;
                     if (globalErrors) {
                         emailRegister()
                         alert(globalErrors[0])
+                    }else if(hasError) {
+                        emailRegister()
                     }
                 </script>
             </form>

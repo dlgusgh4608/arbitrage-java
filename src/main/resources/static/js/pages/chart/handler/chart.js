@@ -199,7 +199,7 @@ const getChartProperties = (initialData) => ({
                         const MAXIMUM_ZOOM_LEVEL = 3.5
                         const MINIMUM_ZOOM_LEVEL = 0.3
 
-                        if(zoomLevel <= MINIMUM_ZOOM_LEVEL || zoomLevel >= MAXIMUM_ZOOM_LEVEL)
+                        if(zoomLevel * currentTime <= MINIMUM_ZOOM_LEVEL || zoomLevel * currentTime >= MAXIMUM_ZOOM_LEVEL)
                             return chart.zoomScale('x', prevZoomScale, 'none')
                         
                         const { min, max } = chart.scales.x
