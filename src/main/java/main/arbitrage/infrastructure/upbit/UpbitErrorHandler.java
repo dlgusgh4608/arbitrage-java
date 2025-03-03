@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.global.exception.common.BaseHttpErrorHandler;
 import main.arbitrage.infrastructure.upbit.exception.UpbitErrorCode;
 import main.arbitrage.infrastructure.upbit.exception.UpbitException;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class UpbitErrorHandler extends BaseHttpErrorHandler {
   private final ObjectMapper objectMapper;
   private final Map<String, UpbitErrorCode> errorMap =
@@ -49,9 +51,10 @@ public class UpbitErrorHandler extends BaseHttpErrorHandler {
   @Override
   public void handleError(ClientHttpResponse response) {
     URI uri = requestContext.get().request().getURI();
+    String method = requestContext.get().request().getMethod().name();
     String body = requestContext.get().body();
 
-    String errorMsg = String.format("\nurl: %s\nbody: %s", uri.toString(), body);
+    String errorMsg = String.format("\nurl: [ %s ] %s\nbody: %s", method, uri.toString(), body);
     try {
 
       JsonNode errorNode = objectMapper.readTree(response.getBody());
@@ -61,6 +64,7 @@ public class UpbitErrorHandler extends BaseHttpErrorHandler {
       UpbitErrorCode errorCode = errorMap.get(key);
 
       if (errorCode == null) {
+        log.info(errorNode.toString());
         throw new UpbitException(UpbitErrorCode.UNKNOWN, errorMsg);
       }
 

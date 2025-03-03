@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.global.exception.common.BaseHttpErrorHandler;
 import main.arbitrage.infrastructure.binance.exception.BinanceErrorCode;
 import main.arbitrage.infrastructure.binance.exception.BinanceException;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class BinanceErrorHandler extends BaseHttpErrorHandler {
   private final ObjectMapper objectMapper;
   private final Map<String, BinanceErrorCode> errorMap =
@@ -50,19 +52,21 @@ public class BinanceErrorHandler extends BaseHttpErrorHandler {
   @Override
   public void handleError(ClientHttpResponse response) {
     URI uri = requestContext.get().request().getURI();
+    String method = requestContext.get().request().getMethod().name();
     String body = requestContext.get().body();
 
-    String errorMsg = String.format("\nurl: %s\nbody: %s", uri.toString(), body);
+    String errorMsg = String.format("\nurl: [ %s ] %s\nbody: %s", method, uri.toString(), body);
     try {
       JsonNode errorNode = objectMapper.readTree(response.getBody());
-
-      System.out.println(errorNode);
 
       String key = errorNode.get("code").asText();
 
       BinanceErrorCode errorCode = errorMap.get(key);
 
-      if (errorCode == null) throw new BinanceException(BinanceErrorCode.UNKNOWN, errorMsg);
+      if (errorCode == null) {
+        log.info(errorNode.toString());
+        throw new BinanceException(BinanceErrorCode.UNKNOWN, errorMsg);
+      }
 
       throw new BinanceException(errorCode, errorMsg);
     } catch (BinanceException e) {

@@ -32,7 +32,7 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 @Slf4j
 public class BinanceUserStream extends AutomaticOrder implements WebSocketClient {
   private static final String BASE_URL = "wss://fstream.binance.com/ws/";
-  private final String socketName;
+  public final String socketName;
   private final BinanceUserStreamHandler binanceUserStreamHandler;
 
   // binance order의 정보를 종합 계산하기 위한 Map

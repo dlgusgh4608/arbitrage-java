@@ -1,11 +1,13 @@
 package main.arbitrage.application.auto.service;
 
 import jakarta.annotation.PostConstruct;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import main.arbitrage.application.auto.dto.AutomaticUserInfoDTO;
 import main.arbitrage.application.collector.dto.PremiumDTO;
 import main.arbitrage.application.collector.service.CollectorScheduleService;
@@ -37,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AutoApplicationService {
   private final TradingStrategyService autoTradingStrategyService;
   private final AESCrypto aesCrypto;
@@ -75,9 +78,12 @@ public class AutoApplicationService {
 
   @Scheduled(fixedDelay = 1000 * 60 * 30) // 30min
   public void listenKeyUpdate() {
-    for (BinanceUserStream userStream : userStreams.values()) {
-      System.out.println("update listen key");
+    Collection<BinanceUserStream> userStreamList = userStreams.values();
+
+    log.info("update listen key length: {}", userStreamList.size());
+    for (BinanceUserStream userStream : userStreamList) {
       userStream.updateListenKey();
+      log.info("{}\tupdated listen key", userStream.socketName);
     }
   }
 

@@ -376,7 +376,7 @@ public class AutomaticOrder {
   protected void updateWallet() {
 
     log.info(
-        "[ Update Wallet End ]\r\n"
+        "[ Update Wallet Start: {} ]\r\n"
             + //
             "currentWallet KRW: {}\r\n"
             + //
@@ -385,6 +385,7 @@ public class AutomaticOrder {
             "initialWallet KRW: {}\r\n"
             + //
             "initialWallet USDT: {}\r\n",
+        automaticUser.userId(),
         currentWallet.getKrw(),
         currentWallet.getUsdt(),
         initialWallet.getKrw(),
@@ -399,7 +400,7 @@ public class AutomaticOrder {
     updateInitialWallet();
 
     log.info(
-        "[ Update Wallet End ]\r\n"
+        "[ Update Wallet End: {} ]\r\n"
             + //
             "currentWallet KRW: {}\r\n"
             + //
@@ -408,6 +409,7 @@ public class AutomaticOrder {
             "initialWallet KRW: {}\r\n"
             + //
             "initialWallet USDT: {}\r\n",
+        automaticUser.userId(),
         currentWallet.getKrw(),
         currentWallet.getUsdt(),
         initialWallet.getKrw(),
@@ -488,7 +490,9 @@ public class AutomaticOrder {
                       .floatValue();
 
               log.info(
-                  "[ Updated Automatic Values ]\r\n"
+                  "[ Updated Automatic Values: {} ]\r\n"
+                      + //
+                      "Symbol: {}\r\n"
                       + //
                       "Lock: {}\r\n"
                       + //
@@ -505,6 +509,8 @@ public class AutomaticOrder {
                       "decimalPlacesOfStepSize: {}\r\n"
                       + //
                       "decimalPlacesOfTickSize: {}",
+                  automaticUser.userId(),
+                  this.symbol.getName(),
                   this.isLock,
                   avgExchangeRate,
                   kneeValue,
