@@ -47,8 +47,6 @@ public class AutomaticOrder {
   private final WalletDTO initialWallet = new WalletDTO();
   private final WalletDTO currentWallet = new WalletDTO();
 
-  AutoTradingStandardValueDTO standardValue;
-
   // 초기화 해야하는 아이들
   protected AutomaticUserInfoDTO automaticUser;
   private BinanceExchangeInfoResponse exchangeInfo;
@@ -376,6 +374,22 @@ public class AutomaticOrder {
 
   // 지갑 관리
   protected void updateWallet() {
+
+    log.info(
+        "[ Update Wallet End ]\r\n"
+            + //
+            "currentWallet KRW: {}\r\n"
+            + //
+            "currentWallet USDT: {}\r\n"
+            + //
+            "initialWallet KRW: {}\r\n"
+            + //
+            "initialWallet USDT: {}\r\n",
+        currentWallet.getKrw(),
+        currentWallet.getUsdt(),
+        initialWallet.getKrw(),
+        initialWallet.getUsdt());
+
     BinanceAccountResponse binanceAccount = binanceService.getUSDT().get();
     UpbitAccountResponse upbitAccount = upbitService.getKRW().get();
 
@@ -383,6 +397,21 @@ public class AutomaticOrder {
     currentWallet.setUsdt(Double.valueOf(binanceAccount.balance()) * leverage);
 
     updateInitialWallet();
+
+    log.info(
+        "[ Update Wallet End ]\r\n"
+            + //
+            "currentWallet KRW: {}\r\n"
+            + //
+            "currentWallet USDT: {}\r\n"
+            + //
+            "initialWallet KRW: {}\r\n"
+            + //
+            "initialWallet USDT: {}\r\n",
+        currentWallet.getKrw(),
+        currentWallet.getUsdt(),
+        initialWallet.getKrw(),
+        initialWallet.getUsdt());
   }
 
   private void updateInitialWallet() {
@@ -419,7 +448,7 @@ public class AutomaticOrder {
     scheduler =
         executorService.scheduleAtFixedRate(
             () -> {
-              standardValue =
+              AutoTradingStandardValueDTO standardValue =
                   priceService.getAutoTradingValue(
                       automaticUser.tradingStrategy().getSymbol(),
                       automaticUser.tradingStrategy().getEntryCandleMinutes());
@@ -457,6 +486,33 @@ public class AutomaticOrder {
               minimumMovePrice =
                   MathUtil.roundTo(exchangeInfo.tickSize() * 3, decimalPlacesOfTickSize)
                       .floatValue();
+
+              log.info(
+                  "[ Updated Automatic Values ]\r\n"
+                      + //
+                      "Lock: {}\r\n"
+                      + //
+                      "avgExchangeRate: {}\r\n"
+                      + //
+                      "kneeValue: {}\r\n"
+                      + //
+                      "shoulderValue: {}\r\n"
+                      + //
+                      "fixedProfitRate: {}\r\n"
+                      + //
+                      "minimumProfitRate: {}\r\n"
+                      + //
+                      "decimalPlacesOfStepSize: {}\r\n"
+                      + //
+                      "decimalPlacesOfTickSize: {}",
+                  this.isLock,
+                  avgExchangeRate,
+                  kneeValue,
+                  shoulderValue,
+                  fixedProfitRate,
+                  minimumProfitRate,
+                  decimalPlacesOfStepSize,
+                  decimalPlacesOfTickSize);
             },
             0,
             automaticUser.tradingStrategy().getEntryCandleMinutes() / 2,
