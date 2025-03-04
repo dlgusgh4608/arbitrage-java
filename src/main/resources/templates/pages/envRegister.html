@@ -94,12 +94,13 @@
             <button type="submit" class="btn-point w-100 opacity-hover">등록하기</button>
 
             <script th:inline="javascript">
-                const hasServerError = /*[[${#fields.hasGlobalErrors()}]]*/ false;
-
-                if (hasServerError) {
-                    const errorMessages = /*[[${#fields.errors()}]]*/[];
-                    alert(errorMessages[0].concat(' 다시 시도해주세요.'))
-                }
+                $(() => {
+                    const globalErrors = /*[[${#fields.hasGlobalErrors()} ? ${#fields.globalErrors()} : null]]*/ null;
+    
+                    if (globalErrors) {
+                        myModule.showToast(globalErrors[0], false)
+                    }
+                })
             </script>
         </form>
     </article>

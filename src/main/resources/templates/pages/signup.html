@@ -1,5 +1,5 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout/default}">
+    layout:decorate="~{layout/headerFooter}">
 
 <head>
     <title>회원가입</title>
@@ -56,108 +56,111 @@
 
                 <button type="submit" class="btn-point w-100">가입하기</button>
                 <script th:inline="javascript">
-                    const globalErrors = /*[[${#fields.hasGlobalErrors()} ? ${#fields.globalErrors()} : null]]*/ null;
-                    const hasError = /*[[${#fields.hasErrors()} ? ${#fields.hasErrors()} : null]]*/ null;
-                    if (globalErrors) {
-                        emailRegister()
-                        alert(globalErrors[0])
-                    }else if(hasError) {
-                        emailRegister()
-                    }
+                    $(() => {
+                        const globalErrors = /*[[${#fields.hasGlobalErrors()} ? ${#fields.globalErrors()} : null]]*/ null;
+                        const hasError = /*[[${#fields.hasErrors()} ? ${#fields.hasErrors()} : null]]*/ null;
+                        if (globalErrors) {
+                            emailRegister()
+                            myModule.showToast(globalErrors[0], false)
+                        }else if(hasError) {
+                            emailRegister()
+                        }
+                    })
                 </script>
             </form>
         </article>
     </section>
     <script th:inline="javascript">
-        let codeOk = false
-
-        const oauth = /*[[${ oauth }]]*/ null;
-
-        if (oauth) {
-            emailRegister()
-            $('#email').val(oauth.email).attr('readonly', true)
-            $('#btnEmailCheck').attr("disabled", true)
-            $('#provider').val(oauth.provider)
-            $('#providerId').val(oauth.providerId)
-            $('#accessToken').val(oauth.accessToken)
-        }
-
-        $('#btnEmailCheck').on('click', async () => {
-            const email = $('#email').val()
-
-            if (String(email).trim() === '') return alert('이메일을 입력해주세요.')
-
-            // back단에서는 open smtp를 사용하여 처리가 불가능. 사용자한테 전가함.
-            if (window.confirm("이 이메일을 사용하시겠습니까?")) {
-                $('#btnEmailCheckSpinner').css('display', 'inline-block')
+        $(() => {
+            let codeOk = false
+    
+            const oauth = /*[[${ oauth }]]*/ null;
+    
+            const { showToast } = myModule
+    
+            if (oauth) {
+                emailRegister()
+                $('#email').val(oauth.email).attr('readonly', true)
                 $('#btnEmailCheck').attr("disabled", true)
-
-                const { success, data } = await myModule.fetch('post', '/api/send-email', { email })
-
-                if (success) {
-                    $('#encryptedCode').val(data.code)
-                    $('#codeWrap').css('display', 'flex')
-                } else {
-                    $('#btnEmailCheck').attr("disabled", false)
-                    alert(data)
+                $('#provider').val(oauth.provider)
+                $('#providerId').val(oauth.providerId)
+                $('#accessToken').val(oauth.accessToken)
+            }
+    
+            $('#btnEmailCheck').on('click', async () => {
+                const email = $('#email').val()
+    
+                if (String(email).trim() === '') return showToast('이메일을 입력해주세요.', false)
+    
+                // back단에서는 open smtp를 사용하여 처리가 불가능. 사용자한테 전가함.
+                if (window.confirm("이 이메일을 사용하시겠습니까?")) {
+                    $('#btnEmailCheckSpinner').css('display', 'inline-block')
+                    $('#btnEmailCheck').attr("disabled", true)
+    
+                    const { success, data } = await myModule.fetch('post', '/api/send-email', { email })
+    
+                    if (success) {
+                        $('#encryptedCode').val(data.code)
+                        $('#codeWrap').css('display', 'flex')
+                    } else {
+                        $('#btnEmailCheck').attr("disabled", false)
+                    }
+    
+                    $('#btnEmailCheckSpinner').css('display', 'none')
                 }
-
-                $('#btnEmailCheckSpinner').css('display', 'none')
-            }
-
-        })
-
-        $('#codeCheck').on('click', async () => {
-            const encryptedCode = $('#encryptedCode').val()
-
-            if (!encryptedCode) return alert('이메일 인증을 다시 진행해주세요.')
-
-            const codeVal = $('#code').val()
-
-            if (String(codeVal).trim() === '') return alert('인증코드를 입력해주세요.')
-
-            const payload = {
-                originCode: codeVal,
-                encryptedCode: encryptedCode
-            }
-
-            const { success, data } = await myModule.fetch('post', '/api/check-code', payload)
-
-            if (success) {
-                codeOk = true
-                alert('인증이 완료되었습니다.')
-                $('#codeWrap').css('display', 'none')
-                $('#email').attr("readonly", true)
-            } else {
-                alert(data)
-            }
-        })
-
-        $('#signupForm').on('submit', (e) => {
-            const password = $('#password').val()
-            const confirmPassword = $('#confirmPassword').val()
-
-            if (!password.trim() || !confirmPassword.trim()) {
-                e.preventDefault()
-                $('#passwordMatchError').show()
-                return false
-            }
-
-            if (password !== confirmPassword) {
-                e.preventDefault()
-                $('#passwordMatchError').show()
-                return false
-            }
-
-            if (!codeOk && !oAuth) {
-                e.preventDefault()
-                alert('이메일 인증을 완료해주세요.')
-                return false
-            }
-
-            $('#password, #confirmPassword').on('input', function () {
-                $('#passwordMatchError').hide();
-            });
+    
+            })
+    
+            $('#codeCheck').on('click', async () => {
+                const encryptedCode = $('#encryptedCode').val()
+    
+                if (!encryptedCode) return showToast('이메일 인증을 다시 진행해주세요.', false)
+    
+                const codeVal = $('#code').val()
+    
+                if (String(codeVal).trim() === '') return showToast('인증코드를 입력해주세요.', false)
+    
+                const payload = {
+                    originCode: codeVal,
+                    encryptedCode: encryptedCode
+                }
+    
+                const { success, data } = await myModule.fetch('post', '/api/check-code', payload)
+    
+                if (success) {
+                    codeOk = true
+                    showToast('인증이 완료되었습니다.', true)
+                    $('#codeWrap').css('display', 'none')
+                    $('#email').attr("readonly", true)
+                }
+            })
+    
+            $('#signupForm').on('submit', (e) => {
+                const password = $('#password').val()
+                const confirmPassword = $('#confirmPassword').val()
+    
+                if (!password.trim() || !confirmPassword.trim()) {
+                    e.preventDefault()
+                    $('#passwordMatchError').show()
+                    return false
+                }
+    
+                if (password !== confirmPassword) {
+                    e.preventDefault()
+                    $('#passwordMatchError').show()
+                    return false
+                }
+    
+                if (!codeOk && !oAuth) {
+                    e.preventDefault()
+                    showToast('이메일 인증을 완료해주세요.', false)
+                    return false
+                }
+    
+                $('#password, #confirmPassword').on('input', function () {
+                    $('#passwordMatchError').hide();
+                });
+            })
         })
     </script>
 </main>

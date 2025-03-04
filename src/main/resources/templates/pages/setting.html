@@ -189,10 +189,12 @@
         </div>
         <button type="submit" class="btn-point w-100">저장</button>
         <script th:inline="javascript">
-            const globalErrors = /*[[${#fields.hasGlobalErrors()} ? ${#fields.globalErrors()} : null]]*/ null;
-            if (globalErrors) {
-                alert(globalErrors[0])
-            }
+            $(() => {
+                const globalErrors = /*[[${#fields.hasGlobalErrors()} ? ${#fields.globalErrors()} : null]]*/ null;
+                if (globalErrors) {
+                    myModule.showToast(globalErrors[0], false)
+                }
+            })
         </script>
     </form>
     <script th:inline="javascript">

@@ -1,5 +1,5 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{layout/noFooter}">
+    layout:decorate="~{layout/headerOnly}">
 
 <head>
     <title>차트</title>
@@ -40,7 +40,8 @@
                 websocketClient,
                 generateOrder,
                 setSocketInitialItems,
-                drawChart
+                drawChart,
+                showToast
             } = myModule
 
             /**
@@ -213,8 +214,7 @@
                     updatePosition(upbitPosition, binancePosition)
                     updateWallet(krw, usdt)
                     updateSellQty(binancePosition)
-                } else {
-                    alert(data)
+                    showToast("구매 완료", true)
                 }
 
                 lock = false
@@ -238,8 +238,7 @@
                     updatePosition(upbitPosition, binancePosition)
                     updateWallet(krw, usdt)
                     updateSellQty(binancePosition)
-                } else {
-                    alert(data)
+                    showToast("판매 완료", true)
                 }
                 lock = false
             }
@@ -249,7 +248,7 @@
                 if (!canTrade) return
 
                 const orderType = $(this).text().trim()
-                if (orderType !== 'BUY' && orderType !== 'SELL') return alert('새로고침 후 다시 시도해주세요.')
+                if (orderType !== 'BUY' && orderType !== 'SELL') return showToast('새로고침 후 다시 시도해주세요.', false)
 
                 const { buyQtyRange, sellQtyRange } = orderJquery
 
@@ -257,8 +256,8 @@
                 const minQty = orderType === 'BUY' ? buyQtyRange.attr('min') : sellQtyRange.attr('min')
                 const maxQty = orderType === 'BUY' ? buyQtyRange.attr('max') : sellQtyRange.attr('max')
 
-                if (Number(qty) < Number(minQty)) return alert(`주문 개수는 최소 주문 개수 보다 커야합니다. 최소 주문 개수: ${minQty}`)
-                if (Number(qty) > Number(maxQty)) return alert(`주문 개수는 최대 주문 개수 보다 작아야합니다. 최대 주문 개수: ${minQty}`)
+                if (Number(qty) < Number(minQty)) return showToast(`주문 개수는 최소 주문 개수 보다 커야합니다. 최소 주문 개수: ${minQty}`, false)
+                if (Number(qty) > Number(maxQty)) return showToast(`주문 개수는 최대 주문 개수 보다 작아야합니다. 최대 주문 개수: ${minQty}`, false)
 
                 lock = true
 

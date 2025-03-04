@@ -17,6 +17,7 @@ import main.arbitrage.domain.user.entity.User;
 import main.arbitrage.domain.user.repository.UserRepository;
 import main.arbitrage.global.util.cookie.CookieUtil;
 import main.arbitrage.infrastructure.redis.service.RefreshTokenService;
+import main.arbitrage.presentation.controller.pub.constant.PublicControllerUrlConstants;
 import main.arbitrage.presentation.dto.view.OAuthSignupView;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -74,7 +75,8 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     User user = oAuthUser.get().getUser();
     createJwtAndSetCookie(response, user);
-    getRedirectStrategy().sendRedirect(request, response, "/");
+    getRedirectStrategy()
+        .sendRedirect(request, response, "/" + PublicControllerUrlConstants.FROM_OAUTH_TO_MAIN);
   }
 
   private void emptyUserProcess(
@@ -106,7 +108,8 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     oAuthUserRepository.save(oauthUser);
 
     createJwtAndSetCookie(response, user.get());
-    getRedirectStrategy().sendRedirect(request, response, "/");
+    getRedirectStrategy()
+        .sendRedirect(request, response, "/" + PublicControllerUrlConstants.FROM_OAUTH_TO_MAIN);
   }
 
   private void createJwtAndSetCookie(HttpServletResponse response, User user) {

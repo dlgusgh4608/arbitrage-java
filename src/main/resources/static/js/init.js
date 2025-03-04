@@ -45,6 +45,28 @@ function toggleDarkMode() {
     }
 }
 
+const showToast = (content, isSuccess) => {
+    const color = isSuccess ? 'bg-up-color' : 'bg-down-color'
+
+    const SHOW_TIME = 3000
+    
+    const html = `
+    <div class="toast align-items-center text-white ${color} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+        <div class="toast-body h6 p-3 m-0">${content}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    `
+    
+    const $toastEle = $(html)
+    const $toastContainer = $("#toast-container")
+    $toastContainer.append($toastEle)
+    
+    const toast = new bootstrap.Toast($toastEle[0], { delay: SHOW_TIME, animation: true })
+    toast.show()
+}
+
 export async function fetcher(method = 'GET', url = '', data = {}) {
     const headers = {
         'Content-Type': 'application/json',
@@ -63,8 +85,8 @@ export async function fetcher(method = 'GET', url = '', data = {}) {
         const response = await fetch(url, payload)
 
         if (response.redirected) {
-            window.location.href = response.url;
-            return; // 함수 종료
+            window.location.href = response.url
+            return // 함수 종료
         }
 
         try {
@@ -74,6 +96,7 @@ export async function fetcher(method = 'GET', url = '', data = {}) {
                 return { success: true, data: json }
             } else {
                 const message = json.message ? json.message : '알 수 없는 에러입니다. 다시 시도해주세요.'
+                showToast(message, false)
                 return { success: false, data: message }
             }
         } catch (e) {
@@ -81,6 +104,7 @@ export async function fetcher(method = 'GET', url = '', data = {}) {
                 return { success: true, data: response }
             } else {
                 const message = response.message ? response.message : '알 수 없는 에러입니다. 다시 시도해주세요.'
+                showToast(message, false)
                 return { success: false, data: message }
             }
         }
@@ -93,3 +117,4 @@ export async function fetcher(method = 'GET', url = '', data = {}) {
 window.myModule.fetch = fetcher
 window.myModule.isLight = isLight
 window.myModule.toggleDarkMode = toggleDarkMode
+window.myModule.showToast = showToast

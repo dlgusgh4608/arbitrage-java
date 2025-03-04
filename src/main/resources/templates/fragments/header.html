@@ -1,4 +1,5 @@
-<header th:fragment="header" class='navbar navbar-expand-lg bd-navbar sticky-top ele-bg-color'>
+<header th:fragment="header" class='navbar navbar-expand-lg bd-navbar ele-bg-color position-sticky z-3 top-0'>
+    <!-- sticky-top  -->
     <nav class="container-xxl">
         <a class="navbar-brand p-0 me-0 me-lg-2" href="/">
             <div class="h-logo" alt="logo"></div>
@@ -90,7 +91,7 @@
 <script th:inline="javascript">
     $(() => {
         $('.logoutBtn').on('click', async () => {
-            const { success, data } = await myModule.fetch('post', '/api/users/logout', {})
+            await myModule.fetch('post', '/api/users/logout', {})
         })
     })
 </script>

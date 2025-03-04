@@ -8,7 +8,13 @@ public final class PublicControllerUrlConstants {
   public static final String LOGIN = "login";
   public static final String SIGNUP = "signup";
   public static final String CHART = "chart";
+  public static final String FROM_OAUTH_TO_MAIN = "from-oauth-to-main";
 
   public static final List<String> PUBLIC_URLS =
-      List.of(DEFAULT_URL + MAIN, DEFAULT_URL + LOGIN, DEFAULT_URL + SIGNUP, DEFAULT_URL + CHART);
+      List.of(
+          DEFAULT_URL + MAIN,
+          DEFAULT_URL + LOGIN,
+          DEFAULT_URL + SIGNUP,
+          DEFAULT_URL + CHART,
+          DEFAULT_URL + FROM_OAUTH_TO_MAIN);
 }

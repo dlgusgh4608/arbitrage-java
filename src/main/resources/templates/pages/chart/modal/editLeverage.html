@@ -40,6 +40,8 @@
     $(function () {
         if (!canTrade) return
 
+        const { showToast } = myModule
+
         const MAX = brackets[0].initialLeverage
         const MIN = 1
 
@@ -124,7 +126,7 @@
             const maxValue = Number(input.attr('max'))
             const minValue = Number(input.attr('min'))
 
-            if (maxValue < value || minValue > value) return alert('값이 올바르지 않습니다.')
+            if (maxValue < value || minValue > value) return showToast('값이 올바르지 않습니다.', false)
 
             const modal = bootstrap.Modal.getInstance($('#leverage-modal'));
 
@@ -141,8 +143,6 @@
                 modalBtn.text(`x${leverage}`)
                 modalBtn.val(leverage)
                 modal.hide()
-            } else {
-                alert(data)
             }
         })
     })

@@ -16,6 +16,7 @@ import main.arbitrage.infrastructure.binance.dto.response.BinanceExchangeInfoRes
 import main.arbitrage.presentation.controller.pub.constant.PublicControllerUrlConstants;
 import main.arbitrage.presentation.dto.form.UserLoginForm;
 import main.arbitrage.presentation.dto.form.UserSignupForm;
+import main.arbitrage.presentation.dto.message.MessageModelSetFactory;
 import main.arbitrage.presentation.dto.response.UserTokenResponseCookie;
 import main.arbitrage.presentation.dto.view.OAuthSignupView;
 import main.arbitrage.presentation.dto.view.UserTradeInfo;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping(PublicControllerUrlConstants.DEFAULT_URL)
@@ -38,11 +40,18 @@ public class PublicController {
   private final OAuthUserStore authUserStore;
   private final CollectorScheduleService collectorScheduleService;
   private final OrderApplicationService orderApplicationService;
+  private final MessageModelSetFactory modelSetFactory;
 
   /** only public */
   @GetMapping(PublicControllerUrlConstants.LOGIN)
-  public String getLogin(Model model, @AuthenticationPrincipal AuthContext authContext) {
-    if (authContext != null) return "redirect:/";
+  public String getLogin(
+      Model model,
+      RedirectAttributes redirectAttributes,
+      @AuthenticationPrincipal AuthContext authContext) {
+    if (authContext != null) {
+      modelSetFactory.createMessage(redirectAttributes, false, "로그아웃을 먼저 진행해 주세요.");
+      return "redirect:/";
+    }
 
     model.addAttribute("formDto", new UserLoginForm());
 
@@ -52,11 +61,15 @@ public class PublicController {
   /** only public */
   @PostMapping(PublicControllerUrlConstants.LOGIN)
   public String postLogin(
+      RedirectAttributes redirectAttributes,
       @Valid @ModelAttribute("formDto") UserLoginForm userLoginForm,
       BindingResult bindingResult,
       @AuthenticationPrincipal AuthContext authContext,
       HttpServletResponse response) {
-    if (authContext != null) return "redirect:/";
+    if (authContext != null) {
+      modelSetFactory.createMessage(redirectAttributes, false, "로그아웃을 먼저 진행해 주세요.");
+      return "redirect:/";
+    }
 
     if (bindingResult.hasErrors()) return "pages/login";
 
@@ -64,6 +77,7 @@ public class PublicController {
       UserTokenResponseCookie userTokenDto = userApplicationService.login(userLoginForm);
       CookieUtil.setCookie(response, userTokenDto);
 
+      modelSetFactory.createMessage(redirectAttributes, true, "로그인 완료");
       return "redirect:/";
     } catch (Exception e) {
       bindingResult.reject("serverError", e.getMessage());
@@ -71,13 +85,23 @@ public class PublicController {
     }
   }
 
+  @GetMapping(PublicControllerUrlConstants.FROM_OAUTH_TO_MAIN)
+  public String fromOAuthToMain(RedirectAttributes redirectAttributes) {
+    modelSetFactory.createMessage(redirectAttributes, true, "로그인 완료");
+    return "redirect:/";
+  }
+
   /** only public */
   @GetMapping(PublicControllerUrlConstants.SIGNUP)
   public String getSignup(
       Model model,
+      RedirectAttributes redirectAttributes,
       @AuthenticationPrincipal AuthContext authContext,
       @RequestParam(name = "uid", required = false) String uid) {
-    if (authContext != null) return "redirect:/";
+    if (authContext != null) {
+      modelSetFactory.createMessage(redirectAttributes, false, "로그아웃을 먼저 진행해 주세요.");
+      return "redirect:/";
+    }
 
     if (uid != null) {
       OAuthSignupView oauthSignupView = authUserStore.getAndRemove(uid);
@@ -95,11 +119,15 @@ public class PublicController {
   @PostMapping(PublicControllerUrlConstants.SIGNUP)
   public String postSignup(
       Model model,
+      RedirectAttributes redirectAttributes,
       @Valid @ModelAttribute("formDto") UserSignupForm userSignupDto,
       BindingResult bindingResult,
       @AuthenticationPrincipal AuthContext authContext,
       HttpServletResponse response) {
-    if (authContext != null) return "redirect:/";
+    if (authContext != null) {
+      modelSetFactory.createMessage(redirectAttributes, false, "로그아웃을 먼저 진행해 주세요.");
+      return "redirect:/";
+    }
 
     if (bindingResult.hasErrors()) {
       if (userSignupDto.getAccessToken().isEmpty() == false) {
@@ -119,6 +147,7 @@ public class PublicController {
       UserTokenResponseCookie userTokenDto = userApplicationService.signup(userSignupDto);
       CookieUtil.setCookie(response, userTokenDto);
 
+      modelSetFactory.createMessage(redirectAttributes, true, "회원가입 완료");
       return "redirect:/";
     } catch (Exception e) {
       bindingResult.reject("serverError", e.getMessage());
@@ -133,14 +162,17 @@ public class PublicController {
 
   @GetMapping(PublicControllerUrlConstants.CHART)
   public String getChart(
+      Model model,
+      RedirectAttributes redirectAttributes,
       @RequestParam(name = "symbol", required = true, defaultValue = "btc") String symbol,
-      @AuthenticationPrincipal AuthContext authContext,
-      Model model) {
+      @AuthenticationPrincipal AuthContext authContext) {
     String upperCaseSymbol = symbol.toUpperCase();
 
     List<String> supportedSymbols = symbolVariableService.getSupportedSymbolNames();
 
     if (!supportedSymbols.contains(upperCaseSymbol)) {
+      modelSetFactory.createMessage(
+          redirectAttributes, false, String.format("[ %s ] 지원하지 않는 심볼입니다.", symbol));
       return "redirect:/";
     }
 

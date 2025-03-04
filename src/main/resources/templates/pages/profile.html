@@ -129,47 +129,49 @@
     </section>
     <!-- Script -->
     <script th:inline="javascript">
-        $('#editNicknameBtn').on('click', () => {
-            const modal = new bootstrap.Modal($('#nicknameModal'));
-            modal.show();
-        })
-
-        $("#saveNicknameBtn").on('click', async () => {
-            const nicknameInput = $('#nicknameInput')
-            const prevNickname = nicknameInput.attr('placeholder')
-            const newNickname = nicknameInput.val().trim();
-
-            if (!newNickname) return alert('변경할 닉네임을 입력해주세요.')
-            if (prevNickname === newNickname) return alert('변경할 닉네임을 입력해주세요.')
-            if (newNickname.length > 60) return alert('닉네임은 3 - 60자 사이로 해주세요.')
-
-            const modal = bootstrap.Modal.getInstance($('#nicknameModal'));
-
-            const payload = { nickname: newNickname }
-
-            const { success, data } = await myModule.fetch('PATCH', '/api/edit-nickname', payload)
-
-            if (success) {
-                $('#nickname').text(newNickname)
-                nicknameInput.val(newNickname).attr('placeholder', newNickname)
-                modal.hide()
-            } else {
-                alert(data)
-            }
-        })
-
-        $('#nicknameInput').keyup(e => {
-            const inputLength = e.target.value.trim().length
-
-            $('#nickname-counter').css('display', 'block')
-            $('#nickname-count').text(inputLength)
-
-            if (inputLength > 60 || inputLength < 3) {
-                $('#nickname-count').addClass('valid-warning')
-            } else {
-                $('#nickname-count').removeClass('valid-warning')
-            }
-
+        $(() => {
+            const { showToast } = myModule
+    
+            $('#editNicknameBtn').on('click', () => {
+                const modal = new bootstrap.Modal($('#nicknameModal'));
+                modal.show();
+            })
+    
+            $("#saveNicknameBtn").on('click', async () => {
+                const nicknameInput = $('#nicknameInput')
+                const prevNickname = nicknameInput.attr('placeholder')
+                const newNickname = nicknameInput.val().trim();
+    
+                if (!newNickname) return showToast('변경할 닉네임을 입력해주세요.', false)
+                if (prevNickname === newNickname) return showToast('변경할 닉네임을 입력해주세요.', false)
+                if (newNickname.length > 60) return showToast('닉네임은 3 - 60자 사이로 해주세요.', false)
+    
+                const modal = bootstrap.Modal.getInstance($('#nicknameModal'));
+    
+                const payload = { nickname: newNickname }
+    
+                const { success, data } = await myModule.fetch('PATCH', '/api/edit-nickname', payload)
+    
+                if (success) {
+                    $('#nickname').text(newNickname)
+                    nicknameInput.val(newNickname).attr('placeholder', newNickname)
+                    modal.hide()
+                }
+            })
+    
+            $('#nicknameInput').keyup(e => {
+                const inputLength = e.target.value.trim().length
+    
+                $('#nickname-counter').css('display', 'block')
+                $('#nickname-count').text(inputLength)
+    
+                if (inputLength > 60 || inputLength < 3) {
+                    $('#nickname-count').addClass('valid-warning')
+                } else {
+                    $('#nickname-count').removeClass('valid-warning')
+                }
+    
+            })
         })
     </script>
 </div>

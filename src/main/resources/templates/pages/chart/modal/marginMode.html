@@ -30,7 +30,7 @@
     </div>
 </div>
 <script th:inline="javascript">
-    $(function () {
+    $(() => {
         if (!canTrade) return 
 
         const updateMarginModeEle = $('#update-margin-mode')
@@ -71,8 +71,6 @@
             if (success) {
                 modalBtn.text(selectMarginModeText)
                 modal.hide()
-            } else {
-                alert(data)
             }
         })
 

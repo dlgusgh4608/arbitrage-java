@@ -17,9 +17,7 @@
     <script type='module' th:src="@{/js/elements/orderHistory.js}"></script>
     <script th:inline="javascript">
         $(() => {
-            const {
-                generateOrder
-            } = myModule
+            const { generateOrder } = myModule
 
             const orders = /*[[${orders}]]*/[];
 
@@ -46,7 +44,6 @@
                     }
                 } else {
                     done = true
-                    alert(data)
                 }
 
                 loading = false
